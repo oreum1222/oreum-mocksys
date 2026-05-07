@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>오름 국어 · 모의고사 진단 시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green-deep:#4a5a3a;
+  --green-darker:#3a4830;
+  --gold:#c9a84c;
+  --gold-soft:#d4b966;
+  --cream:#f4ede0;
+  --bg-dark:#1a1f15;
+  --bg-card:#252b1f;
+  --bg-card-hover:#2d3326;
+  --text-primary:#f4ede0;
+  --text-secondary:#b8b09e;
+  --text-muted:#7a7466;
+  --border-soft:rgba(201,168,76,0.18);
+  --border-line:rgba(244,237,224,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:var(--bg-dark);
+  color:var(--text-primary);
+  min-height:100vh;
+  padding:60px 24px 80px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px;margin:0 auto}
+
+/* ─── Header ─── */
+.header{text-align:center;margin-bottom:64px;padding-bottom:48px;border-bottom:1px solid var(--border-line)}
+.brand-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px}
+.brand-mark{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold-soft) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif KR',serif;font-weight:900;font-size:18px;color:var(--bg-dark);
+  letter-spacing:-1px;
+}
+.brand-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:1.05rem;color:var(--gold);letter-spacing:1px}
+.brand-sub{color:var(--text-muted);font-size:0.85rem;margin-left:4px}
+.title{
+  font-family:'Noto Serif KR',serif;
+  font-weight:700;
+  font-size:2.1rem;
+  letter-spacing:-0.5px;
+  margin-bottom:18px;
+  color:var(--cream);
+}
+.title-accent{color:var(--gold)}
+.lead{
+  color:var(--text-secondary);
+  font-size:1.02rem;
+  max-width:560px;
+  margin:0 auto;
+  line-height:1.85;
+}
+.lead strong{color:var(--cream);font-weight:500}
+
+/* ─── Section label ─── */
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  margin:0 0 28px;
+  font-family:'Noto Serif KR',serif;font-weight:500;
+  color:var(--gold);font-size:0.92rem;letter-spacing:2px;
+}
+.section-label::before,
+.section-label::after{content:'';height:1px;background:var(--border-soft);flex:1}
+.section-label::before{flex:0 0 32px}
+
+/* ─── Exam cards ─── */
+.exam-list{display:grid;gap:20px;grid-template-columns:1fr}
+.exam-card{
+  display:block;
+  background:var(--bg-card);
+  border:1px solid var(--border-line);
+  border-radius:6px;
+  padding:32px 36px;
+  text-decoration:none;
+  color:inherit;
+  transition:border-color 0.2s ease,background 0.2s ease,transform 0.2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.exam-card::before{
+  content:'';
+  position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--gold);
+  opacity:0.6;
+  transition:opacity 0.2s ease,width 0.2s ease;
+}
+.exam-card:hover{
+  background:var(--bg-card-hover);
+  border-color:var(--border-soft);
+  transform:translateY(-2px);
+}
+.exam-card:hover::before{opacity:1;width:4px}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:14px;flex-wrap:wrap}
+.card-meta-left{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.card-num{
+  font-family:'Noto Serif KR',serif;
+  font-weight:700;
+  color:var(--gold);
+  font-size:0.78rem;
+  letter-spacing:3px;
+}
+.card-grade{
+  font-size:0.72rem;
+  color:var(--text-muted);
+  padding:3px 10px;
+  border:1px solid var(--border-soft);
+  border-radius:11px;
+  letter-spacing:1px;
+}
+.card-status{
+  font-size:0.72rem;
+  letter-spacing:0.5px;
+  padding:3px 10px;
+  border-radius:11px;
+}
+.status-active{background:rgba(74,90,58,0.5);color:var(--cream);border:1px solid var(--green-deep)}
+.status-tentative{background:rgba(201,168,76,0.12);color:var(--gold-soft);border:1px solid rgba(201,168,76,0.3)}
+
+.card-arrow{
+  font-family:'Noto Serif KR',serif;
+  font-size:1.4rem;
+  color:var(--text-muted);
+  transition:color 0.2s ease,transform 0.2s ease;
+  line-height:1;
+  align-self:center;
+}
+.exam-card:hover .card-arrow{color:var(--gold);transform:translateX(4px)}
+
+.card-name{
+  font-family:'Noto Serif KR',serif;
+  font-weight:500;
+  font-size:1.32rem;
+  color:var(--cream);
+  margin-bottom:8px;
+  letter-spacing:-0.3px;
+}
+.card-date{
+  color:var(--text-muted);
+  font-size:0.85rem;
+  margin-bottom:22px;
+  font-weight:300;
+}
+
+.card-body{
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;
+  padding-top:22px;
+  border-top:1px solid var(--border-line);
+}
+.card-body-block{display:flex;flex-direction:column;gap:8px}
+.body-label{
+  font-size:0.72rem;color:var(--text-muted);letter-spacing:1.5px;
+  font-weight:500;
+}
+.body-value{
+  font-size:0.88rem;color:var(--text-secondary);line-height:1.65;
+}
+.body-value strong{color:var(--cream);font-weight:500}
+.cut-row{display:flex;gap:10px;flex-wrap:wrap;font-size:0.86rem}
+.cut-pill{
+  display:inline-flex;align-items:baseline;gap:5px;
+  color:var(--text-secondary);
+}
+.cut-pill .cut-num{
+  color:var(--cream);
+  font-weight:700;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.95rem;
+}
+.cut-divider{color:var(--text-muted)}
+.cut-tentative-mark{font-size:0.7rem;color:var(--gold-soft);margin-left:6px;letter-spacing:0.5px}
+
+/* ─── Footer ─── */
+.footer{
+  margin-top:72px;padding-top:32px;
+  border-top:1px solid var(--border-line);
+  text-align:center;
+  color:var(--text-muted);
+  font-size:0.82rem;
+  line-height:1.9;
+}
+.footer-mark{
+  font-family:'Noto Serif KR',serif;
+  color:var(--gold);
+  font-weight:500;
+  letter-spacing:2px;
+  font-size:0.78rem;
+  margin-bottom:8px;
+  display:block;
+}
+
+/* ─── Mobile ─── */
+@media (max-width:640px){
+  body{padding:40px 16px 60px}
+  .title{font-size:1.55rem}
+  .lead{font-size:0.94rem}
+  .exam-card{padding:24px 22px}
+  .card-name{font-size:1.15rem}
+  .card-body{grid-template-columns:1fr;gap:18px}
+  .card-arrow{display:none}
+  .header{margin-bottom:48px;padding-bottom:36px}
+  .section-label{font-size:0.82rem;letter-spacing:1.5px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="header">
+    <div class="brand-row">
+      <div class="brand-mark">오</div>
+      <div>
+        <div class="brand-name">오름 국어 연구소</div>
+      </div>
+    </div>
+    <h1 class="title">모의고사 <span class="title-accent">진단 시스템</span></h1>
+    <p class="lead">
+      오답 마킹부터 시간 진단까지 4단계로 자기 약점을 정확히 짚어내는 도구입니다.<br>
+      응시한 회차를 선택해 주세요.
+    </p>
+  </header>
+
+  <div class="section-label">회차 목록</div>
+
+  <!-- 회차 목록 -->
+  <div class="exam-list">
+
+    <!-- 3회차 · 2026학년도 5월 학력평가 (이번에 추가) -->
+    <a href="./mock2026-05/" class="exam-card">
+      <div class="card-top">
+        <div class="card-meta-left">
+          <span class="card-num">제 3 회</span>
+          <span class="card-grade">고3</span>
+          <span class="card-status status-tentative">잠정 등급컷</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2 class="card-name">2026학년도 5월 전국연합학력평가</h2>
+      <p class="card-date">시행일 · 2026년 5월 7일</p>
+      <div class="card-body">
+        <div class="card-body-block">
+          <span class="body-label">등급컷 · 1 / 2 / 3</span>
+          <div class="cut-row">
+            <span class="cut-pill">언매 <span class="cut-num">95</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">88</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">81</span></span>
+            <span class="cut-tentative-mark">잠정</span>
+          </div>
+          <div class="cut-row">
+            <span class="cut-pill">화작 <span class="cut-num">97</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">90</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">83</span></span>
+            <span class="cut-tentative-mark">잠정</span>
+          </div>
+        </div>
+        <div class="card-body-block">
+          <span class="body-label">핵심 변별 자리</span>
+          <p class="body-value">
+            <strong>11번</strong> 비점 수차 그림 적용 · <strong>16번</strong> 두 정의 매칭 · <strong>8번</strong> 추상 개념 사례 적용
+          </p>
+        </div>
+      </div>
+    </a>
+
+    <!-- 2회차 · 2027 상상 시즌2 1회차 -->
+    <a href="./mock2027-s2-01/" class="exam-card">
+      <div class="card-top">
+        <div class="card-meta-left">
+          <span class="card-num">제 2 회</span>
+          <span class="card-grade">고3</span>
+          <span class="card-status status-active">정식 운영</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2 class="card-name">2027 상상 모의고사 시즌2 제1차</h2>
+      <p class="card-date">사설 모의고사 · 학원 자체 응시</p>
+      <div class="card-body">
+        <div class="card-body-block">
+          <span class="body-label">등급컷 · 1 / 2 / 3</span>
+          <div class="cut-row">
+            <span class="cut-pill">언매 <span class="cut-num">84</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">75</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">67</span></span>
+          </div>
+          <div class="cut-row">
+            <span class="cut-pill">화작 <span class="cut-num">87</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">79</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">70</span></span>
+          </div>
+        </div>
+        <div class="card-body-block">
+          <span class="body-label">핵심 변별 자리</span>
+          <p class="body-value">
+            <strong>13번</strong> 4규칙·4거래 분배 · <strong>31번</strong> 서술자/초점화자 · <strong>16번</strong> 동축 케이블 그림
+          </p>
+        </div>
+      </div>
+    </a>
+
+    <!-- 1회차 · 2025년 5월 학평 -->
+    <a href="./mock2025-05/" class="exam-card">
+      <div class="card-top">
+        <div class="card-meta-left">
+          <span class="card-num">제 1 회</span>
+          <span class="card-grade">고3</span>
+          <span class="card-status status-active">정식 운영</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2 class="card-name">2025학년도 5월 전국연합학력평가</h2>
+      <p class="card-date">시행일 · 2025년 5월 8일 · 경기도교육청</p>
+      <div class="card-body">
+        <div class="card-body-block">
+          <span class="body-label">등급컷 · 1 / 2 / 3</span>
+          <div class="cut-row">
+            <span class="cut-pill">언매 <span class="cut-num">95</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">88</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">81</span></span>
+          </div>
+          <div class="cut-row">
+            <span class="cut-pill">화작 <span class="cut-num">97</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">90</span></span>
+            <span class="cut-divider">/</span>
+            <span class="cut-pill"><span class="cut-num">83</span></span>
+          </div>
+        </div>
+        <div class="card-body-block">
+          <span class="body-label">핵심 변별 자리</span>
+          <p class="body-value">
+            <strong>12번</strong> 자기유변유체 그래프 · <strong>15번</strong> 섀플리 값 계산 · <strong>8번</strong> 신실재론 사례 적용
+          </p>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <footer class="footer">
+    <span class="footer-mark">가경T · 오름 국어 연구소</span>
+    오름 국어학원 고3 정규반 · 학원등록번호 제2474호<br>
+    문의 사항은 가경T에게 직접 전달해 주시기 바랍니다.
+  </footer>
+
+</div>
+</body>
+</html>
