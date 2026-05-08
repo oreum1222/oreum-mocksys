@@ -529,6 +529,40 @@ function loadExamPreview(examId, choice, pattern){
   });
 }
 
+// 강사용 — 시트의 학생 데이터로 진단 화면 재현
+function loadExamReport(examId, info){
+  const meta = EXAM_LIST.find(e=>e.id===examId);
+  if(!meta){ renderRouter(); return; }
+  document.getElementById('loading').style.display = 'flex';
+  fetch(meta.file).then(r=>r.json()).then(d=>{
+    STATE.examId = examId;
+    STATE.data = d;
+    STATE.view = 'diag';
+    STATE.step = 4;
+    STATE.student = {
+      name: info.name || '학생',
+      school: info.school || '-',
+      grade: info.grade || '고3',
+      choice: info.choice || 'lm',
+      raw: null
+    };
+    // 시트의 '틀린문항' 콤마 구분 키를 그대로 Set으로 복원
+    const wrongList = (info.wrong || '').split(',').map(s=>s.trim()).filter(Boolean);
+    STATE.wrong = new Set(wrongList);
+    STATE.timeAns = {};  // 시트엔 라벨만 저장됨 — 답변 자체는 복원 불가
+    STATE.result = computeResult();
+    // timeDiag는 시트 라벨로 직접 찾아 덮어쓰기
+    if(info.time && d.timeDiagnosticCodes){
+      STATE.result.timeDiag = d.timeDiagnosticCodes[info.time] || null;
+    }
+    document.getElementById('loading').style.display = 'none';
+    renderDiag();
+  }).catch(err=>{
+    document.getElementById('loading').style.display = 'none';
+    alert('회차 데이터를 불러오지 못했습니다: '+err.message);
+  });
+}
+
 // ─────────────────── Diag (4 steps) ───────────────────
 function renderDiag(){
   clear(root);
@@ -995,8 +1029,23 @@ function submitResult(){
 loadConfig().then(()=>{
   document.getElementById('loading').style.display = 'none';
   root.style.display = '';
-  // 강사용 미리보기 — ?preview=2027-s3-01&choice=lm&pattern=mid
   const params = new URLSearchParams(window.location.search);
+
+  // 강사용 — 학생 결과 재현 (대시보드에서 클릭)
+  const reportExamId = params.get('report');
+  if(reportExamId){
+    loadExamReport(reportExamId, {
+      choice: params.get('choice'),
+      name:   params.get('name'),
+      school: params.get('school'),
+      grade:  params.get('grade'),
+      wrong:  params.get('wrong'),
+      time:   params.get('time')
+    });
+    return;
+  }
+
+  // 강사용 — 미리보기 (?preview=2027-s3-01&choice=lm&pattern=mid)
   const previewExamId = params.get('preview');
   if(previewExamId){
     const choice  = params.get('choice')  || 'lm';

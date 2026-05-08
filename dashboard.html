@@ -79,6 +79,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
     <div class="row">
       <select id="examSelect" style="min-width:240px">
         <option value="all">전체 회차</option>
+        <option value="2027-s3-01">제4회 · 2027 이감 시즌3-1</option>
         <option value="2026-05">제3회 · 2026 5월 학평</option>
         <option value="2027-s2-01">제2회 · 2027 상상 시즌2-1</option>
         <option value="2025-05">제1회 · 2025 5월 학평</option>
@@ -158,7 +159,8 @@ function loadData(){
   }
 
   tableBox.innerHTML = '<div class="empty">불러오는 중...</div>';
-  fetch(SCRIPT_URL)
+  const sep = SCRIPT_URL.includes('?') ? '&' : '?';
+  fetch(SCRIPT_URL + sep + 'action=list')
     .then(r=>r.json())
     .then(d=>{
       ALL_DATA = Array.isArray(d) ? d : (d.data || []);
@@ -206,24 +208,25 @@ function renderStatsAndTable(){
   }
   // 최신순 정렬
   rows.sort((a,b)=>{
-    const ta = a.timestamp||a['시간']||a['타임스탬프']||'';
-    const tb = b.timestamp||b['시간']||b['타임스탬프']||'';
-    return tb.localeCompare(ta);
+    const ta = a.timestamp||a['시간']||a['타임스탬프']||a['제출시각']||'';
+    const tb = b.timestamp||b['시간']||b['타임스탬프']||b['제출시각']||'';
+    return String(tb).localeCompare(String(ta));
   });
+  CURRENT_ROWS = rows;  // openReport에서 인덱스로 접근
 
   let html = '<div style="overflow-x:auto"><table><thead><tr>';
-  html += '<th>시각</th><th>이름</th><th>학교</th><th>회차</th><th>선택</th><th>원점수</th><th>등급</th><th>핵심 패턴</th>';
+  html += '<th>시각</th><th>이름</th><th>학교</th><th>회차</th><th>선택</th><th>원점수</th><th>등급</th><th>핵심 패턴</th><th></th>';
   html += '</tr></thead><tbody>';
-  rows.forEach(r=>{
-    const ts = (r.timestamp||r['시간']||r['타임스탬프']||'').toString().substring(0,16).replace('T',' ');
+  rows.forEach((r, idx)=>{
+    const ts = (r.timestamp||r['시간']||r['타임스탬프']||r['제출시각']||'').toString().substring(0,16).replace('T',' ');
     const name = r.name||r['이름']||'';
     const school = r.school||r['학교']||'';
-    const exam = r.exam||r['시험']||'';
+    const exam = r.exam||r['시험']||r['회차ID']||'';
     const choice = r.choice||r['선택과목']||'';
     const raw = r.raw||r['원점수']||'';
     const grade = r['예상등급']||r.grade||'';
     const patterns = (r['핵심패턴']||r.patterns||'').toString().split('|').map(p=>p.split(':')[0]).filter(Boolean).join(', ');
-    html += `<tr>
+    html += `<tr style="cursor:pointer" onclick="openReport(${idx})" title="클릭하면 학생이 받은 진단 화면 열림">
       <td style="color:var(--text-muted);font-size:0.78rem">${escape(ts)}</td>
       <td style="color:var(--cream);font-weight:500">${escape(name)}</td>
       <td>${escape(school)}</td>
@@ -232,10 +235,30 @@ function renderStatsAndTable(){
       <td style="color:var(--gold);font-weight:500">${escape(raw)}</td>
       <td>${grade?'<span class="tag tag-grade">'+escape(grade)+'</span>':'-'}</td>
       <td style="font-size:0.8rem">${escape(patterns)}</td>
+      <td style="color:var(--gold);font-size:0.78rem;text-align:right">진단 →</td>
     </tr>`;
   });
   html += '</tbody></table></div>';
   tableBox.innerHTML = html;
+}
+
+// 학생 진단 화면 새 탭으로 열기 (현재 필터 적용된 rows 기준 idx)
+let CURRENT_ROWS = [];
+function openReport(idx){
+  const r = CURRENT_ROWS[idx];
+  if(!r){ alert('데이터를 찾지 못했습니다.'); return; }
+  const examId = r['회차ID']||r.exam||'';
+  if(!examId){ alert('회차 정보가 없습니다.'); return; }
+  const params = new URLSearchParams({
+    report: examId,
+    choice: r['선택과목']||r.choice||'lm',
+    name:   r['이름']||r.name||'',
+    school: r['학교']||r.school||'',
+    grade:  r['학년']||r.grade||'고3',
+    wrong:  r['틀린문항']||'',
+    time:   r['시간진단']||''
+  });
+  window.open('index.html?' + params.toString(), '_blank');
 }
 
 function avg(rows, key1, key2){
@@ -245,6 +268,7 @@ function avg(rows, key1, key2){
 }
 function examShort(exam){
   if(!exam) return '-';
+  if(exam.includes('2027-s3-01')) return '제4회';
   if(exam.includes('2026-05')) return '제3회';
   if(exam.includes('2027-s2-01')) return '제2회';
   if(exam.includes('2025-05')) return '제1회';
