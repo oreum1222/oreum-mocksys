@@ -248,6 +248,16 @@ body{
   .score-block{grid-template-columns:1fr 1fr}
   .score-num{font-size:2rem}
 }
+@media print{
+  body{background:#fff;color:#000}
+  .header,.back-bar,.diag-header,.btn-row,#submitFeedback,.loading,.exam-list,.section-label,.footer{display:none !important}
+  .result-hero,.score-block,.diag-section{break-inside:avoid;page-break-inside:avoid}
+  .pattern,.q-detail{break-inside:avoid;page-break-inside:avoid}
+  .score-card{border:1px solid #888 !important;background:#fff !important}
+  .pattern,.q-detail{background:#f8f8f8 !important;color:#000 !important}
+  .pattern-action,.parent-note,.q-detail-rem{background:#fff !important;border:1px solid #888 !important}
+  *{box-shadow:none !important;text-shadow:none !important}
+}
 </style>
 </head>
 <body>
@@ -451,6 +461,66 @@ function loadExam(examId){
     STATE.wrong = new Set();
     STATE.timeAns = {};
     STATE.result = null;
+    document.getElementById('loading').style.display = 'none';
+    renderDiag();
+  }).catch(err=>{
+    document.getElementById('loading').style.display = 'none';
+    alert('회차 데이터를 불러오지 못했습니다: '+err.message);
+  });
+}
+
+// ─────────────────── Preview (강사용) ───────────────────
+function flagToKey(flagKey){
+  if(flagKey.includes('-')) return flagKey;
+  return 'common-' + flagKey;
+}
+
+function generatePreviewWrong(data, choice, pattern){
+  const wrong = new Set();
+  const flags = (data.discriminationFlags || []).filter(f=>{
+    if(!f.key.includes('-')) return true;
+    return f.key.startsWith(choice+'-');
+  });
+
+  if(pattern === 'top'){
+    flags.filter(f=>f.level==='1').slice(0,2).forEach(f=>wrong.add(flagToKey(f.key)));
+  } else if(pattern === 'low'){
+    flags.forEach(f=>wrong.add(flagToKey(f.key)));
+    [13,17,19,25,33].forEach(n=>wrong.add('common-'+n));
+    [38,39,41].forEach(n=>wrong.add(choice+'-'+n));
+  } else {
+    const ones = flags.filter(f=>f.level==='1');
+    const twos = flags.filter(f=>f.level==='2').slice(0,3);
+    [...ones, ...twos].forEach(f=>wrong.add(flagToKey(f.key)));
+  }
+  return wrong;
+}
+
+function generatePreviewTimeAns(pattern){
+  if(pattern === 'low')  return { '1': 4, '2': 0 };
+  if(pattern === 'top')  return { '1': 0, '2': 5 };
+  return { '1': 2, '2': 1 };
+}
+
+function loadExamPreview(examId, choice, pattern){
+  const meta = EXAM_LIST.find(e=>e.id===examId);
+  if(!meta){ renderRouter(); return; }
+  document.getElementById('loading').style.display = 'flex';
+  fetch(meta.file).then(r=>r.json()).then(d=>{
+    STATE.examId = examId;
+    STATE.data = d;
+    STATE.view = 'diag';
+    STATE.step = 4;
+    STATE.student = {
+      name: '[미리보기] '+pattern+' 시나리오',
+      school: '오름',
+      grade: '고3',
+      choice: choice,
+      raw: null
+    };
+    STATE.wrong = generatePreviewWrong(d, choice, pattern);
+    STATE.timeAns = generatePreviewTimeAns(pattern);
+    STATE.result = computeResult();
     document.getElementById('loading').style.display = 'none';
     renderDiag();
   }).catch(err=>{
@@ -843,6 +913,7 @@ function renderStep4(){
   // 제출
   const submitBox = el('div',{class:'btn-row'},
     el('button',{class:'btn btn-ghost', onclick:()=>{ STATE.step=3; renderDiag(); }},'← 시간 진단으로'),
+    el('button',{class:'btn btn-ghost', onclick:()=>window.print()},'PDF 저장 / 인쇄'),
     el('button',{class:'btn btn-primary', id:'submitBtn', onclick:submitResult},'결과 시트에 제출 →')
   );
   root.appendChild(submitBox);
@@ -876,6 +947,22 @@ function submitResult(){
     틀린문항: Array.from(STATE.wrong).join(','),
     핵심패턴: r.patterns.map(p=>p.code+':'+p.name).join('|'),
     시간진단: r.timeDiag ? r.timeDiag.label : '',
+    // 강사 메일용 풍부한 진단 데이터
+    patternsJson: JSON.stringify(r.patterns.map(p=>({
+      code: p.code, name: p.name,
+      diag: p.diag||'', action: p.action||'',
+      hits: p.evidence||[], scope: p.scope||''
+    }))),
+    wrongDetailsJson: JSON.stringify(r.wrongDetails.map(q=>({
+      no: q.no, scope: q.scope,
+      area: q.area||'', source: q.source||'',
+      three: !!q.three, wr: q.wr||null,
+      coreElement: q.coreElement||'',
+      weakness1: q.weakness1||'', weakness2: q.weakness2||'',
+      remediation: q.remediation||'',
+      parentNote: q.parentNote||''
+    }))),
+    timeDiagJson: JSON.stringify(r.timeDiag||null)
   };
 
   btn.disabled = true; btn.textContent = '제출 중...';
@@ -908,6 +995,15 @@ function submitResult(){
 loadConfig().then(()=>{
   document.getElementById('loading').style.display = 'none';
   root.style.display = '';
+  // 강사용 미리보기 — ?preview=2027-s3-01&choice=lm&pattern=mid
+  const params = new URLSearchParams(window.location.search);
+  const previewExamId = params.get('preview');
+  if(previewExamId){
+    const choice  = params.get('choice')  || 'lm';
+    const pattern = params.get('pattern') || 'mid';
+    loadExamPreview(previewExamId, choice, pattern);
+    return;
+  }
   renderRouter();
 });
 </script>
