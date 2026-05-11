@@ -77,11 +77,8 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
   <div class="section">
     <div class="section-title">조회 조건</div>
     <div class="row">
-      <select id="examSelect" style="min-width:240px">
+      <select id="examSelect" style="min-width:280px">
         <option value="all">전체 회차</option>
-        <option value="2026-05">제3회 · 2026 5월 학평</option>
-        <option value="2027-s2-01">제2회 · 2027 상상 시즌2-1</option>
-        <option value="2025-05">제1회 · 2025 5월 학평</option>
       </select>
       <input id="searchInput" type="text" placeholder="이름·학교 검색" style="flex:1;min-width:180px">
       <button onclick="loadData()">새로고침</button>
@@ -162,12 +159,46 @@ function loadData(){
     .then(r=>r.json())
     .then(d=>{
       ALL_DATA = Array.isArray(d) ? d : (d.data || []);
+      populateExamSelect();
       renderStatsAndTable();
     })
     .catch(err=>{
       msg.innerHTML = '<div class="error">데이터를 불러오지 못했습니다: '+err.message+'</div>';
       tableBox.innerHTML = '<div class="empty">로드 실패</div>';
     });
+}
+
+// 시트 데이터에서 회차 목록을 추출해서 셀렉트 박스 자동 생성
+function populateExamSelect(){
+  const select = document.getElementById('examSelect');
+  const currentValue = select.value;
+
+  // 회차ID + 회차이름을 unique하게 모음
+  const examMap = new Map();
+  ALL_DATA.forEach(r => {
+    const id = (r.exam || r['회차ID'] || r['시험'] || '').toString().trim();
+    const name = (r.examLabel || r['회차이름'] || '').toString().trim();
+    if(id && !examMap.has(id)){
+      examMap.set(id, name || id);
+    }
+  });
+
+  // 기존 옵션 제거 후 다시 채우기 ("전체 회차" 유지)
+  select.innerHTML = '<option value="all">전체 회차</option>';
+  Array.from(examMap.entries())
+    .sort((a,b) => String(b[0]).localeCompare(String(a[0])))  // 최신순 (회차ID 역순)
+    .forEach(([id, name]) => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      // 라벨: "회차이름 (회차ID)" 형식. 회차이름이 길면 ID도 같이 보여서 강사가 구분 쉽게
+      opt.textContent = name === id ? id : `${name}`;
+      select.appendChild(opt);
+    });
+
+  // 이전 선택값 복원
+  if(currentValue && Array.from(select.options).some(o => o.value === currentValue)){
+    select.value = currentValue;
+  }
 }
 
 function renderStatsAndTable(){
@@ -219,6 +250,7 @@ function renderStatsAndTable(){
     const name = r.name||r['이름']||'';
     const school = r.school||r['학교']||'';
     const exam = r.exam||r['회차ID']||r['시험']||'';
+    const examName = r.examLabel||r['회차이름']||'';
     const choice = r.choice||r['선택과목']||'';
     const raw = r.raw||r['원점수']||'';
     const grade = r['예상등급']||r.grade||'';
@@ -227,7 +259,7 @@ function renderStatsAndTable(){
       <td style="color:var(--text-muted);font-size:0.78rem">${escape(ts)}</td>
       <td style="color:var(--cream);font-weight:500">${escape(name)}</td>
       <td>${escape(school)}</td>
-      <td><span class="tag tag-lm">${escape(examShort(exam))}</span></td>
+      <td><span class="tag tag-lm">${escape(examShort(exam, examName))}</span></td>
       <td><span class="tag ${choice==='lm'?'tag-lm':'tag-hs'}">${choice==='lm'?'언매':(choice==='hs'?'화작':'-')}</span></td>
       <td style="color:var(--gold);font-weight:500">${escape(raw)}</td>
       <td>${grade?'<span class="tag tag-grade">'+escape(grade)+'</span>':'-'}</td>
@@ -243,11 +275,30 @@ function avg(rows, key1, key2){
   if(nums.length===0) return 0;
   return nums.reduce((a,b)=>a+b,0)/nums.length;
 }
-function examShort(exam){
+function examShort(exam, examName){
+  // 회차이름이 있으면 그걸 짧게 변환
+  if(examName){
+    // "2026학년도 5월 전국연합학력평가" → "5월 학평"
+    if(/5월.*학력평가|학평/.test(examName)) return '5월 학평';
+    if(/6월.*평가|모의평가/.test(examName) && /6월/.test(examName)) return '6월 모평';
+    if(/9월.*평가|모의평가/.test(examName) && /9월/.test(examName)) return '9월 모평';
+    if(/수능/.test(examName)) return '수능';
+    // "2027 이감 모의고사 시즌3 1회차" → "이감 시즌3-1"
+    let m = examName.match(/이감.*시즌\s*(\d+)\s*[-·]?\s*(\d+)\s*회차/);
+    if(m) return `이감 시즌${m[1]}-${m[2]}`;
+    // "2027 상상 모의고사 시즌2 1회차" → "상상 시즌2-1"
+    m = examName.match(/상상.*시즌\s*(\d+)\s*[-·]?\s*(\d+)\s*회차/);
+    if(m) return `상상 시즌${m[1]}-${m[2]}`;
+    // 그 외엔 회차이름의 마지막 식별 부분 사용 (너무 길면 잘라서)
+    if(examName.length <= 20) return examName;
+    return examName.slice(0, 18) + '…';
+  }
+  // 회차이름 없으면 ID로 추정
   if(!exam) return '-';
-  if(exam.includes('2026-05')) return '제3회';
-  if(exam.includes('2027-s2-01')) return '제2회';
-  if(exam.includes('2025-05')) return '제1회';
+  if(/^2026-05/.test(exam)) return '5월 학평';
+  if(/^2027-s2/.test(exam)) return '상상 시즌2';
+  if(/^2027-s3/.test(exam)) return '이감 시즌3';
+  if(/^2025-05/.test(exam)) return '5월 학평';
   return exam;
 }
 function escape(s){ return String(s||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
