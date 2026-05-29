@@ -6,10 +6,10 @@
     "month": "이감 시즌3 제4차",
     "examName": "이감 예비평가",
     "examShort": "이감",
-    "label": "시즌3 제4차 예비평가",
+    "label": "2027학년도 시즌3 제4차 이감 예비평가",
     "fullTitle": "2027학년도 시즌3 제4차 이감 예비평가",
     "region": "전국",
-    "totalQuestions": 45,
+    "totalQuestions": 56,
     "elective": true,
     "structure": {
       "common": {
@@ -27,7 +27,8 @@
         "count": 11,
         "description": "언어와 매체"
       }
-    }
+    },
+    "id": "2027-s3-04"
   },
   "answers": {
     "common": {
@@ -929,32 +930,32 @@
   },
   "discriminationFlags": [
     {
-      "key": 16,
+      "key": "16",
       "level": "1",
       "note": "63% · GPU 뱅크 충돌·패딩 계산"
     },
     {
-      "key": 8,
+      "key": "8",
       "level": "1",
       "note": "57% · 법 형성 〈보기〉 적용"
     },
     {
-      "key": 15,
+      "key": "15",
       "level": "2",
       "note": "49% · 공유 메모리 메커니즘"
     },
     {
-      "key": 7,
+      "key": "7",
       "level": "2",
       "note": "41% · 대법원·헌재 사례 적용"
     },
     {
-      "key": 13,
+      "key": "13",
       "level": "2",
       "note": "38% · 충분성 원리 사고실험"
     },
     {
-      "key": 5,
+      "key": "5",
       "level": "2",
       "note": "33% · 법 발견 세부 판단"
     }
