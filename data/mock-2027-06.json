@@ -26,10 +26,138 @@
       }
     }
   },
-  "gradeCutsPending": true,
+  "gradeCutsPending": false,
   "gradeCuts": {
-    "lm": [],
-    "hs": []
+    "lm": [
+      {
+        "grade": 1,
+        "raw": 95,
+        "std": 130,
+        "pct": 96,
+        "source": "공식"
+      },
+      {
+        "grade": 2,
+        "raw": 88,
+        "std": 124,
+        "pct": 89,
+        "source": "공식"
+      },
+      {
+        "grade": 3,
+        "raw": 81,
+        "std": 118,
+        "pct": 78,
+        "source": "공식"
+      },
+      {
+        "grade": 4,
+        "raw": 70,
+        "std": 108,
+        "pct": 61,
+        "source": "공식"
+      },
+      {
+        "grade": 5,
+        "raw": 56,
+        "std": 96,
+        "pct": 40,
+        "source": "공식"
+      },
+      {
+        "grade": 6,
+        "raw": 41,
+        "std": 83,
+        "pct": 23,
+        "source": "공식"
+      },
+      {
+        "grade": 7,
+        "raw": 27,
+        "std": 71,
+        "pct": 11,
+        "source": "공식"
+      },
+      {
+        "grade": 8,
+        "raw": 20,
+        "std": 65,
+        "pct": 4,
+        "source": "공식"
+      },
+      {
+        "grade": 9,
+        "raw": 0,
+        "std": null,
+        "pct": 0,
+        "source": "공식"
+      }
+    ],
+    "hs": [
+      {
+        "grade": 1,
+        "raw": 96,
+        "std": 130,
+        "pct": 96,
+        "source": "공식"
+      },
+      {
+        "grade": 2,
+        "raw": 89,
+        "std": 124,
+        "pct": 89,
+        "source": "공식"
+      },
+      {
+        "grade": 3,
+        "raw": 82,
+        "std": 118,
+        "pct": 78,
+        "source": "공식"
+      },
+      {
+        "grade": 4,
+        "raw": 71,
+        "std": 108,
+        "pct": 61,
+        "source": "공식"
+      },
+      {
+        "grade": 5,
+        "raw": 56,
+        "std": 96,
+        "pct": 40,
+        "source": "공식"
+      },
+      {
+        "grade": 6,
+        "raw": 41,
+        "std": 83,
+        "pct": 23,
+        "source": "공식"
+      },
+      {
+        "grade": 7,
+        "raw": 27,
+        "std": 71,
+        "pct": 11,
+        "source": "공식"
+      },
+      {
+        "grade": 8,
+        "raw": 20,
+        "std": 65,
+        "pct": 4,
+        "source": "공식"
+      },
+      {
+        "grade": 9,
+        "raw": 0,
+        "std": null,
+        "pct": 0,
+        "source": "공식"
+      }
+    ]
   },
   "answers": {
     "common": {
