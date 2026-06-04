@@ -232,6 +232,39 @@ function loadConfig(){
 
 let ALL_DATA = [];
 
+// ─── 등급컷 캐시 & 등급 재계산 (등급컷 입력 전 제출분의 '미정' 보정) ───
+const GRADECUTS = {};   // examId -> {lm:[...], hs:[...]}
+function loadGradeCuts(ids){
+  return Promise.all((ids||[]).map(id=>
+    fetch('data/mock-'+id+'.json?v='+Date.now())
+      .then(r=>r.json())
+      .then(d=>{ GRADECUTS[id] = (d && d.gradeCuts) ? d.gradeCuts : null; })
+      .catch(()=>{ GRADECUTS[id] = null; })
+  ));
+}
+function computeGradeFromRaw(examId, choice, raw){
+  const gc = GRADECUTS[examId];
+  if(!gc) return null;
+  const cuts = gc[choice];
+  if(!cuts || !cuts.length) return null;
+  const r = parseInt(raw, 10);
+  if(isNaN(r)) return null;
+  for(const c of cuts){ if(r >= c.raw) return {grade:c.grade, std:c.std, pct:c.pct}; }
+  const last = cuts[cuts.length-1];
+  return {grade:last.grade, std:last.std, pct:last.pct};
+}
+// 저장된 등급이 숫자면 그대로, '미정'·빈값이면 원점수로 재계산
+function gradeOf(r){
+  const stored = (r['예상등급']!=null ? r['예상등급'] : r.grade);
+  const s = (stored==null ? '' : String(stored)).trim();
+  if(/^[1-9]$/.test(s)) return s;
+  const examId = (r.exam||r['회차ID']||r['시험']||'').toString().trim();
+  const choice = (r.choice||r['선택과목']||'').toString().trim();
+  const raw = (r.raw!=null?r.raw:r['원점수']);
+  const c = computeGradeFromRaw(examId, choice, raw);
+  return c ? String(c.grade) : (s && s!=='미정' ? s : '');
+}
+
 function checkPassword(){
   const pw = document.getElementById('pwInput').value;
   const msg = document.getElementById('gateMsg');
@@ -273,9 +306,12 @@ function loadData(){
     .then(r=>r.json())
     .then(d=>{
       ALL_DATA = Array.isArray(d) ? d : (d.data || []);
-      populateExamSelect();
-      renderStatsAndTable();
-      buildReports();
+      const ids = [...new Set(ALL_DATA.map(r=>(r.exam||r['회차ID']||r['시험']||'').toString().trim()).filter(Boolean))];
+      loadGradeCuts(ids).then(()=>{
+        populateExamSelect();
+        renderStatsAndTable();
+        buildReports();
+      });
     })
     .catch(err=>{
       msg.innerHTML = '<div class="error">데이터를 불러오지 못했습니다: '+err.message+'</div>';
@@ -368,7 +404,7 @@ function renderStatsAndTable(){
     const examName = r.examLabel||r['회차이름']||'';
     const choice = r.choice||r['선택과목']||'';
     const raw = r.raw||r['원점수']||'';
-    const grade = r['예상등급']||r.grade||'';
+    const grade = gradeOf(r);
     const patterns = (r['핵심패턴']||r.patterns||'').toString().split('|').map(p=>p.split(':')[0]).filter(Boolean).join(', ');
     html += `<tr>
       <td style="color:var(--text-muted);font-size:0.78rem">${escape(ts)}</td>
@@ -458,7 +494,7 @@ function buildReports(){
     var rid=val(r,'exam','회차ID').trim();
     if(!SEASON3[rid])return;
     var raw=parseInt(val(r,'raw','원점수'),10)||0;
-    var grade=parseInt(val(r,'grade','예상등급'),10)||0;
+    var grade=parseInt(gradeOf(r),10)||0;
     var wrongs=repWrongs(val(r,'','틀린문항'));
     var time=val(r,'','시간진단').trim();
     var pats=repPatLabels(val(r,'patterns','핵심패턴'));
