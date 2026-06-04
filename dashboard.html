@@ -234,6 +234,18 @@ let ALL_DATA = [];
 
 // ─── 등급컷 캐시 & 등급 재계산 (등급컷 입력 전 제출분의 '미정' 보정) ───
 const GRADECUTS = {};   // examId -> {lm:[...], hs:[...]}
+// 구글 시트가 'YYYY-MM' 회차ID를 날짜로 강제 변환한 경우(예: 2027-06 → 2027-05-31T15:00:00.000Z) 원래 id로 복원
+function normExamId(raw){
+  raw = (raw==null ? '' : String(raw)).trim();
+  if(/^\d{4}-\d{2}-\d{2}T/.test(raw)){
+    const dt = new Date(raw);
+    if(!isNaN(dt)){
+      const k = new Date(dt.getTime() + 9*3600*1000); // KST(UTC+9)
+      return k.getUTCFullYear() + '-' + String(k.getUTCMonth()+1).padStart(2,'0');
+    }
+  }
+  return raw;
+}
 function loadGradeCuts(ids){
   return Promise.all((ids||[]).map(id=>
     fetch('data/mock-'+id+'.json?v='+Date.now())
@@ -258,7 +270,7 @@ function gradeOf(r){
   const stored = (r['예상등급']!=null ? r['예상등급'] : r.grade);
   const s = (stored==null ? '' : String(stored)).trim();
   if(/^[1-9]$/.test(s)) return s;
-  const examId = (r.exam||r['회차ID']||r['시험']||'').toString().trim();
+  const examId = normExamId(r.exam||r['회차ID']||r['시험']||'');
   const choice = (r.choice||r['선택과목']||'').toString().trim();
   const raw = (r.raw!=null?r.raw:r['원점수']);
   const c = computeGradeFromRaw(examId, choice, raw);
@@ -306,7 +318,7 @@ function loadData(){
     .then(r=>r.json())
     .then(d=>{
       ALL_DATA = Array.isArray(d) ? d : (d.data || []);
-      const ids = [...new Set(ALL_DATA.map(r=>(r.exam||r['회차ID']||r['시험']||'').toString().trim()).filter(Boolean))];
+      const ids = [...new Set(ALL_DATA.map(r=>normExamId(r.exam||r['회차ID']||r['시험']||'')).filter(Boolean))];
       loadGradeCuts(ids).then(()=>{
         populateExamSelect();
         renderStatsAndTable();
