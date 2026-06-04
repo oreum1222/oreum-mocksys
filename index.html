@@ -283,6 +283,11 @@ const LOGO_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+
 
 const EXAM_LIST = [
   {
+    id: '2027-06', file: 'data/mock-2027-06.json',
+    no: '제 9 회', tagDate: '2026년 6월 · 한국교육과정평가원',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
     id: '2026-06', file: 'data/mock-2026-06.json',
     no: '제 8 회', tagDate: '2025년 6월 · 한국교육과정평가원',
     status: 'active', statusLabel: '정식 운영'
@@ -427,7 +432,9 @@ function buildCardContent(meta, data=null){
 
   // 등급컷
   let cutHtml = '...';
-  if(data && data.gradeCuts){
+  if(data && data.gradeCutsPending){
+    cutHtml = '<div class="cut-row"><span class="cut-pill" style="color:var(--gold-soft)">등급컷 미정 · 추후 업데이트</span></div>';
+  } else if(data && data.gradeCuts){
     const lm = data.gradeCuts.lm || [];
     const hs = data.gradeCuts.hs || [];
     const lmCuts = [lm[0],lm[1],lm[2]].filter(Boolean);
@@ -797,13 +804,19 @@ function computeResult(){
     else wrongDetails.push({...q, key, scope:choice, score});
   });
 
-  // 2. 등급 산출
-  const cuts = d.gradeCuts[choice];
+  // 2. 등급 산출 (등급컷 미발표 시 '미정' 처리)
+  const cuts = (d.gradeCuts && d.gradeCuts[choice]) || [];
   let grade = 9;
-  for(const c of cuts){
-    if(raw >= c.raw){ grade = c.grade; break; }
+  let gradeCut;
+  if(d.gradeCutsPending || !cuts.length){
+    grade = '미정';
+    gradeCut = { std: null, pct: null, raw: null };
+  } else {
+    for(const c of cuts){
+      if(raw >= c.raw){ grade = c.grade; break; }
+    }
+    gradeCut = cuts.find(c=>c.grade===grade) || cuts[cuts.length-1];
   }
-  const gradeCut = cuts.find(c=>c.grade===grade) || cuts[cuts.length-1];
 
   // 3. 패턴 매칭
   const patterns = matchPatterns(STATE.wrong, d.patternRules || []);
@@ -901,12 +914,12 @@ function renderStep4(){
     ),
     el('div',{class:'score-card'},
       el('div',{class:'score-label'},'표준점수'),
-      el('div',{class:'score-num'}, r.gradeCut.std || '-'),
+      el('div',{class:'score-num'}, r.gradeCut.std || (STATE.data.gradeCutsPending ? '미정' : '-')),
       el('div',{class:'score-num-sub'},'예상')
     ),
     el('div',{class:'score-card'},
       el('div',{class:'score-label'},'백분위'),
-      el('div',{class:'score-num'}, (r.gradeCut.pct||0)+'%'),
+      el('div',{class:'score-num'}, STATE.data.gradeCutsPending ? '미정' : ((r.gradeCut.pct||0)+'%')),
       el('div',{class:'score-num-sub'},'예상')
     )
   ));
