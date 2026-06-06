@@ -115,7 +115,8 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rtbl2 th{text-align:left;color:var(--text-muted);font-weight:500;font-size:0.74rem;letter-spacing:1px;padding:8px 11px;background:var(--bg-dark);border-bottom:1px solid var(--border-soft)}
 .rtbl2 td{padding:9px 11px;border-bottom:1px solid var(--border-line);vertical-align:top}
 .rtbl2 tr:hover td{background:transparent}
-.r-rnd{width:42px;font-weight:600;color:var(--text-secondary)}
+.r-rnd{width:96px;font-weight:600;color:var(--text-secondary);vertical-align:top}
+.r-rnd-exam{display:block;font-size:0.66rem;color:var(--text-muted);font-weight:400;margin-top:3px;line-height:1.25;white-space:nowrap}
 .r-sc{width:96px;font-weight:600;white-space:nowrap}
 .r-gong{color:var(--text-secondary);font-size:0.8rem;line-height:1.7}
 .r-sun{width:150px;color:var(--gold-soft);font-size:0.8rem;line-height:1.7}
@@ -500,7 +501,8 @@ function repAvailRounds(){
     .sort(function(a,b){return String(a.id).localeCompare(String(b.id));});  // 시간순(대략)
 }
 function repSetSel(ids){
-  REP.sel=ids.slice(); REP.labelMap={};
+  REP.sel=ids.slice(); REP.labelMap={}; REP.nameMap={};
+  (REP.avail||[]).forEach(function(a){ REP.nameMap[a.id]=a.name; });
   REP.sel.forEach(function(id,i){ REP.labelMap[id]=(i+1)+'회'; });
   try{ localStorage.setItem('oreum_rep_sel', JSON.stringify(REP.sel)); }catch(e){}
 }
@@ -664,8 +666,8 @@ function rRoundRows(m){var rows="";
   REP.sel.forEach(function(r,i){var pr=m.per_round[i];
     if(pr){var gong=pr.wrongs.filter(function(w){return w.indexOf("common")===0;}).sort(function(a,b){return parseInt(/\d+/.exec(a))-parseInt(/\d+/.exec(b));});
       var sun=pr.wrongs.filter(function(w){return w.indexOf("common")!==0;}).sort(function(a,b){return parseInt(/\d+/.exec(a))-parseInt(/\d+/.exec(b));});
-      rows+='<tr><td class="r-rnd">'+REP.labelMap[r]+'</td><td class="r-sc" style="color:'+rGcol(pr.grade)+'">'+pr.raw+'·'+pr.grade+'등급</td><td class="r-gong">'+(gong.length?gong.map(rItemnum).join(", "):"—")+'</td><td class="r-sun">'+(sun.length?sun.map(rItemnum).join(", "):"—")+'</td></tr>';
-    } else rows+='<tr class="r-empty"><td class="r-rnd">'+REP.labelMap[r]+'</td><td colspan="3">미응시</td></tr>';});
+      rows+='<tr><td class="r-rnd">'+REP.labelMap[r]+'<span class="r-rnd-exam">'+escape(REP.nameMap[r]||'')+'</span></td><td class="r-sc" style="color:'+rGcol(pr.grade)+'">'+pr.raw+'·'+pr.grade+'등급</td><td class="r-gong">'+(gong.length?gong.map(rItemnum).join(", "):"—")+'</td><td class="r-sun">'+(sun.length?sun.map(rItemnum).join(", "):"—")+'</td></tr>';
+    } else rows+='<tr class="r-empty"><td class="r-rnd">'+REP.labelMap[r]+'<span class="r-rnd-exam">'+escape(REP.nameMap[r]||'')+'</span></td><td colspan="3">미응시</td></tr>';});
   return rows;}
 
 function renderReports(){
