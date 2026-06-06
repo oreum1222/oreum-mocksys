@@ -9,11 +9,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
-  --green-deep:#4a5a3a;--gold:#c9a84c;--gold-soft:#d4b966;--cream:#f4ede0;
-  --bg-dark:#1a1f15;--bg-card:#252b1f;--bg-card-hover:#2d3326;
-  --text-primary:#f4ede0;--text-secondary:#b8b09e;--text-muted:#7a7466;
-  --border-soft:rgba(201,168,76,0.18);--border-line:rgba(244,237,224,0.08);
-  --danger:#c66;
+  --green-deep:#2f6b4e;--gold:#4aa97e;--gold-soft:#6fc99e;--cream:#eaf2ec;
+  --bg-dark:#0b110d;--bg-card:#141c16;--bg-card-hover:#1b251d;
+  --text-primary:#eaf2ec;--text-secondary:#aebcb0;--text-muted:#7c8a7f;
+  --border-soft:rgba(74,169,126,0.22);--border-line:rgba(234,242,236,0.08);
+  --danger:#d98a8a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px}
@@ -43,8 +43,8 @@ td{padding:13px 12px;color:var(--text-secondary);border-bottom:1px solid var(--b
 tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .tag{display:inline-block;padding:2px 8px;border-radius:9px;font-size:0.72rem;letter-spacing:0.5px}
 .tag-lm{background:rgba(74,90,58,0.4);color:var(--cream);border:1px solid var(--green-deep)}
-.tag-hs{background:rgba(201,168,76,0.12);color:var(--gold-soft);border:1px solid rgba(201,168,76,0.3)}
-.tag-grade{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid var(--gold);font-weight:500}
+.tag-hs{background:rgba(74,169,126,0.12);color:var(--gold-soft);border:1px solid rgba(74,169,126,0.3)}
+.tag-grade{background:rgba(74,169,126,0.15);color:var(--gold);border:1px solid var(--gold);font-weight:500}
 .empty{text-align:center;color:var(--text-muted);padding:48px 0;font-style:italic;font-size:0.92rem}
 .hide{display:none}
 @media (max-width:640px){
@@ -68,7 +68,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rp-chips{display:flex;flex-wrap:wrap;gap:8px}
 .rp-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:16px;border:1px solid var(--border-line);background:transparent;color:var(--text-secondary);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:border-color .15s,background .15s}
 .rp-chip:hover{border-color:var(--gold)}
-.rp-chip.on{background:rgba(201,168,76,0.14);border-color:var(--gold);color:var(--cream)}
+.rp-chip.on{background:rgba(74,169,126,0.14);border-color:var(--gold);color:var(--cream)}
 .rp-ord{font-weight:700;color:var(--gold);font-size:0.74rem;letter-spacing:0.3px}
 .rp-cnt{font-size:0.68rem;color:var(--text-muted)}
 #reportPane .rep-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
@@ -91,7 +91,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rtrend{font-size:0.74rem;font-weight:500;padding:3px 11px;border-radius:18px;letter-spacing:0.5px}
 .rtrend-up{background:rgba(74,90,58,0.4);color:#a8d088;border:1px solid var(--green-deep)}
 .rtrend-down{background:rgba(198,102,102,0.15);color:#d68a8a;border:1px solid rgba(198,102,102,0.4)}
-.rtrend-keep{background:rgba(201,168,76,0.12);color:var(--gold-soft);border:1px solid rgba(201,168,76,0.3)}
+.rtrend-keep{background:rgba(74,169,126,0.12);color:var(--gold-soft);border:1px solid rgba(74,169,126,0.3)}
 .rtrend-single{background:rgba(122,116,102,0.18);color:var(--text-muted);border:1px solid var(--border-soft)}
 .rpdf-btn{background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:0.72rem;padding:5px 12px;border-radius:6px;cursor:pointer;font-weight:500}
 .rpdf-btn:hover{background:var(--gold);color:var(--bg-dark)}
@@ -621,7 +621,7 @@ function rTimeComment(m){var seq=m.time_seq;if(!seq.length)return null;var mode=
 function rDonut(m){var sp=m.small_pct,bp=m.big_pct,segs=[];
   if(sp["독서"])segs.push(["독서",sp["독서"],"#d68a8a"]);
   if(sp["문학"])segs.push(["문학",sp["문학"],"#86c9a8"]);
-  var sun=bp["선택"]||0;if(sun)segs.push([m.sub==="lm"?"언어와 매체":"화법과 작문",sun,"var(--gold)"]);
+  var sun=bp["선택"]||0;if(sun)segs.push([m.sub==="lm"?"언어와 매체":"화법과 작문",sun,"#6fa8d6"]);
   if(!segs.length)return '<div class="rdonut-empty">오답 없음</div>';
   var total=segs.reduce(function(a,s){return a+s[1];},0)||1,R=52,CX=64,CY=64,SW=20,C=2*Math.PI*R,off=0,arcs="";
   segs.forEach(function(s){var fr=s[1]/total,dash=C*fr,gap=C-dash;
@@ -658,10 +658,10 @@ function rSpark(m){var W=300,H=72,pad=10,n=REP.sel.length,bw=Math.max(14,Math.mi
     if(pr){var v=pr.raw,g=pr.grade,bh=(v/100)*(H-22),y=H-bh-14;
       bars+='<rect x="'+x.toFixed(0)+'" y="'+y.toFixed(1)+'" width="'+bw+'" height="'+bh.toFixed(1)+'" rx="2" fill="'+rGcol(g)+'" opacity=".9"/>';
       bars+='<text x="'+(x+bw/2).toFixed(0)+'" y="'+(y-3).toFixed(0)+'" text-anchor="middle" class="rspk-v">'+v+'</text>';
-    } else bars+='<rect x="'+x.toFixed(0)+'" y="'+(H-16)+'" width="'+bw+'" height="2" fill="#3a4830"/>';
+    } else bars+='<rect x="'+x.toFixed(0)+'" y="'+(H-16)+'" width="'+bw+'" height="2" fill="#2a3a30"/>';
     bars+='<text x="'+(x+bw/2).toFixed(0)+'" y="'+(H-2)+'" text-anchor="middle" class="rspk-x">'+REP.labelMap[r]+'</text>';});
   var base=H-(80/100)*(H-22)-14;
-  return '<svg viewBox="0 0 '+W+' '+H+'" class="rspark"><line x1="'+pad+'" y1="'+base.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+base.toFixed(1)+'" stroke="#4a5a3a" stroke-dasharray="3 3"/>'+bars+'</svg>';}
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="rspark"><line x1="'+pad+'" y1="'+base.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+base.toFixed(1)+'" stroke="#2f6b4e" stroke-dasharray="3 3"/>'+bars+'</svg>';}
 function rRoundRows(m){var rows="";
   REP.sel.forEach(function(r,i){var pr=m.per_round[i];
     if(pr){var gong=pr.wrongs.filter(function(w){return w.indexOf("common")===0;}).sort(function(a,b){return parseInt(/\d+/.exec(a))-parseInt(/\d+/.exec(b));});
@@ -713,7 +713,7 @@ function repSearchFn(q){q=q.trim();
 function getJsPDF(){if(window.jspdf&&window.jspdf.jsPDF)return window.jspdf.jsPDF;if(window.jsPDF)return window.jsPDF;return null;}
 function repLibsReady(){return !!(window.html2canvas&&getJsPDF());}
 async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn.style.visibility:'';if(btn)btn.style.visibility='hidden';
-  var c=await html2canvas(t,{scale:2,backgroundColor:'#252b1f',useCORS:true,logging:false,windowWidth:t.scrollWidth});if(btn)btn.style.visibility=pv;return c;}
+  var c=await html2canvas(t,{scale:2,backgroundColor:'#141c16',useCORS:true,logging:false,windowWidth:t.scrollWidth});if(btn)btn.style.visibility=pv;return c;}
 function repA4(pdf,c,first){var pw=210,ph=297;if(!first)pdf.addPage();pdf.setFillColor(26,31,21);pdf.rect(0,0,pw,ph,'F');
   var ratio=c.height/c.width,w=pw,h=w*ratio;if(h>ph){h=ph;w=h/ratio;}var x=(pw-w)/2,y=(ph-h)/2;
   pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',x,y,w,h);}
