@@ -512,8 +512,11 @@ function repRoundName(id, fullName){
 function repAvailRounds(){
   var map={};
   (ALL_DATA||[]).forEach(function(r){
+    var who=val(r,'name','이름').trim();
+    if(!who || EXCLUDE[who]) return;                 // 더미 제출자(클로드·테스트·실험용) 제외
     var id=normExamId(val(r,'exam','회차ID')); if(!id)return;
     var nm=val(r,'examLabel','회차이름');
+    if(/테스트|실험|더미|test/i.test(id) || /테스트|실험|더미/.test(nm)) return;  // 더미 회차 제외
     var t=Date.parse(val(r,'timestamp','제출시각')); if(isNaN(t)) t=Infinity;
     if(!map[id]) map[id]={id:id,name:repRoundName(id,nm),cnt:0,firstTs:t};
     map[id].cnt++;
