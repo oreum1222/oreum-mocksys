@@ -501,15 +501,30 @@ var EXCLUDE = {"실험용":1,"테스트":1,"클로드":1};
 var ALIAS = {"지환":"신지환"};
 
 // ── 리포트에 포함할 회차를 동적으로 선택 (기본: 가장 최근 4회) ──
+// 칩/표에 쓸 회차명: 6월 모평 등 평가원·학평류는 학년도를 붙여 구분
+function repRoundName(id, fullName){
+  fullName=(fullName||'').trim();
+  var base=examShort(id, fullName);
+  var ym=fullName.match(/(20\d\d)\s*학년도/);
+  if(ym && /(모평|학평|수능|모의평가|학력평가)/.test(base)) return ym[1]+'학년도 '+base;
+  return base;
+}
 function repAvailRounds(){
   var map={};
   (ALL_DATA||[]).forEach(function(r){
     var id=normExamId(val(r,'exam','회차ID')); if(!id)return;
-    if(!map[id]) map[id]={id:id,name:examShort(id, val(r,'examLabel','회차이름')),cnt:0};
+    var nm=val(r,'examLabel','회차이름');
+    var t=Date.parse(val(r,'timestamp','제출시각')); if(isNaN(t)) t=Infinity;
+    if(!map[id]) map[id]={id:id,name:repRoundName(id,nm),cnt:0,firstTs:t};
     map[id].cnt++;
+    if(t<map[id].firstTs) map[id].firstTs=t;
   });
+  // 제출 시작 시각(=실제 응시 시점) 순 = 과거→현재
   return Object.keys(map).map(function(k){return map[k];})
-    .sort(function(a,b){return String(a.id).localeCompare(String(b.id));});  // 시간순(대략)
+    .sort(function(a,b){
+      if(a.firstTs!==b.firstTs) return a.firstTs-b.firstTs;
+      return String(a.id).localeCompare(String(b.id));
+    });
 }
 function repSetSel(ids){
   REP.sel=ids.slice(); REP.labelMap={}; REP.nameMap={};
