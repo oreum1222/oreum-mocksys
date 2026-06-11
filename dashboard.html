@@ -47,6 +47,12 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .tag-grade{background:rgba(74,169,126,0.15);color:var(--gold);border:1px solid var(--gold);font-weight:500}
 .empty{text-align:center;color:var(--text-muted);padding:48px 0;font-style:italic;font-size:0.92rem}
 .hide{display:none}
+.dedup-banner{background:rgba(217,138,138,0.09);border:1px solid rgba(217,138,138,0.45);border-radius:8px;padding:13px 16px;margin:0 0 18px;color:var(--cream)}
+.dedup-head{font-size:0.9rem;font-weight:600;line-height:1.6}
+.dedup-sub{font-size:0.78rem;color:var(--text-muted);font-weight:400}
+.dedup-toggle{margin-left:8px;background:transparent;border:1px solid var(--border-soft);color:var(--text-secondary);font-size:0.72rem;padding:3px 10px;border-radius:12px;cursor:pointer;font-family:inherit}
+.dedup-toggle:hover{border-color:var(--gold);color:var(--gold)}
+.dedup-list{margin:11px 0 0;padding-left:18px;font-size:0.78rem;color:var(--text-secondary);line-height:1.75;max-height:240px;overflow:auto}
 @media (max-width:640px){
   .wrap{padding:32px 16px}
   .row{flex-direction:column;align-items:stretch}
@@ -168,6 +174,8 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 <!-- 메인 -->
 <div id="main" class="hide">
 
+  <div id="dedupNotice"></div>
+
   <div class="tabs">
     <button class="tab on" id="tabList" onclick="switchTab('list')">응답 목록</button>
     <button class="tab" id="tabReport" onclick="switchTab('report')">학생별 개별 리포트</button>
@@ -242,6 +250,67 @@ function loadConfig(){
 }
 
 let ALL_DATA = [];
+
+// ─── 중복 응답 정리 (비파괴: 시트 원본 유지, 통계/표/리포트에서만 제외) ───
+//  같은 시험·같은 학생이 2건↑일 때
+//   · 완전 동일(제출시각만 다름)  → 중복 클릭 → 1건만 남김
+//   · 값이 다름(점수 등)          → 재입력 정정 → 최신 1건만 남기고 이전 제거
+var DEDUP_INFO = { dup:0, reentry:0, removed:[] };
+function rowSig(r){
+  var o={};
+  Object.keys(r).forEach(function(k){ if(k!=='제출시각'&&k!=='timestamp'&&k!=='_kstTime') o[k]=String(r[k]==null?'':r[k]); });
+  return JSON.stringify(o);
+}
+function rowTime(r){ var t=Date.parse(val(r,'timestamp','제출시각')); return isNaN(t)?0:t; }
+function dedupeData(rows){
+  var groups={}, order=[];
+  (rows||[]).forEach(function(r){
+    var name=val(r,'name','이름').trim();
+    var exam=normExamId(val(r,'exam','회차ID'));
+    var school=val(r,'school','학교').replace(/등학교$/,'고').trim();
+    if(!name||!exam){ var k0='_keep'; (groups[k0]=groups[k0]||[]).push(r); if(order.indexOf(k0)<0)order.push(k0); return; }
+    var key=exam+''+name+''+school;
+    if(!groups[key]){ groups[key]=[]; order.push(key); }
+    groups[key].push(r);
+  });
+  var kept=[], removed=[], dup=0, reentry=0;
+  order.forEach(function(key){
+    var g=groups[key];
+    if(key==='_keep'){ g.forEach(function(r){kept.push(r);}); return; }
+    if(g.length<=1){ kept.push(g[0]); return; }
+    g.sort(function(a,b){return rowTime(a)-rowTime(b);});           // 시간순
+    var sigs=g.map(rowSig), allSame=sigs.every(function(s){return s===sigs[0];});
+    var keepRow, dropList, reason;
+    if(allSame){ keepRow=g[0]; dropList=g.slice(1); reason='중복 제출(완전 동일)'; dup+=dropList.length; }
+    else { keepRow=g[g.length-1]; dropList=g.slice(0,g.length-1); reason='재입력 정정(이전 데이터 제거)'; reentry+=dropList.length; }
+    kept.push(keepRow);
+    dropList.forEach(function(r){
+      removed.push({
+        name: val(r,'name','이름').trim(),
+        exam: val(r,'examLabel','회차이름') || normExamId(val(r,'exam','회차ID')),
+        reason: reason,
+        raw: val(r,'raw','원점수'),
+        time: repKST(val(r,'timestamp','제출시각'))
+      });
+    });
+  });
+  DEDUP_INFO={ dup:dup, reentry:reentry, removed:removed };
+  return kept;
+}
+function renderDedupNotice(){
+  var box=document.getElementById('dedupNotice'); if(!box) return;
+  var info=DEDUP_INFO||{}, total=(info.dup||0)+(info.reentry||0);
+  if(!total){ box.innerHTML=''; return; }
+  var lines=(info.removed||[]).map(function(x){
+    return '<li><b>'+escape(x.name)+'</b> · '+escape(x.exam)+' · '+escape(x.reason)
+      +(x.raw!==''?(' · 점수 '+escape(x.raw)):'')+(x.time?(' · '+escape(x.time)):'')+'</li>';
+  }).join('');
+  box.innerHTML='<div class="dedup-banner">'
+    +'<div class="dedup-head">⚠ 중복 응답 '+total+'건을 통계에서 제외했습니다'
+    +'<span class="dedup-sub"> — 중복 제출 '+(info.dup||0)+'건 · 재입력 정정 '+(info.reentry||0)+'건 (시트 원본은 그대로 유지)</span>'
+    +' <button class="dedup-toggle" onclick="document.getElementById(\'dedupList\').classList.toggle(\'hide\')">상세 보기</button></div>'
+    +'<ul id="dedupList" class="dedup-list hide">'+lines+'</ul></div>';
+}
 
 // ─── 등급컷 캐시 & 등급 재계산 (등급컷 입력 전 제출분의 '미정' 보정) ───
 const GRADECUTS = {};   // examId -> {lm:[...], hs:[...]}
@@ -336,7 +405,8 @@ function loadData(){
   fetch(SCRIPT_URL + '?action=list')
     .then(r=>r.json())
     .then(d=>{
-      ALL_DATA = Array.isArray(d) ? d : (d.data || []);
+      ALL_DATA = dedupeData(Array.isArray(d) ? d : (d.data || []));
+      renderDedupNotice();
       const ids = [...new Set(ALL_DATA.map(r=>normExamId(r.exam||r['회차ID']||r['시험']||'')).filter(Boolean))];
       loadGradeCuts(ids).then(()=>{
         populateExamSelect();
