@@ -62,6 +62,9 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .gd-g{font-size:0.72rem;color:var(--text-muted)}
 .gd-n{font-size:1.05rem;font-weight:700;color:var(--gold);margin:2px 0}
 .gd-p{font-size:0.75rem;color:var(--gold-soft)}
+.gd-cum{font-size:0.66rem;color:var(--text-muted);margin-top:2px}
+.gd-names{margin-top:11px;padding-top:9px;border-top:1px solid var(--border-line);font-size:0.84rem;color:var(--text-secondary);line-height:1.6}
+.gd-names-t{color:var(--gold);font-weight:600;margin-right:8px}
 .gd-und .gd-n{color:var(--text-secondary)}
 .dedup-banner{background:rgba(217,138,138,0.09);border:1px solid rgba(217,138,138,0.45);border-radius:8px;padding:13px 16px;margin:0 0 18px;color:var(--cream)}
 .dedup-head{font-size:0.9rem;font-weight:600;line-height:1.6}
@@ -523,8 +526,8 @@ function renderGradeDist(){
   html+='<div class="gd-hint">회차를 누르면 등급별 인원·비율(응답자 대비 %)이 펼쳐집니다.</div>';
   rounds.forEach(function(rd,ri){
     var list=byId[rd.id]||[]; var n=list.length; if(!n)return;
-    var cnt={};
-    list.forEach(function(r){ var g=gradeOf(r); g=(g===''||g==null)?'-':String(g); cnt[g]=(cnt[g]||0)+1; });
+    var byG={};
+    list.forEach(function(r){ var g=gradeOf(r); g=(g===''||g==null)?'-':String(g); (byG[g]=byG[g]||[]).push(r); });
     var av=avgRaw(list);
     var open=(ri===0);
     html+='<div class="gd-round"><div class="gd-head">'
@@ -532,13 +535,18 @@ function renderGradeDist(){
       +'<span class="gd-meta">'+n+'명 · 평균 '+av.toFixed(1)+'점</span>'
       +'<span class="gd-caret">▾</span></div>';
     html+='<div class="gd-detail'+(open?'':' hide')+'"><div class="gd-grid">';
+    var cum=0;
     for(var g=1; g<=9; g++){
-      var c=cnt[String(g)]||0, pct=n?Math.round(c/n*100):0;
-      html+='<div class="gd-cell'+(c?'':' gd-zero')+'"><div class="gd-g">'+g+'등급</div><div class="gd-n">'+c+'</div><div class="gd-p">'+pct+'%</div></div>';
+      var c=(byG[String(g)]||[]).length, pct=n?Math.round(c/n*100):0;
+      cum+=c; var cpct=n?Math.round(cum/n*100):0;
+      html+='<div class="gd-cell'+(c?'':' gd-zero')+'"><div class="gd-g">'+g+'등급</div><div class="gd-n">'+c+'</div><div class="gd-p">'+pct+'%</div><div class="gd-cum">누적 '+cpct+'%</div></div>';
     }
-    var und=cnt['-']||0;
+    var und=(byG['-']||[]).length;
     if(und){ var up=Math.round(und/n*100); html+='<div class="gd-cell gd-und"><div class="gd-g">미정</div><div class="gd-n">'+und+'</div><div class="gd-p">'+up+'%</div></div>'; }
-    html+='</div></div></div>';
+    html+='</div>';
+    var ones=(byG['1']||[]).map(function(r){return escape(val(r,'name','이름').trim());}).filter(Boolean);
+    if(ones.length){ html+='<div class="gd-names"><span class="gd-names-t">★ 1등급 '+ones.length+'명</span>'+ones.join(', ')+'</div>'; }
+    html+='</div></div>';
   });
   html+='</div>';
   box.innerHTML=html;
