@@ -353,16 +353,42 @@ function computeGradeFromRaw(examId, choice, raw){
   const last = cuts[cuts.length-1];
   return {grade:last.grade, std:last.std, pct:last.pct};
 }
+// 소급 재계산: 틀린문항 + QMAP(배점)로 raw 재계산 (배점 정정 소급, 시트 원본 불변)
+function rawOf(r){
+  var examId = normExamId(r.exam||r['회차ID']||r['시험']||'');
+  var stored = parseInt((r.raw!=null?r.raw:r['원점수']),10);
+  var storedV = isNaN(stored)?null:stored;
+  var qm = QMAP[examId];
+  if(!qm) return storedV;
+  var ks = Object.keys(qm); if(!ks.length) return storedV;
+  var wstr = val(r,'','틀린문항');
+  var choice = (r.choice||r['선택과목']||'').toString().trim();
+  if(choice!=='hs' && choice!=='lm'){
+    if(/(^|,)\s*hs-/.test(wstr)) choice='hs'; else if(/(^|,)\s*lm-/.test(wstr)) choice='lm';
+  }
+  if(choice!=='hs' && choice!=='lm') return storedV;
+  var total=0;
+  ks.forEach(function(k){ if(k.indexOf('common-')===0 || k.indexOf(choice+'-')===0) total += (qm[k].three?3:2); });
+  if(!total) return storedV;
+  var wrongs = (wstr||'').split(',').map(function(x){return x.trim();}).filter(Boolean);
+  var wsum=0, ok=true;
+  wrongs.forEach(function(k){ var q=qm[k]; if(q) wsum += (q.three?3:2); else ok=false; });
+  if(!ok) return storedV;
+  return total - wsum;
+}
+function avgRaw(rows){
+  var n=(rows||[]).map(rawOf).filter(function(v){return v!=null && !isNaN(v) && v>0;});
+  return n.length ? n.reduce(function(a,b){return a+b;},0)/n.length : 0;
+}
 // 저장된 등급이 숫자면 그대로, '미정'·빈값이면 원점수로 재계산
 function gradeOf(r){
-  const stored = (r['예상등급']!=null ? r['예상등급'] : r.grade);
-  const s = (stored==null ? '' : String(stored)).trim();
-  if(/^[1-9]$/.test(s)) return s;
   const examId = normExamId(r.exam||r['회차ID']||r['시험']||'');
   const choice = (r.choice||r['선택과목']||'').toString().trim();
-  const raw = (r.raw!=null?r.raw:r['원점수']);
-  const c = computeGradeFromRaw(examId, choice, raw);
-  return c ? String(c.grade) : (s && s!=='미정' ? s : '');
+  const c = computeGradeFromRaw(examId, choice, rawOf(r));
+  if(c) return String(c.grade);
+  const stored = (r['예상등급']!=null ? r['예상등급'] : r.grade);
+  const s = (stored==null ? '' : String(stored)).trim();
+  return (s && s!=='미정') ? s : '';
 }
 
 function checkPassword(){
@@ -486,7 +512,7 @@ function renderStatsAndTable(){
     <div class="section"><div class="section-title">요약</div>
     <div class="stats">
       <div class="stat-card"><div class="stat-label">총 응답</div><div class="stat-num">${rows.length}</div></div>
-      <div class="stat-card"><div class="stat-label">평균 원점수</div><div class="stat-num">${avg(rows,'raw','원점수').toFixed(1)}</div></div>
+      <div class="stat-card"><div class="stat-label">평균 원점수</div><div class="stat-num">${avgRaw(rows).toFixed(1)}</div></div>
       <div class="stat-card"><div class="stat-label">언매</div><div class="stat-num">${rows.filter(r=>(r.choice||r['선택과목'])==='lm').length}</div></div>
       <div class="stat-card"><div class="stat-label">화작</div><div class="stat-num">${rows.filter(r=>(r.choice||r['선택과목'])==='hs').length}</div></div>
     </div></div>
@@ -515,7 +541,7 @@ function renderStatsAndTable(){
     const exam = r.exam||r['회차ID']||r['시험']||'';
     const examName = r.examLabel||r['회차이름']||'';
     const choice = r.choice||r['선택과목']||'';
-    const raw = r.raw||r['원점수']||'';
+    var _rw=rawOf(r); const raw=(_rw==null?'':_rw);
     const grade = gradeOf(r);
     const patterns = (r['핵심패턴']||r.patterns||'').toString().split('|').map(p=>p.split(':')[0]).filter(Boolean).join(', ');
     html += `<tr>
@@ -668,7 +694,7 @@ function buildReports(){
     if(ALIAS[name])name=ALIAS[name];
     var rid=normExamId(val(r,'exam','회차ID'));
     if(REP.sel.indexOf(rid)<0)return;
-    var raw=parseInt(val(r,'raw','원점수'),10)||0;
+    var raw=rawOf(r); if(raw==null||isNaN(raw))raw=parseInt(val(r,'raw','원점수'),10)||0;
     var grade=parseInt(gradeOf(r),10)||0;
     var wrongs=repWrongs(val(r,'','틀린문항'));
     var time=val(r,'','시간진단').trim();
