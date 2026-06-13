@@ -47,6 +47,22 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .tag-grade{background:rgba(74,169,126,0.15);color:var(--gold);border:1px solid var(--gold);font-weight:500}
 .empty{text-align:center;color:var(--text-muted);padding:48px 0;font-style:italic;font-size:0.92rem}
 .hide{display:none}
+.gd-hint{font-size:0.8rem;color:var(--text-muted);margin-bottom:10px}
+.gd-round{border:1px solid var(--border-soft);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.gd-head{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;background:var(--bg-card-hover)}
+.gd-head:hover{background:rgba(74,169,126,0.12)}
+.gd-name{font-weight:600;color:var(--cream);font-size:0.92rem}
+.gd-meta{color:var(--text-secondary);font-size:0.82rem}
+.gd-caret{margin-left:auto;color:var(--gold-soft);font-size:0.78rem}
+.gd-detail{padding:12px 14px}
+.gd-detail.hide{display:none}
+.gd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:8px}
+.gd-cell{text-align:center;padding:8px 4px;border:1px solid var(--border-soft);border-radius:6px;background:var(--bg-dark)}
+.gd-cell.gd-zero{opacity:0.38}
+.gd-g{font-size:0.72rem;color:var(--text-muted)}
+.gd-n{font-size:1.05rem;font-weight:700;color:var(--gold);margin:2px 0}
+.gd-p{font-size:0.75rem;color:var(--gold-soft)}
+.gd-und .gd-n{color:var(--text-secondary)}
 .dedup-banner{background:rgba(217,138,138,0.09);border:1px solid rgba(217,138,138,0.45);border-radius:8px;padding:13px 16px;margin:0 0 18px;color:var(--cream)}
 .dedup-head{font-size:0.9rem;font-weight:600;line-height:1.6}
 .dedup-sub{font-size:0.78rem;color:var(--text-muted);font-weight:400}
@@ -197,6 +213,8 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
   </div>
 
   <div id="statsBox"></div>
+
+  <div id="gradeDistBox"></div>
 
   <div class="section">
     <div class="section-title">응답 목록</div>
@@ -437,6 +455,7 @@ function loadData(){
       loadGradeCuts(ids).then(()=>{
         populateExamSelect();
         renderStatsAndTable();
+        renderGradeDist();
         buildReports();
       });
     })
@@ -490,6 +509,44 @@ function repKST(s){
   }
   return s.substring(0,16).replace('T',' ');
 }
+function renderGradeDist(){
+  var box=document.getElementById('gradeDistBox'); if(!box) return;
+  var rounds=repAvailRounds(); if(!rounds.length){ box.innerHTML=''; return; }
+  var byId={};
+  (ALL_DATA||[]).forEach(function(r){
+    var who=val(r,'name','이름').trim(); if(!who||EXCLUDE[who])return;
+    var id=normExamId(val(r,'exam','회차ID')); if(!id)return;
+    (byId[id]=byId[id]||[]).push(r);
+  });
+  rounds=rounds.slice().reverse();
+  var html='<div class="section"><div class="section-title">회차별 등급 분포</div>';
+  html+='<div class="gd-hint">회차를 누르면 등급별 인원·비율(응답자 대비 %)이 펼쳐집니다.</div>';
+  rounds.forEach(function(rd,ri){
+    var list=byId[rd.id]||[]; var n=list.length; if(!n)return;
+    var cnt={};
+    list.forEach(function(r){ var g=gradeOf(r); g=(g===''||g==null)?'-':String(g); cnt[g]=(cnt[g]||0)+1; });
+    var av=avgRaw(list);
+    var open=(ri===0);
+    html+='<div class="gd-round"><div class="gd-head">'
+      +'<span class="gd-name">'+escape(rd.name)+'</span>'
+      +'<span class="gd-meta">'+n+'명 · 평균 '+av.toFixed(1)+'점</span>'
+      +'<span class="gd-caret">▾</span></div>';
+    html+='<div class="gd-detail'+(open?'':' hide')+'"><div class="gd-grid">';
+    for(var g=1; g<=9; g++){
+      var c=cnt[String(g)]||0, pct=n?Math.round(c/n*100):0;
+      html+='<div class="gd-cell'+(c?'':' gd-zero')+'"><div class="gd-g">'+g+'등급</div><div class="gd-n">'+c+'</div><div class="gd-p">'+pct+'%</div></div>';
+    }
+    var und=cnt['-']||0;
+    if(und){ var up=Math.round(und/n*100); html+='<div class="gd-cell gd-und"><div class="gd-g">미정</div><div class="gd-n">'+und+'</div><div class="gd-p">'+up+'%</div></div>'; }
+    html+='</div></div></div>';
+  });
+  html+='</div>';
+  box.innerHTML=html;
+}
+document.addEventListener('click',function(e){
+  var h=e.target.closest ? e.target.closest('.gd-head') : null;
+  if(h){ var d=h.nextElementSibling; if(d && d.classList.contains('gd-detail')) d.classList.toggle('hide'); }
+});
 function renderStatsAndTable(){
   const examFilter = document.getElementById('examSelect').value;
   const search = document.getElementById('searchInput').value.toLowerCase().trim();
