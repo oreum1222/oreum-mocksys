@@ -824,7 +824,7 @@ function buildReports(){
 }
 
 function rItemnum(c){var m=/(common|hs|lm)-(\d+)/.exec(c);return m?m[2]+"번":c;}
-function rGcol(g){if(g<=2)return"#a8d088";if(g===3)return"var(--gold-soft)";if(g<=4)return"#d6a96a";return"#d68a8a";}
+function rGcol(g){var R={1:"#2f7d57",2:"#3f9268",3:"#52a87c",4:"#6fbd95",5:"#8fceac",6:"#aadcc1",7:"#c4e7d4",8:"#daf0e4",9:"#ebf6f0"};return R[parseInt(g,10)]||"var(--text-muted)";}
 function rTlabel(t){return{"상승":"▲ 상승","하락":"▼ 하락","유지":"― 유지","단일":"단일 응시"}[t];}
 function rTcls(t){return{"상승":"up","하락":"down","유지":"keep","단일":"single"}[t];}
 var R_TIME_DESC={"전체 시간 부족형":"시험 전체에서 시간에 쫓김 — 푸는 속도 자체가 병목","루틴 부재형":"풀이 순서·페이스 루틴이 잡히지 않음","고난도 집착형":"어려운 문항에 시간을 과투입 — 버리는 판단이 늦음","선택과목 지연형":"선택과목(화작/언매)에서 시간이 샘","독서 지연형":"독서 지문에서 시간이 과다 소모","문학 지연형":"문학에서 시간이 과다 소모","시간 안정형":"시간 운용이 안정적"};
