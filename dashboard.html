@@ -637,12 +637,9 @@ function examShort(exam, examName){
     if(/6월.*평가|모의평가/.test(examName) && /6월/.test(examName)) return '6월 모평';
     if(/9월.*평가|모의평가/.test(examName) && /9월/.test(examName)) return '9월 모평';
     if(/수능/.test(examName)) return '수능';
-    // "2027 이감 모의고사 시즌3 1회차" → "이감 시즌3-1"
-    let m = examName.match(/이감.*시즌\s*(\d+)\s*[-·]?\s*(\d+)\s*회차/);
-    if(m) return `이감 시즌${m[1]}-${m[2]}`;
-    // "2027 상상 모의고사 시즌2 1회차" → "상상 시즌2-1"
-    m = examName.match(/상상.*시즌\s*(\d+)\s*[-·]?\s*(\d+)\s*회차/);
-    if(m) return `상상 시즌${m[1]}-${m[2]}`;
+    // 이감·상상 시즌(신·구 이름 모두) → "2027학년도 이감 시즌3-1회"
+    let m = examName.match(/(20\d{2}).*?(이감|상상).*?시즌\s*(\d+)\s*[-·\s제]*\s*(\d+)\s*회/);
+    if(m) return `${m[1]}학년도 ${m[2]} 시즌${m[3]}-${m[4]}회`;
     // 그 외엔 회차이름의 마지막 식별 부분 사용 (너무 길면 잘라서)
     if(examName.length <= 20) return examName;
     return examName.slice(0, 18) + '…';
