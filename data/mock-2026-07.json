@@ -26,136 +26,136 @@
    }
   }
  },
- "gradeCutsPending": true,
+ "gradeCutsPending": false,
  "gradeCuts": {
   "hs": [
    {
     "grade": 1,
-    "raw": 92,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 90,
+    "std": 131,
+    "pct": 95,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 2,
-    "raw": 85,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 83,
+    "std": 125,
+    "pct": 89,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 3,
-    "raw": 77,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 75,
+    "std": 118,
+    "pct": 77,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 4,
-    "raw": 66,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 63,
+    "std": 108,
+    "pct": 60,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 5,
-    "raw": 53,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 48,
+    "std": 95,
+    "pct": 40,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 6,
-    "raw": 39,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 32,
+    "std": 81,
+    "pct": 23,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 7,
-    "raw": 25,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 23,
+    "std": 73,
+    "pct": 11,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 8,
-    "raw": 14,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 17,
+    "std": 68,
+    "pct": 4,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 9,
     "raw": 0,
     "std": null,
     "pct": null,
-    "source": "추정"
+    "source": "교육청 실측(2607 성적표)"
    }
   ],
   "lm": [
    {
     "grade": 1,
-    "raw": 89,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 87,
+    "std": 131,
+    "pct": 95,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 2,
-    "raw": 82,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 81,
+    "std": 125,
+    "pct": 89,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 3,
     "raw": 73,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "std": 118,
+    "pct": 77,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 4,
-    "raw": 62,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 61,
+    "std": 108,
+    "pct": 60,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 5,
-    "raw": 49,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 47,
+    "std": 95,
+    "pct": 40,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 6,
-    "raw": 35,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 31,
+    "std": 81,
+    "pct": 23,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 7,
     "raw": 22,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "std": 73,
+    "pct": 11,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 8,
-    "raw": 12,
-    "std": null,
-    "pct": null,
-    "source": "추정"
+    "raw": 16,
+    "std": 68,
+    "pct": 4,
+    "source": "교육청 실측(2607 성적표)"
    },
    {
     "grade": 9,
     "raw": 0,
     "std": null,
     "pct": null,
-    "source": "추정"
+    "source": "교육청 실측(2607 성적표)"
    }
   ]
  },
