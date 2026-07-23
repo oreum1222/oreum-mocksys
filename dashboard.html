@@ -785,7 +785,7 @@ function buildReports(){
     var raws=seq.map(function(r){return st.rounds[r].raw;});
     var grades=seq.map(function(r){return st.rounds[r].grade;});
     var n=seq.length,big={},small={},perRound=[],total=0,appear={},timeSeq=[];
-    var typeAgg={},thinkAgg={},thinkTotal=0;   // 유형·요구사고 누적(문항 JSON 기반)
+    var typeAgg={},thinkAgg={},thinkTotal=0,lowfreq=0;   // 유형·요구사고 누적(문항 JSON 기반)
     REP.sel.forEach(function(r){
       if(!st.rounds[r]){perRound.push(null);return;}
       var d=st.rounds[r],bc={},sc={},qm=QMAP[r]||{};
@@ -799,6 +799,7 @@ function buildReports(){
           if(meta.coreElement)typeAgg[ty].core=meta.coreElement;
           var th=(meta.thinking||'').trim();
           if(th){thinkAgg[th]=(thinkAgg[th]||0)+1;thinkTotal++;}
+          if(meta.wr!=null && meta.wr!=='' && +meta.wr<=20) lowfreq++;
         }
       });
       Object.keys(sc).forEach(function(s){appear[s]=(appear[s]||0)+1;});
@@ -818,7 +819,7 @@ function buildReports(){
     var timeMode="";if(timeSeq.length){var c={},best=0;timeSeq.forEach(function(t){c[t]=(c[t]||0)+1;if(c[t]>best){best=c[t];timeMode=t;}});}
     var allSame=timeSeq.length>=2&&timeSeq.every(function(t){return t===timeSeq[0];});
     master.push({name:nm,school:st.school,sub:st.sub,n:n,raws:raws,grades:grades,trend:repTrend(raws),
-      total_wrong:total,big_pct:bigPct,small_pct:smallPct,per_round:perRound,recurring:recurring,
+      total_wrong:total,low_freq:lowfreq,big_pct:bigPct,small_pct:smallPct,per_round:perRound,recurring:recurring,
       weak_labels:weakLabels,time_seq:timeSeq,time_mode:timeMode,time_all_same:allSame,
       type_top:typeTop,think_top:thinkTop,think_total:thinkTotal});
   });
@@ -834,10 +835,10 @@ function rTlabel(t){return{"상승":"▲ 상승","하락":"▼ 하락","유지":
 function rTcls(t){return{"상승":"up","하락":"down","유지":"keep","단일":"single"}[t];}
 var R_TIME_DESC={"전체 시간 부족형":"시험 전체에서 시간에 쫓김 — 푸는 속도 자체가 병목","루틴 부재형":"풀이 순서·페이스 루틴이 잡히지 않음","고난도 집착형":"어려운 문항에 시간을 과투입 — 버리는 판단이 늦음","선택과목 지연형":"선택과목(화작/언매)에서 시간이 샘","독서 지연형":"독서 지문에서 시간이 과다 소모","문학 지연형":"문학에서 시간이 과다 소모","시간 안정형":"시간 운용이 안정적"};
 function rTimeComment(m){var seq=m.time_seq;if(!seq.length)return null;var mode=m.time_mode,desc=R_TIME_DESC[mode]||mode;
-  if(m.time_all_same&&seq.length>=2)return seq.length+'개 회차 모두 <b>'+mode+'</b>으로 동일 — '+desc+'. 고착된 패턴이라 우선 교정 대상입니다.';
+  if(m.time_all_same&&seq.length>=2)return seq.length+'개 회차 모두 <b>'+mode+'</b>으로 답했다 — '+desc+'. 자가 응답이라 단정은 어렵지만, 반복되는 만큼 고착된 패턴일 가능성이 커 먼저 살펴볼 만하다.';
   var u={};seq.forEach(function(t){u[t]=1;});
-  if(Object.keys(u).length>1)return '회차별로 <b>'+seq.join(' → ')+'</b>으로 변동. 가장 잦은 형태는 '+mode+'('+desc+')입니다.';
-  return '<b>'+mode+'</b> — '+desc+'.';}
+  if(Object.keys(u).length>1)return '회차별로 <b>'+seq.join(' → ')+'</b>으로 답이 갈렸다. 가장 잦은 형태는 '+mode+'('+desc+')다.';
+  return '<b>'+mode+'</b> — '+desc+'. <span style="color:var(--text-muted)">(학생 자가 응답)</span>';}
 function rDonut(m){var sp=m.small_pct,bp=m.big_pct,segs=[];
   if(sp["독서"])segs.push(["독서",sp["독서"],"#d68a8a"]);
   if(sp["문학"])segs.push(["문학",sp["문학"],"#86c9a8"]);
@@ -855,40 +856,46 @@ function rIntegrated(m){var out=[],n=m.n,rec=m.recurring;
   // 1) 요구 사고 진단 — '확인'이 새는가, '적용·추론'에서 무너지는가
   if(m.think_total>=3 && tt.length){
     var hi=0,conf=0; tt.forEach(function(x){ if(x.k==='적용'||x.k==='추론'||x.k==='종합')hi+=x.pct; if(x.k==='확인')conf+=x.pct; });
-    if(hi>=55) out.push('오답의 <b>'+hi+'%가 ‘적용·추론·종합’</b> 사고에 몰려 있습니다. 개념·본문은 아는데 그것을 〈보기〉나 낯선 사례에 옮기는 단계에서 무너지는 전형 — 암기가 아니라 ‘적용 훈련’이 1순위입니다.');
-    else if(conf>=55) out.push('오답의 <b>'+conf+'%가 ‘확인(내용 일치)’</b>에 몰려 있습니다. 본문을 정확히·끝까지 읽는 기본 독해에서 새고 있어, 푸는 속도보다 정독이 우선 과제입니다.');
-    else if(tt[0]) out.push('요구 사고별로는 <b>‘'+tt[0].k+'’('+tt[0].pct+'%)</b>에서 가장 많이 무너집니다.');
+    if(hi>=55) out.push('오답의 <b>'+hi+'%가 ‘적용·추론·종합’</b> 사고에 몰려 있다. 개념·본문은 알지만 그것을 〈보기〉나 낯선 사례에 옮기는 단계에서 무너지는 것으로 보인다 — 암기보다 ‘적용 훈련’이 필요해 보인다.');
+    else if(conf>=55) out.push('오답의 <b>'+conf+'%가 ‘확인(내용 일치)’</b>에 몰려 있다. 본문을 정확히·끝까지 읽는 기본 독해에서 새고 있을 가능성이 있어, 속도보다 정독을 먼저 점검해 볼 만하다.');
+    else if(tt[0]) out.push('요구 사고별로는 <b>‘'+tt[0].k+'’('+tt[0].pct+'%)</b>에서 오답이 가장 많다.');
   }
   // 2) 반복 유형 + 실제 처방(문항 JSON 기반)
   if(ty.length){
     var top=ty[0];
     var kw=(top.rounds>=2)?(n+'회 중 '+top.rounds+'회 반복'):'누적';
     var coreShort=top.core?top.core.replace(/\s*—.*$/,'').replace(/\s*\([^)]*\)\s*/g,'').trim().slice(0,46):'';
-    out.push('가장 자주 틀리는 유형은 <b>‘'+top.type+'’</b>입니다 — '+kw+', 누적 '+top.cnt+'문항'+(coreShort?('. 이 유형이 묻는 핵심은 “'+coreShort+'…”'):'.'));
-    if(top.rem) out.push('<b>처방</b> — '+top.rem);
-    if(ty[1]&&ty[1].cnt>=2) out.push('이어서 <b>‘'+ty[1].type+'’</b>('+ty[1].cnt+'문항)에서도 반복 실점합니다.');
+    out.push('가장 자주 틀린 유형은 <b>‘'+top.type+'’</b>다 — '+kw+', 누적 '+top.cnt+'문항'+(coreShort?('. 이 유형이 묻는 핵심은 “'+coreShort+'…”'):'.'));
+    if(top.rem) out.push('<b>처방 방향</b> — '+top.rem);
+    if(ty[1]&&ty[1].cnt>=2) out.push('이어서 <b>‘'+ty[1].type+'’</b>('+ty[1].cnt+'문항)에서도 오답이 반복된다.');
+  }
+  if(m.low_freq>=3){
+    out.push('또래 대부분(80%↑)이 맞힌 <b>저빈도 오답이 누적 '+m.low_freq+'개</b>다. 고난도만의 문제가 아니라 쉬운 문항의 검산·판단 기준도 흔들릴 수 있다는 신호로 보인다 <span style="color:var(--text-muted)">— 시간 압박에서 확인 절차가 먼저 무너지는지는 다음 회차에서 확인이 필요하다.</span>');
   }
   // 3) 영역 + 추이 (맥락)
   if(rec.length){var t0=rec[0];
-    out.push('영역으로는 <b>'+t0.area+'</b>('+t0.pct+'%)에 오답이 집중'+(rec[1]?(' · '+rec[1].area+' '+rec[1].pct+'%'):'')+'.');}
+    out.push('영역으로는 <b>'+t0.area+'</b>('+t0.pct+'%)에 오답이 집중돼 있다'+(rec[1]?(' · '+rec[1].area+' '+rec[1].pct+'%'):'')+'.');}
   if(n>=2){
-    if(m.trend==="상승")out.push('점수는 우상향('+m.raws[0]+'→'+m.raws[m.raws.length-1]+'점)이지만 위 약점은 회차 내내 줄지 않았습니다 — 여길 직접 잡으면 추가 상승 여지가 큽니다.');
-    else if(m.trend==="하락")out.push('점수 하락('+m.raws[0]+'→'+m.raws[m.raws.length-1]+'점)과 맞물려 위 약점이 최근 회차에서 더 도드라집니다. 우선순위로 보강해야 합니다.');
-    else out.push('점수는 '+m.grades[0]+'~'+m.grades[m.grades.length-1]+'등급대 정체 — 원인이 위 유형의 반복 실점입니다. 여길 뚫어야 등급이 한 칸 움직입니다.');
+    if(m.trend==="상승")out.push('점수는 우상향('+m.raws[0]+'→'+m.raws[m.raws.length-1]+'점)이지만, 위 약점은 회차 내내 줄지 않았다 — 이 지점을 직접 잡으면 추가 상승 여지가 있어 보인다.');
+    else if(m.trend==="하락")out.push('점수 하락('+m.raws[0]+'→'+m.raws[m.raws.length-1]+'점)과 맞물려 위 약점이 최근 회차에서 더 두드러진다. 우선 보강해 볼 지점으로 보인다.');
+    else out.push('점수는 '+m.grades[0]+'~'+m.grades[m.grades.length-1]+'등급대에 머물러 있다 — 위 유형의 반복 실점이 원인일 가능성이 크며, 이 지점이 등급 변화의 관건으로 보인다.');
   }
-  if(!out.length)out.push('표시할 만한 누적 오답이 없습니다. 안정적으로 풀어낸 회차들입니다.');
+  if(!out.length)out.push('표시할 만한 누적 오답이 없다. 안정적으로 풀어낸 회차들이다.');
   return out;}
 function rDiagnose(m){var parts=[],raws=m.raws,grades=m.grades,n=m.n;
+  if(n>=2){var vr=raws.filter(function(x){return x>0;}),hi=Math.max.apply(null,vr),lo=Math.min.apply(null,vr),amp=hi-lo;
+    if(amp>=20)parts.push('최고 '+hi+'점과 최저 '+lo+'점이 <b>'+amp+'점</b> 벌어져 있다. 실력의 천장보다 <b>재현성</b>이 병목으로 보이며, 최고점보다 <b>최저점</b>을 끌어올리는 쪽이 우선일 수 있다.');
+  }
   if(n>=2){var d=raws[raws.length-1]-raws[0];
-    if(m.trend==="상승")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+d+'점 상승</b>('+grades[0]+'→'+grades[grades.length-1]+'등급). 우상향이라 현재 방향 유지하며 변별만 추가로 잡으면 됩니다.');
-    else if(m.trend==="하락")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+Math.abs(d)+'점 하락</b>('+grades[0]+'→'+grades[grades.length-1]+'등급). 회차 난도 상승인지 시간 붕괴인지 분리 진단 필요.');
-    else parts.push(raws.join("→")+'점, '+grades[0]+'~'+grades[grades.length-1]+'등급대 <b>유지</b>.');
-  } else parts.push(raws[0]+'점·'+grades[grades.length-1]+'등급 단일 응시. 다음 회차부터 추이 비교 가능.');
+    if(m.trend==="상승")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+d+'점 상승</b>('+grades[0]+'→'+grades[grades.length-1]+'등급)했다. 우상향이라 현재 방향을 유지하며 변별 문항만 더 잡아 볼 만하다.');
+    else if(m.trend==="하락")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+Math.abs(d)+'점 하락</b>('+grades[0]+'→'+grades[grades.length-1]+'등급)했다. 회차 난도 탓인지 시간 붕괴 탓인지는 나눠 볼 필요가 있다.');
+    else parts.push(raws.join("→")+'점으로 '+grades[0]+'~'+grades[grades.length-1]+'등급대에 <b>머물러 있다</b>.');
+  } else parts.push(raws[0]+'점·'+grades[grades.length-1]+'등급 단일 응시다. 다음 회차부터 추이 비교가 가능하다.');
   var bp=m.big_pct,sm=m.small_pct;
   if(Object.keys(bp).length){var gong=bp["공통"]||0,sun=bp["선택"]||0;
     if(gong>=sun){var sd=[];if(sm["독서"])sd.push('독서 '+sm["독서"]+'%');if(sm["문학"])sd.push('문학 '+sm["문학"]+'%');
-      parts.push('오답의 <b>'+gong+'%가 공통(독서·문학)</b>에 몰려 있습니다('+sd.join(" · ")+'). 공통 독해력이 1순위 과제입니다.');
-    } else parts.push('오답의 <b>'+sun+'%가 선택('+(m.sub==="lm"?"언어와 매체":"화법과 작문")+')</b>에 몰려 있습니다. 선택과목 집중 보강이 효율적입니다.');}
+      parts.push('오답의 <b>'+gong+'%가 공통(독서·문학)</b>에 몰려 있다('+sd.join(" · ")+'). 공통 독해력이 우선 과제로 보인다.');
+    } else parts.push('오답의 <b>'+sun+'%가 선택('+(m.sub==="lm"?"언어와 매체":"화법과 작문")+')</b>에 몰려 있다. 선택과목 집중 보강이 효율적일 수 있다.');}
   return parts;}
 function rSpark(m){var W=300,H=72,pad=10,n=REP.sel.length,bw=Math.max(14,Math.min(34,Math.floor((W-2*pad-(n-1)*8)/Math.max(1,n)))),gap=n>1?(W-2*pad-bw*n)/(n-1):0,bars="";
   REP.sel.forEach(function(r,i){var x=pad+i*(bw+gap),pr=m.per_round[i];
@@ -907,6 +914,20 @@ function rRoundRows(m){var rows="";
     } else rows+='<tr class="r-empty"><td class="r-rnd">'+REP.labelMap[r]+'<span class="r-rnd-exam">'+escape(REP.nameMap[r]||'')+'</span></td><td colspan="3">미응시</td></tr>';});
   return rows;}
 
+function rMetrics(m){
+  var vr=(m.raws||[]).filter(function(x){return x>0;});
+  if(!vr.length) return '';
+  var hi=Math.max.apply(null,vr),lo=Math.min.apply(null,vr),amp=hi-lo;
+  var avg=Math.round(vr.reduce(function(a,b){return a+b;},0)/vr.length*10)/10;
+  var lf=m.low_freq||0;
+  function cell(lab,v,col){return '<div style="background:var(--bg-dark);border:1px solid var(--border-line);border-radius:5px;padding:9px 4px;text-align:center"><div style="font-size:.66rem;color:var(--text-muted);letter-spacing:.3px">'+lab+'</div><div style="font-family:\'Noto Serif KR\',serif;font-size:1.3rem;font-weight:700;color:'+col+'">'+v+'</div></div>';}
+  return '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 2px">'
+    +cell('최고',hi,'var(--gold)')+cell('최저',lo,'var(--danger)')+cell('진폭',amp,(amp>=20?'var(--danger)':'var(--cream)'))
+    +cell('평균',avg,'var(--cream)')+cell('또래 저빈도 오답',lf,(lf>=3?'var(--danger)':'var(--cream)'))+'</div>';
+}
+function rCaveat(){
+  return '<div style="font-size:.72rem;color:var(--text-muted);border-top:1px dashed var(--border-soft);padding-top:9px;margin-top:6px;line-height:1.55">자가 표시 오답 기반 — 넘긴 문항이나 찍어 맞은 문항은 집계되지 않습니다. 절대 오답률이 아닌 <b style="color:var(--text-secondary)">반복 신호</b>로 해석하세요.</div>';
+}
 function renderReports(){
   var root=document.getElementById('reportRoot');
   var note=document.getElementById('repNote');
@@ -924,6 +945,7 @@ function renderReports(){
       +'<div class="rc-head"><div><div class="rc-name">'+m.name+'</div><div class="rc-meta">'+school+' · '+sub+' · '+m.n+'/'+REP.sel.length+'회 응시</div></div>'
       +'<div class="rc-right"><span class="rtrend rtrend-'+rTcls(m.trend)+'">'+rTlabel(m.trend)+'</span><span class="rc-tw">누적 오답 '+m.total_wrong+'개</span>'
       +'<button class="rpdf-btn no-print" onclick="printOneReport(\''+sid+'\')">이 학생 PDF</button></div></div>'
+      +rMetrics(m)
       +'<div class="rc-row1"><div>'+rSpark(m)+'</div>'
       +'<div><div class="rblk-t">반복 약점 영역 비중</div>'+rDonut(m)+'</div></div>'
       +'<div class="rc-blk"><div class="rblk-t">회차별 오답 <span class="rblk-sub">(공통 = 독서·문학 1~34 / 선택 = 화작·언매 35~45)</span></div>'
@@ -931,6 +953,7 @@ function renderReports(){
       +'<div class="rc-blk rweak"><div class="rblk-t gold">진단 약점 <span class="rblk-sub">(1~'+REP.sel.length+'회 통합 분석)</span></div><ul class="rdlist">'+integ+'</ul></div>'
       +'<div class="rc-blk rtime"><div class="rblk-t gold">시간 관리</div>'+timeBlock+'</div>'
       +'<div class="rc-blk rdiag"><div class="rblk-t gold">진단 종합</div><ul class="rdlist">'+diag+'</ul></div>'
+      +rCaveat()
       +'<div class="rc-foot"><span class="m">가경T · 오름 국어 연구소</span><span class="n">'+(i+1)+' / '+REP.master.length+'</span></div></div>';
   });
   root.innerHTML=html;
