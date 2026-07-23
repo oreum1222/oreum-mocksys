@@ -160,6 +160,8 @@ body{
 .q-item:hover{border-color:var(--border-soft)}
 .q-item.wrong{background:rgba(198,102,102,0.12);border-color:var(--danger);color:var(--cream)}
 .q-num{font-weight:500;font-size:0.92rem;min-width:34px;color:var(--cream)}
+.q-area{font-size:0.68rem;color:var(--text-muted);letter-spacing:0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px}
+.q-item.wrong .q-area{color:var(--cream);opacity:0.75}
 .q-three{font-size:0.7rem;color:var(--gold-soft);font-weight:500;margin-left:auto}
 .q-wr{font-size:0.7rem;color:var(--text-muted);margin-left:auto}
 .q-item.wrong .q-wr{color:var(--cream);opacity:0.7}
@@ -666,6 +668,24 @@ function stepEl(n,label){
   );
 }
 
+// 문항 area 값을 마킹 칩에 넣을 짧은 라벨로 정규화 (회차마다 표기가 달라 통일)
+function shortArea(area){
+  if(!area) return '';
+  var a = String(area);
+  var head = a.indexOf('>')>=0 ? a.split('>')[0] : a;   // '독서>사회' → '독서'
+  var sub  = a.indexOf('>')>=0 ? a.split('>')[1] : '';
+  sub = sub.replace(/\s*\(.*$/,'').trim();               // '과학(만유인력 적용)' → '과학'
+  if(/독서|비문학/.test(head)) return sub ? '독서·'+sub : '독서';
+  if(/문학/.test(head))       return sub ? sub : '문학';  // '고전소설','갈래복합' 등
+  if(/현대시|고전시가|현대소설|고전소설|수필|갈래복합|극/.test(head)) return head;
+  if(/^문법|^언어$/.test(head)) return '문법';
+  if(/^매체/.test(head)) return '매체';
+  if(/언어와\s*매체|언매/.test(head)) return sub || '언매';   // 하위 구분이 없으면 단정하지 않음
+  if(/화법과작문|화작/.test(head)) return '화작';
+  if(/화법/.test(head)) return '화법';
+  if(/작문/.test(head)) return '작문';
+  return head.slice(0,6);
+}
 // 통합 체제 회차(선택과목 없던 2018·2019 수능 등) 여부 — JSON examMeta.unified
 function isUnified(){ return !!(STATE.data && STATE.data.examMeta && STATE.data.examMeta.unified); }
 // 채점·마킹에 쓸 유효 선택 키 (통합 회차는 항상 common)
@@ -763,8 +783,10 @@ function areaBlock(title, questions, scope){
   questions.forEach(q=>{
     const key = scope==='common' ? `common-${q.no}` : `${scope}-${q.no}`;
     const isWrong = STATE.wrong.has(key);
+    const areaTag = shortArea(q.area);
     const item = el('div',{class:isWrong?'q-item wrong':'q-item'},
       el('span',{class:'q-num'}, q.no+'번'),
+      areaTag ? el('span',{class:'q-area'}, areaTag) : null,
       q.three ? el('span',{class:'q-three'},'3점') : null,
       q.wr!=null ? el('span',{class:'q-wr'}, q.wr+'%') : null
     );
