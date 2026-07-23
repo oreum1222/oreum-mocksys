@@ -269,6 +269,8 @@ body{
 
 <script>
 // ─────────────────── State ───────────────────
+const DATA_VER = '20260728';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+
 const STATE = {
   view: 'router',         // 'router' | 'diag'
   examId: null,           // 선택된 회차 id
@@ -441,7 +443,7 @@ function renderRouter(){
 
   // 카드별 메타 비동기 로드
   EXAM_LIST.forEach((meta, idx)=>{
-    fetch(meta.file).then(r=>r.json()).then(d=>{
+    fetch(meta.file+'?v='+DATA_VER).then(r=>r.json()).then(d=>{
       const cardEl = list.children[idx];
       clear(cardEl);
       cardEl.appendChild(buildCardContent(meta, d));
@@ -517,7 +519,7 @@ function loadExam(examId){
   const meta = EXAM_LIST.find(e=>e.id===examId);
   if(!meta) return;
   document.getElementById('loading').style.display = 'flex';
-  fetch(meta.file).then(r=>r.json()).then(d=>{
+  fetch(meta.file+'?v='+DATA_VER).then(r=>r.json()).then(d=>{
     STATE.examId = examId;
     STATE.data = d;
     STATE.view = 'diag';
@@ -571,7 +573,7 @@ function loadExamPreview(examId, choice, pattern){
   const meta = EXAM_LIST.find(e=>e.id===examId);
   if(!meta){ renderRouter(); return; }
   document.getElementById('loading').style.display = 'flex';
-  fetch(meta.file).then(r=>r.json()).then(d=>{
+  fetch(meta.file+'?v='+DATA_VER).then(r=>r.json()).then(d=>{
     STATE.examId = examId;
     STATE.data = d;
     STATE.view = 'diag';
@@ -601,7 +603,7 @@ function loadExamReport(examId, info){
   const meta = EXAM_LIST.find(e=>e.id===examId);
   if(!meta){ renderRouter(); return; }
   document.getElementById('loading').style.display = 'flex';
-  fetch(meta.file).then(r=>r.json()).then(d=>{
+  fetch(meta.file+'?v='+DATA_VER).then(r=>r.json()).then(d=>{
     STATE.examId = examId;
     STATE.data = d;
     STATE.view = 'diag';
