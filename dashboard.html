@@ -335,7 +335,8 @@ function renderDedupNotice(){
 
 // ─── 등급컷 캐시 & 등급 재계산 (등급컷 입력 전 제출분의 '미정' 보정) ───
 const GRADECUTS = {};   // examId -> {lm:[...], hs:[...]}
-const QMAP = {};        // examId -> { 'common-13':{type,thinking,source,coreElement,remediation,wr,three,area}, ... }
+const QMAP = {};
+const UNIFIED = {};   // examId -> true (선택과목 없던 통합 체제 회차)        // examId -> { 'common-13':{type,thinking,source,coreElement,remediation,wr,three,area}, ... }
 // 구글 시트가 'YYYY-MM' 회차ID를 날짜로 강제 변환한 경우(예: 2027-06 → 2027-05-31T15:00:00.000Z) 원래 id로 복원
 function normExamId(raw){
   raw = (raw==null ? '' : String(raw)).trim();
@@ -359,8 +360,9 @@ function loadGradeCuts(ids){
           ((d.questions && d.questions[sc]) || []).forEach(function(q){ m[sc+'-'+q.no]=q; });
         });
         QMAP[id]=m;
+        UNIFIED[id]=!!(d.examMeta && d.examMeta.unified);
       })
-      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; })
+      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; })
   ));
 }
 function computeGradeFromRaw(examId, choice, raw){
@@ -746,8 +748,20 @@ function switchTab(t){
 }
 
 function val(r,kEng,kKor){ var v=r[kKor]; if(v===undefined||v==='') v=r[kEng]; return v===undefined||v===null?'':String(v); }
-function repArea(code){var m=/(common|hs|lm)-(\d+)/.exec(code);if(!m)return["기타","기타"];
-  var t=m[1],n=+m[2];if(t==='hs')return["선택","화법과 작문"];if(t==='lm')return["선택","언어와 매체"];
+function repArea(code,examId){var m=/(common|hs|lm)-(\d+)/.exec(code);if(!m)return["기타","기타"];
+  var t=m[1],n=+m[2];
+  var meta=(examId&&QMAP[examId])?QMAP[examId][code]:null;
+  if(meta&&meta.area){
+    var a=String(meta.area),sub=a.indexOf('>')>=0?a.split('>')[0]:a;
+    var big=(UNIFIED[examId])?"전체":(t==='common'?"공통":"선택");
+    if(sub.indexOf('독서')>=0)return[big,"독서"];
+    if(sub.indexOf('문학')>=0)return[big,"문학"];
+    if(sub.indexOf('문법')>=0||sub.indexOf('언어')>=0)return[big,"문법"];
+    if(sub.indexOf('화법')>=0||sub.indexOf('작문')>=0||sub.indexOf('화작')>=0)return[big,"화법과 작문"];
+    if(sub.indexOf('매체')>=0)return[big,"매체"];
+    return[big,sub];
+  }
+  if(t==='hs')return["선택","화법과 작문"];if(t==='lm')return["선택","언어와 매체"];
   return n<=17?["공통","독서"]:["공통","문학"];}
 function repWrongs(s){return s?String(s).split(",").map(function(x){return x.trim();}).filter(function(x){return /(common|hs|lm)-\d+/.test(x);}):[];}
 function repPatLabels(s){return s?String(s).split("|").map(function(p){var sg=p.split(":");var l=sg.length>1?sg.slice(1).join(":"):sg[0];
@@ -789,11 +803,11 @@ function buildReports(){
     REP.sel.forEach(function(r){
       if(!st.rounds[r]){perRound.push(null);return;}
       var d=st.rounds[r],bc={},sc={},qm=QMAP[r]||{};
-      d.wrongs.forEach(function(w){var ar=repArea(w);big[ar[0]]=(big[ar[0]]||0)+1;small[ar[1]]=(small[ar[1]]||0)+1;total++;bc[ar[0]]=(bc[ar[0]]||0)+1;sc[ar[1]]=(sc[ar[1]]||0)+1;
+      d.wrongs.forEach(function(w){var ar=repArea(w,r);big[ar[0]]=(big[ar[0]]||0)+1;small[ar[1]]=(small[ar[1]]||0)+1;total++;bc[ar[0]]=(bc[ar[0]]||0)+1;sc[ar[1]]=(sc[ar[1]]||0)+1;
         var meta=qm[w];
         if(meta){
           var ty=(meta.type||'기타');
-          if(!typeAgg[ty])typeAgg[ty]={cnt:0,rounds:{},rem:'',core:'',area:(repArea(w)[1])};
+          if(!typeAgg[ty])typeAgg[ty]={cnt:0,rounds:{},rem:'',core:'',area:(repArea(w,r)[1])};
           typeAgg[ty].cnt++; typeAgg[ty].rounds[r]=1;
           if(meta.remediation)typeAgg[ty].rem=meta.remediation;
           if(meta.coreElement)typeAgg[ty].core=meta.coreElement;
@@ -948,8 +962,8 @@ function renderReports(){
       +rMetrics(m)
       +'<div class="rc-row1"><div>'+rSpark(m)+'</div>'
       +'<div><div class="rblk-t">반복 약점 영역 비중</div>'+rDonut(m)+'</div></div>'
-      +'<div class="rc-blk"><div class="rblk-t">회차별 오답 <span class="rblk-sub">(공통 = 독서·문학 1~34 / 선택 = 화작·언매 35~45)</span></div>'
-      +'<table class="rtbl2"><thead><tr><th>회차</th><th>점수</th><th>공통(1~34)</th><th>선택(35~45)</th></tr></thead><tbody>'+rRoundRows(m)+'</tbody></table></div>'
+      +'<div class="rc-blk"><div class="rblk-t">회차별 오답 <span class="rblk-sub">'+(REP.sel.every(function(x){return UNIFIED[x];})?'(통합 체제 — 1~45 전체가 공통)':'(공통 = 독서·문학 1~34 / 선택 = 화작·언매 35~45)')+'</span></div>'
+      +'<table class="rtbl2"><thead><tr><th>회차</th><th>점수</th><th>'+(REP.sel.every(function(x){return UNIFIED[x];})?'전체(1~45)':'공통(1~34)')+'</th><th>'+(REP.sel.every(function(x){return UNIFIED[x];})?'—':'선택(35~45)')+'</th></tr></thead><tbody>'+rRoundRows(m)+'</tbody></table></div>'
       +'<div class="rc-blk rweak"><div class="rblk-t gold">진단 약점 <span class="rblk-sub">(1~'+REP.sel.length+'회 통합 분석)</span></div><ul class="rdlist">'+integ+'</ul></div>'
       +'<div class="rc-blk rtime"><div class="rblk-t gold">시간 관리</div>'+timeBlock+'</div>'
       +'<div class="rc-blk rdiag"><div class="rblk-t gold">진단 종합</div><ul class="rdlist">'+diag+'</ul></div>'

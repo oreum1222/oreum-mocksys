@@ -110,6 +110,7 @@ body{
 .footer{margin-top:72px;padding-top:32px;border-top:1px solid var(--border-line);text-align:center;color:var(--text-muted);font-size:0.82rem;line-height:1.9}
 .footer-mark{font-family:'Noto Serif KR',serif;color:var(--gold);font-weight:500;letter-spacing:2px;font-size:0.78rem;margin-bottom:8px;display:block}
 
+.unified-note{color:var(--text-secondary);font-size:0.86rem;line-height:1.6;padding:10px 0}
 .diag-caveat{margin-top:20px;padding:16px 18px;background:rgba(74,169,126,0.06);border:1px solid var(--border-soft);border-radius:6px;color:var(--text-secondary);font-size:0.82rem;line-height:1.75}
 .diag-caveat b{color:var(--cream);font-weight:500}
 /* ─── Diagnostic flow common ─── */
@@ -663,6 +664,11 @@ function stepEl(n,label){
   );
 }
 
+// 통합 체제 회차(선택과목 없던 2018·2019 수능 등) 여부 — JSON examMeta.unified
+function isUnified(){ return !!(STATE.data && STATE.data.examMeta && STATE.data.examMeta.unified); }
+// 채점·마킹에 쓸 유효 선택 키 (통합 회차는 항상 common)
+function activeChoice(){ return isUnified() ? 'common' : STATE.student.choice; }
+
 // ─── Step 1: 기본 정보 ───
 function renderStep1(){
   const form = el('div',{class:'section'},
@@ -671,7 +677,10 @@ function renderStep1(){
     formRow('이름','text','name', STATE.student.name),
     formRow('학교','text','school', STATE.student.school, '예: 산본고'),
     formRow('학년','select','grade', STATE.student.grade, null, ['고3']),
-    el('div',{class:'form-row'},
+    isUnified() ? el('div',{class:'form-row'},
+      el('label',{},'선택 과목'),
+      el('div',{class:'unified-note'},'이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
+    ) : el('div',{class:'form-row'},
       el('label',{},'선택 과목 ', el('span',{class:'req'},'*')),
       el('div',{class:'radio-group'},
         radioPill('choice','lm','언어와 매체', STATE.student.choice==='lm'),
@@ -714,7 +723,7 @@ function nextFromStep1(){
   const s = STATE.student;
   if(!s.name?.trim()) return alert('이름을 입력해 주세요.');
   if(!s.school?.trim()) return alert('학교를 입력해 주세요.');
-  if(!s.choice) return alert('선택 과목을 선택해 주세요.');
+  if(!isUnified() && !s.choice) return alert('선택 과목을 선택해 주세요.');
   STATE.step = 2; renderDiag();
 }
 
@@ -726,15 +735,17 @@ function renderStep2(){
   );
   root.appendChild(intro);
 
-  // 공통 (독서/문학)
-  const commonBlock = areaBlock('공통 1-34 (독서·문학)', STATE.data.questions.common, 'common');
-  root.appendChild(commonBlock);
-
-  // 선택 (lm or hs)
-  const choice = STATE.student.choice;
-  const choiceLabel = choice==='lm' ? '선택 35-45 (언어와 매체)' : '선택 35-45 (화법과 작문)';
-  const choiceQs = STATE.data.questions[choice];
-  root.appendChild(areaBlock(choiceLabel, choiceQs, choice));
+  if(isUnified()){
+    // 선택과목이 없던 통합 체제 — 1~45 전체가 공통
+    root.appendChild(areaBlock('전체 1-45 (공통)', STATE.data.questions.common, 'common'));
+  } else {
+    // 공통 (독서/문학)
+    root.appendChild(areaBlock('공통 1-34 (독서·문학)', STATE.data.questions.common, 'common'));
+    // 선택 (lm or hs)
+    const choice = STATE.student.choice;
+    const choiceLabel = choice==='lm' ? '선택 35-45 (언어와 매체)' : '선택 35-45 (화법과 작문)';
+    root.appendChild(areaBlock(choiceLabel, STATE.data.questions[choice], choice));
+  }
 
   const btnRow = el('div',{class:'btn-row'},
     el('button',{class:'btn btn-ghost', onclick:()=>{STATE.step=1; renderDiag();}},'← 이전'),
@@ -833,16 +844,18 @@ function computeResult(){
     if(!STATE.wrong.has(key)) raw += score;
     else wrongDetails.push({...q, key, scope:'common', score});
   });
-  d.questions[choice].forEach(q=>{
-    const key = choice+'-'+q.no;
-    const score = q.three ? 3 : 2;
-    totalScore.choice += score;
-    if(!STATE.wrong.has(key)) raw += score;
-    else wrongDetails.push({...q, key, scope:choice, score});
-  });
+  if(!isUnified()){
+    d.questions[choice].forEach(q=>{
+      const key = choice+'-'+q.no;
+      const score = q.three ? 3 : 2;
+      totalScore.choice += score;
+      if(!STATE.wrong.has(key)) raw += score;
+      else wrongDetails.push({...q, key, scope:choice, score});
+    });
+  }
 
   // 2. 등급 산출 (등급컷 미발표 시 '미정' 처리)
-  const cuts = (d.gradeCuts && d.gradeCuts[choice]) || [];
+  const cuts = (d.gradeCuts && (d.gradeCuts[activeChoice()] || d.gradeCuts[choice])) || [];
   let grade = 9;
   let gradeCut;
   if(d.gradeCutsPending || !cuts.length){
