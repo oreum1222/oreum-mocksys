@@ -157,6 +157,13 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rdlist b{color:var(--cream);font-weight:600}
 .rtime{background:var(--bg-dark);border:1px solid var(--border-line);border-left:3px solid var(--gold);border-radius:8px;padding:14px 18px}
 .rtime .tc{font-size:0.86rem;color:var(--text-secondary);line-height:1.6}.rtime .tc b{color:var(--gold);font-weight:600}
+/* PDF 인쇄용 라이트 테마(흰 배경·네이비 포인트) — 화면 대시보드는 그대로, PDF 캡처 때만 적용 */
+.repcard.pdf-print{--green-deep:#1F3A5F;--gold:#1F3A5F;--gold-soft:#2C4A6E;
+  --cream:#182430;--text-primary:#182430;--text-secondary:#38424c;--text-muted:#6d767e;
+  --bg-dark:#f3f5f6;--bg-card:#ffffff;--bg-card-hover:#eef1f2;
+  --border-soft:#c8d0d7;--border-line:#dce1e5;--danger:#b23a2e;
+  background:#ffffff!important;color:#182430}
+.repcard.pdf-print .rnarr{background:#f6f8f9!important}
 .rc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:13px;border-top:1px solid var(--border-line);font-size:0.72rem}
 .rc-foot .m{color:var(--gold)}.rc-foot .n{color:var(--text-muted)}
 
@@ -183,7 +190,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 <div class="wrap">
 
 <h1>오름 모의고사 진단 — 강사 대시보드</h1>
-<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B11</span></p>
+<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B12</span></p>
 
 <!-- 비밀번호 게이트 -->
 <div id="gate" class="section">
@@ -1071,7 +1078,10 @@ function repSearchFn(q){q=q.trim();
 function getJsPDF(){if(window.jspdf&&window.jspdf.jsPDF)return window.jspdf.jsPDF;if(window.jsPDF)return window.jsPDF;return null;}
 function repLibsReady(){return !!(window.html2canvas&&getJsPDF());}
 async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn.style.visibility:'';if(btn)btn.style.visibility='hidden';
-  var c=await html2canvas(t,{scale:2,backgroundColor:'#141c16',useCORS:true,logging:false,windowWidth:t.scrollWidth});if(btn)btn.style.visibility=pv;return c;}
+  t.classList.add('pdf-print');   // 인쇄용 라이트 테마 적용 후 캡처
+  var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:t.scrollWidth});
+  t.classList.remove('pdf-print');
+  if(btn)btn.style.visibility=pv;return c;}
 function repA4(pdf,c,first){var pw=210,ph=297;if(!first)pdf.addPage();pdf.setFillColor(26,31,21);pdf.rect(0,0,pw,ph,'F');
   var ratio=c.height/c.width,w=pw,h=w*ratio;if(h>ph){h=ph;w=h/ratio;}var x=(pw-w)/2,y=(ph-h)/2;
   pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',x,y,w,h);}
@@ -1097,9 +1107,9 @@ function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.heigh
   var TM=12,BM=8,avail=297-TM-BM;   // 위 여백 12mm·아래 8mm — 각 그룹은 여백 안쪽에 배치
   groups.forEach(function(gr){var y0=Math.round(gr.f0*H),y1=Math.round(gr.f1*H),sh=Math.max(1,y1-y0);
     var tmp=document.createElement('canvas');tmp.width=W;tmp.height=sh;var ctx=tmp.getContext('2d');
-    ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,sh);ctx.drawImage(canvas,0,y0,W,sh,0,0,W,sh);
+    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,sh);ctx.drawImage(canvas,0,y0,W,sh,0,0,W,sh);
     if(state.added)pdf.addPage();state.added=true;
-    pdf.setFillColor(20,28,22);pdf.rect(0,0,210,297,'F');
+    pdf.setFillColor(255,255,255);pdf.rect(0,0,210,297,'F');
     var wmm=210,hmm=sh/W*210;if(hmm>avail){var s=avail/hmm;wmm=210*s;hmm=avail;}
     pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',(210-wmm)/2,TM,wmm,hmm);});}
 async function printOneReport(id){var t=document.getElementById(id);if(!t)return;
