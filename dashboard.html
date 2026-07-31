@@ -1075,23 +1075,28 @@ async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn
 function repA4(pdf,c,first){var pw=210,ph=297;if(!first)pdf.addPage();pdf.setFillColor(26,31,21);pdf.rect(0,0,pw,ph,'F');
   var ratio=c.height/c.width,w=pw,h=w*ratio;if(h>ph){h=ph;w=h/ratio;}var x=(pw-w)/2,y=(ph-h)/2;
   pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',x,y,w,h);}
-// 카드 캔버스를 '블록 경계'에서 A4 페이지로 분할해 담기 (긴 카드도 깨알 축소 없이 여러 장으로)
-function repBreakYs(card,scale){var ys=[];var k=card.children;for(var i=0;i<k.length;i++){var e=k[i];
-  if(e.classList&&e.classList.contains('no-print'))continue; ys.push((e.offsetTop+e.offsetHeight)*scale);}return ys;}
-function addCardPaged(pdf,canvas,breakYs,state){var W=canvas.width,H=canvas.height,pageH=W*297/210;
-  var by=breakYs.filter(function(y){return y>0&&y<H;});by.sort(function(a,b){return a-b;});by.push(H);
-  var start=0,guard=0;
-  while(start<H-1&&guard++<300){var target=start+pageH,cut=-1;
-    for(var i=0;i<by.length;i++){if(by[i]>start+4&&by[i]<=target+0.5)cut=by[i];}
-    if(cut<0)cut=Math.min(target,H);                 // 한 블록이 A4보다 길면 강제 분할
-    var sliceH=Math.max(1,Math.round(cut-start));
-    var tmp=document.createElement('canvas');tmp.width=W;tmp.height=sliceH;
-    var ctx=tmp.getContext('2d');ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,sliceH);
-    ctx.drawImage(canvas,0,start,W,sliceH,0,0,W,sliceH);
-    if(state.added)pdf.addPage();
-    pdf.setFillColor(20,28,22);pdf.rect(0,0,210,297,'F');
-    pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,(sliceH/W)*210);
-    state.added=true;start=cut;}}
+// 카드의 직접 자식 블록 경계 → [{y0,y1,brk}] (brk=이 블록 앞에서 강제 개페이지)
+// 페이지 구성: 1쪽 헤드~회차별표 / 2쪽 진단 약점·시간·종합 / 3쪽 서술형 소견
+function repBlocks(card,scale){var kids=card.children,items=[],H=card.scrollHeight*scale;
+  for(var i=0;i<kids.length;i++){var e=kids[i];if(e.classList&&e.classList.contains('no-print'))continue;
+    var brk=e.classList&&(e.classList.contains('rweak')||e.classList.contains('rnarr'));  // 진단 약점·서술형 소견 앞에서 페이지 분리
+    items.push({top:e.offsetTop*scale,brk:!!brk});}
+  if(!items.length)return [{y0:0,y1:H,brk:false}];
+  var out=[];for(var k=0;k<items.length;k++){var y0=(k===0)?0:items[k].top,y1=(k+1<items.length)?items[k+1].top:H;
+    out.push({y0:y0,y1:y1,brk:items[k].brk});}return out;}
+function repDrawSlice(pdf,canvas,srcY,srcH,destMM){var W=canvas.width,h=Math.max(1,Math.round(srcH));
+  var tmp=document.createElement('canvas');tmp.width=W;tmp.height=h;var ctx=tmp.getContext('2d');
+  ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,h);ctx.drawImage(canvas,0,srcY,W,h,0,0,W,h);
+  pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',0,destMM,210,(h/W)*210);}
+// 블록 단위로 A4에 배치 — 남은 공간에 안 들어가면 통째로 새 페이지(블록 중간 절대 안 자름). 블록이 A4보다 클 때만 강제 분할
+function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,pageHpx=W*297/210,EPS=2,pageY=0;
+  function newPage(){if(state.added)pdf.addPage();state.added=true;pdf.setFillColor(20,28,22);pdf.rect(0,0,210,297,'F');pageY=0;}
+  newPage();
+  blocks.forEach(function(b){var h=b.y1-b.y0;
+    if(b.brk&&pageY>EPS)newPage();                    // 지정 블록(진단 약점·서술형) 앞에서 강제 새 페이지
+    if(h>pageHpx+EPS){var s=b.y0;while(s<b.y1-1){if(pageY>EPS)newPage();var seg=Math.min(pageHpx,b.y1-s);repDrawSlice(pdf,canvas,s,seg,pageY/W*210);pageY+=seg;s+=seg;}return;}
+    if(pageY+h>pageHpx+EPS)newPage();
+    repDrawSlice(pdf,canvas,b.y0,h,pageY/W*210);pageY+=h;});}
 async function printOneReport(id){var t=document.getElementById(id);if(!t)return;
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
   var name=t.dataset.name||'학생';repOverlay(name+' PDF 생성 중…');
@@ -1099,7 +1104,7 @@ async function printOneReport(id){var t=document.getElementById(id);if(!t)return
   await new Promise(function(r){setTimeout(r,120);});
   try{var c=await repCapture(t);var jsPDF=getJsPDF();var scale=c.width/t.offsetWidth;
     var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    addCardPaged(pdf,c,repBreakYs(t,scale),{added:false});
+    addCardPaged(pdf,c,repBlocks(t,scale),{added:false});
     pdf.save('오름_'+name+'_진단리포트.pdf');
   }catch(err){alert('PDF 생성 오류: '+(err.message||err));}finally{repHideOverlay();}}
 async function printAllReports(){
@@ -1115,7 +1120,7 @@ async function printAllReports(){
       repOverlay('전체 PDF 생성 중… ('+(i+1)+'/'+cards.length+') · '+name);
       await new Promise(function(r){setTimeout(r,20);});
       var c=await repCapture(cards[i]);var scale=c.width/cards[i].offsetWidth;
-      addCardPaged(pdf,c,repBreakYs(cards[i],scale),state);c.width=0;c.height=0;}  // 학생마다 새 A4 페이지에서 시작
+      addCardPaged(pdf,c,repBlocks(cards[i],scale),state);c.width=0;c.height=0;}  // 학생마다 새 A4 페이지에서 시작
     repOverlay('PDF 저장 중…');await new Promise(function(r){setTimeout(r,30);});
     pdf.save('오름_학생별_개별리포트_전체.pdf');
   }catch(err){alert('전체 PDF 오류: '+(err.message||err));}finally{if(btn)btn.disabled=false;repHideOverlay();}}
