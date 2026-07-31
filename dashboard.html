@@ -857,6 +857,8 @@ function buildReports(){
     // 대비: 관계·검증 유형 vs 순수 독해
     function grpC(names){var w=0,t=0;names.forEach(function(nm){w+=typeWrong[nm]||0;t+=typeTaken[nm]||0;});return t?{rate:Math.round(w/t*1000)/10,wrong:w,taken:t}:null;}
     var relC=grpC(['보기·외적준거 적용','추론·근거 판단']), compC=grpC(['내용·세부 파악']);
+    var relSet={}; ['보기·외적준거 적용','추론·근거 판단'].forEach(function(t){Object.keys(typeRnds[t]||{}).forEach(function(rr){relSet[rr]=1;});});
+    var relRoundCount=Object.keys(relSet).length;
     // 등급 시뮬: 최대 누수 유형을 모두 맞혔다면 등급이 어떻게 바뀌는가
     var leak=typeRates.length?typeRates[0].type:null, gradeSim=[];
     if(leak){ seq.forEach(function(r){var d=st.rounds[r],qm=QMAP[r]||{},uni=UNIFIED[r],ch=(st.sub==='lm')?'lm':'hs',gc=GRADECUTS[r];
@@ -883,7 +885,7 @@ function buildReports(){
       total_wrong:total,low_freq:lowfreq,big_pct:bigPct,small_pct:smallPct,per_round:perRound,recurring:recurring,
       weak_labels:weakLabels,time_seq:timeSeq,time_mode:timeMode,time_all_same:allSame,
       type_top:typeTop,think_top:thinkTop,think_total:thinkTotal,
-      type_rates:typeRates,area_rates:areaRates,rel_contrast:relC,comp_contrast:compC,leak_type:leak,grade_sim:gradeSim});
+      type_rates:typeRates,area_rates:areaRates,rel_contrast:relC,comp_contrast:compC,leak_type:leak,grade_sim:gradeSim,rel_round_count:relRoundCount});
   });
   master.sort(function(a,b){if(b.n!==a.n)return b.n-a.n;var ga=a.grades[a.grades.length-1]||9,gb=b.grades[b.grades.length-1]||9;
     if(ga!==gb)return ga-gb;return a.name.localeCompare(b.name,'ko');});
@@ -983,6 +985,42 @@ function rMetrics(m){
 function rCaveat(){
   return '<div style="font-size:.72rem;color:var(--text-muted);border-top:1px dashed var(--border-soft);padding-top:9px;margin-top:6px;line-height:1.55">자가 표시 오답 기반 — 넘긴 문항이나 찍어 맞은 문항은 집계되지 않습니다. 절대 오답률이 아닌 <b style="color:var(--text-secondary)">반복 신호</b>로 해석하세요.</div>';
 }
+// 학생·학부모용 서술형 소견 — 프로필별 분기 + 계산값 삽입
+function rNarrative(m){
+  var rel=m.rel_contrast, comp=m.comp_contrast, gs=m.grade_sim||[], ups=gs.filter(function(x){return x.up;});
+  var nm=m.name, P=[];
+  var enough = rel && comp && comp.taken>=4 && rel.taken>=4;
+  if(!enough){
+    P.push(nm+' 학생은 아직 통합 분석에 쓸 오답 표본이 충분치 않습니다. 회차가 더 쌓이면 유형별 강·약점과 등급 상승 여지를 구체적으로 짚어 드리겠습니다.');
+    return P;
+  }
+  var relHi = rel.rate > comp.rate*1.25;
+  var compHi = comp.rate >= rel.rate;
+  // 1문단 — 프로필 진단
+  if(relHi){
+    P.push(nm+' 학생은 지문의 내용을 읽고 이해하는 기본 독해력이 비교적 안정적으로 갖춰져 있습니다. 실제로 내용과 세부 정보를 직접 확인하는 문항의 오답률은 <b>'+comp.rate+'%</b>에 그쳤습니다. 반면 〈보기〉의 기준을 지문에 적용하거나, 두 자료의 관계를 선지까지 연결해 판단하는 문항에서는 오답이 상대적으로 많았습니다(<b>'+rel.rate+'%</b>). 글을 이해하지 못해서라기보다, 읽어 낸 내용을 정답으로 확정하는 마지막 과정에서 점수를 놓치는 경우가 많은 것입니다.');
+  } else if(compHi){
+    P.push(nm+' 학생은 내용과 세부 정보를 확인하는 기본 독해 문항의 오답률이 <b>'+comp.rate+'%</b>로, 〈보기〉·관계 판단 문항(<b>'+rel.rate+'%</b>)과 비슷하거나 오히려 높게 나타납니다. 지문을 정확히, 끝까지 읽어 내는 기초 독해 단계에서 먼저 점수가 새고 있을 가능성이 있어, 푸는 속도보다 정독과 근거 표시를 먼저 다지는 것이 우선으로 보입니다.');
+  } else {
+    P.push(nm+' 학생은 기본 독해(<b>'+comp.rate+'%</b>)와 〈보기〉·관계 판단(<b>'+rel.rate+'%</b>) 어느 한쪽에 크게 치우치기보다 전반에서 고르게 실점하고 있습니다. 특정 유형의 구멍이라기보다, 읽어 낸 내용을 근거로 답을 확정하는 절차를 문항마다 일정하게 유지하는 것이 과제로 보입니다.');
+  }
+  // 2문단 — 학습 방향
+  P.push('남은 기간의 방향은 분명합니다. 독해의 기초부터 다시 시작하기보다, 이미 이해한 내용을 ‘누가–무엇을–어떤 관계로 말하는가’로 정리하고 선지의 표현과 대조하는 습관을 들이는 것이 중요합니다. 특히 〈보기〉 문제에서는 판단 기준에 먼저 표시하고, 그것이 지문의 어느 대상과 연결되는지 확인한 뒤, 선지가 그 관계를 바꾸거나 범위를 넓히지는 않았는지 점검하는 과정이 필요합니다.');
+  // 3문단 — 오답 정리법
+  P.push('오답을 정리할 때도 정답과 해설을 확인하는 데서 끝내지 않는 것이 좋습니다. 틀린 선지를 ‘주체가 바뀜’, ‘대상이 달라짐’, ‘관계가 반대로 제시됨’, ‘조건이나 범위가 달라짐’처럼 구분하고, 다음 문제에서 같은 기준을 다시 적용해 보는 것이 효과적입니다. 이 과정이 반복되면 감각에 의존하던 판단이 근거를 갖춘 안정적인 판단으로 바뀔 수 있습니다.');
+  // 4문단 — 시간(신호 있을 때만)
+  if(/부족|집착|지연|루틴/.test(m.time_mode||'')){
+    P.push('시간 운영에서는 어려운 한 문제에 오래 머물러 뒤의 문제까지 함께 놓치지 않도록 주의해야 합니다. 바로 판단되지 않는 문제는 표시한 뒤 넘어가고, 확보한 시간 안에서 다시 검토하는 습관이 필요합니다. 어려운 문제를 모두 해결하는 것보다, 이미 맞힐 수 있는 문제를 안정적으로 지키는 것이 점수를 끌어올리는 데 더 직접적으로 도움이 됩니다.');
+  }
+  // 5문단 — 등급 여지 + 마무리
+  var five='관계·적용 유형의 오답은 <b>'+(m.rel_round_count||0)+'개 회차에서 '+rel.wrong+'문항</b>으로 반복되었습니다. 이 중 절반만 줄여도 회차마다 평균 1~2문항을 더 확보할 여지가 있';
+  if(ups.length){ five+='으며, 실제 기록에서도 이 부분이 줄었다면 <b>한 등급 이상 상승</b>할 수 있었던 시험이 '+ups.length+'차례 확인됩니다. '; }
+  else { five+='습니다. '; }
+  if(relHi){ five+='이미 기본 독해력이 갖춰져 있고 보완할 지점도 구체적인 만큼, 남은 기간 동안 관계를 정리하고 근거로 답을 확정하는 절차에 조금 더 신경 쓴다면 점수의 편차가 줄고 현재의 독해력이 보다 안정적인 등급으로 이어질 가능성이 충분합니다.'; }
+  else { five+='보완할 지점이 구체적인 만큼, 답을 근거로 확정하는 절차를 문항마다 반복하면 점수의 편차가 줄어들 여지가 있습니다.'; }
+  P.push(five);
+  return P;
+}
 function renderReports(){
   var root=document.getElementById('reportRoot');
   var note=document.getElementById('repNote');
@@ -995,6 +1033,7 @@ function renderReports(){
     var timeBlock=tc?'<div class="tc">'+tc+'</div>':'<div class="tc" style="color:var(--text-muted)">시간 진단 데이터 없음</div>';
     var diag=rDiagnose(m).map(function(d){return '<li>'+d+'</li>';}).join("");
     var integ=rIntegrated(m).map(function(d){return '<li>'+d+'</li>';}).join("");
+    var narr=rNarrative(m).map(function(p){return '<p style="margin:0 0 11px;line-height:1.8;font-size:0.9rem;color:var(--text-secondary)">'+p+'</p>';}).join("");
     var sid="rep-"+i;
     html+='<div class="repcard" id="'+sid+'" data-n="'+m.n+'" data-trend="'+m.trend+'" data-name="'+m.name+'">'
       +'<div class="rc-head"><div><div class="rc-name">'+m.name+'</div><div class="rc-meta">'+school+' · '+sub+' · '+m.n+'/'+REP.sel.length+'회 응시</div></div>'
@@ -1008,6 +1047,7 @@ function renderReports(){
       +'<div class="rc-blk rweak"><div class="rblk-t gold">진단 약점 <span class="rblk-sub">(1~'+REP.sel.length+'회 통합 분석)</span></div><ul class="rdlist">'+integ+'</ul></div>'
       +'<div class="rc-blk rtime"><div class="rblk-t gold">시간 관리</div>'+timeBlock+'</div>'
       +'<div class="rc-blk rdiag"><div class="rblk-t gold">진단 종합</div><ul class="rdlist">'+diag+'</ul></div>'
+      +'<div class="rc-blk rnarr" style="border:1px solid var(--border-line);border-radius:8px;padding:15px 17px;background:rgba(74,169,126,0.05)"><div class="rblk-t gold">서술형 소견 <span class="rblk-sub">(학생·학부모용)</span></div>'+narr+'</div>'
       +rCaveat()
       +'<div class="rc-foot"><span class="m">가경T · 오름 국어 연구소</span><span class="n">'+(i+1)+' / '+REP.master.length+'</span></div></div>';
   });
