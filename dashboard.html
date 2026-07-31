@@ -767,6 +767,18 @@ function repWrongs(s){return s?String(s).split(",").map(function(x){return x.tri
 function repPatLabels(s){return s?String(s).split("|").map(function(p){var sg=p.split(":");var l=sg.length>1?sg.slice(1).join(":"):sg[0];
   return l.replace(/\s*약점.*$/,"").replace(/\(\d+번\)/,"").replace(/\(.*?\)/,"").trim();}).filter(Boolean):[];}
 function repTrend(raws){if(raws.length<2)return"단일";var d=raws[raws.length-1]-raws[0];return d>=8?"상승":d<=-8?"하락":"유지";}
+// 회차마다 제각각인 유형 표기를 능력 단위로 통합 (진단 정규화)
+function rNormType(typ){var t=(typ||'').replace(/\s/g,'').replace(/[〈〉]/g,'');
+  if(/외적준거|보기적용/.test(t))return'보기·외적준거 적용';
+  if(/사례적용|그래프적용|그림적용|자료활용|규칙적용|구체적사례/.test(t))return'자료·사례 적용';
+  if(/내용일치|세부내용|내용이해|중심내용|작품의내용|부재확인|일치/.test(t))return'내용·세부 파악';
+  if(/표현비교|서술상특징|서술시점|시어비교|시구해석|표현|서술/.test(t))return'표현·서술 분석';
+  if(/이유추론|결론근거|입장적용|개념정의|추론|근거/.test(t))return'추론·근거 판단';
+  if(/문법/.test(t))return'문법 적용';
+  if(/매체/.test(t))return'매체';
+  if(/어휘/.test(t))return'어휘';
+  return'기타:'+(typ||'');}
+function rAreaBuck(a){a=String(a||'');if(a.indexOf('독서')>=0)return'독서';if(a.indexOf('문학')>=0)return'문학';return'선택';}
 
 function buildReports(){
   repInitSel();
@@ -800,11 +812,19 @@ function buildReports(){
     var grades=seq.map(function(r){return st.rounds[r].grade;});
     var n=seq.length,big={},small={},perRound=[],total=0,appear={},timeSeq=[];
     var typeAgg={},thinkAgg={},thinkTotal=0,lowfreq=0;   // 유형·요구사고 누적(문항 JSON 기반)
+    var typeTaken={},typeWrong={},typeRnds={},areaTaken={},areaWrong={};  // 출제 대비(분모 포함) 정규화 집계
     REP.sel.forEach(function(r){
       if(!st.rounds[r]){perRound.push(null);return;}
-      var d=st.rounds[r],bc={},sc={},qm=QMAP[r]||{};
+      var d=st.rounds[r],bc={},sc={},qm=QMAP[r]||{},uni=UNIFIED[r];
+      var ch=(st.sub==='lm')?'lm':'hs';
+      // 분모: 이 회차에서 학생이 실제로 본 문항(통합=전체 / 선택=공통+선택)을 유형·영역별로 집계
+      Object.keys(qm).forEach(function(k){var meta=qm[k];if(!meta)return;var scp=k.split('-')[0];
+        var inScope=uni?(scp==='common'):(scp==='common'||scp===ch); if(!inScope)return;
+        var nt=rNormType(meta.type),ab=rAreaBuck(meta.area);
+        typeTaken[nt]=(typeTaken[nt]||0)+1; areaTaken[ab]=(areaTaken[ab]||0)+1;});
       d.wrongs.forEach(function(w){var ar=repArea(w,r);big[ar[0]]=(big[ar[0]]||0)+1;small[ar[1]]=(small[ar[1]]||0)+1;total++;bc[ar[0]]=(bc[ar[0]]||0)+1;sc[ar[1]]=(sc[ar[1]]||0)+1;
-        var meta=qm[w];
+        var wc=w; if(uni){var mm=/-(\d+)$/.exec(w); if(mm)wc='common-'+mm[1];}
+        var meta=qm[wc];
         if(meta){
           var ty=(meta.type||'기타');
           if(!typeAgg[ty])typeAgg[ty]={cnt:0,rounds:{},rem:'',core:'',area:(repArea(w,r)[1])};
@@ -814,12 +834,36 @@ function buildReports(){
           var th=(meta.thinking||'').trim();
           if(th){thinkAgg[th]=(thinkAgg[th]||0)+1;thinkTotal++;}
           if(meta.wr!=null && meta.wr!=='' && +meta.wr<=20) lowfreq++;
+          var nt=rNormType(meta.type),ab=rAreaBuck(meta.area);
+          typeWrong[nt]=(typeWrong[nt]||0)+1; areaWrong[ab]=(areaWrong[ab]||0)+1;
+          if(!typeRnds[nt])typeRnds[nt]={}; typeRnds[nt][r]=1;
         }
       });
       Object.keys(sc).forEach(function(s){appear[s]=(appear[s]||0)+1;});
       if(d.time)timeSeq.push(d.time);
       perRound.push({raw:d.raw,grade:d.grade,wn:d.wrongs.length,time:d.time,wrongs:d.wrongs,big:bc,small:sc});
     });
+    // 정규화 유형 실제 오답률(출제 대비) — 틀린 개수만이 아니라 분모 대비
+    var typeRates=Object.keys(typeWrong).map(function(t){return {type:t,wrong:typeWrong[t],taken:typeTaken[t]||0,
+      rate:typeTaken[t]?Math.round(typeWrong[t]/typeTaken[t]*1000)/10:0,rounds:Object.keys(typeRnds[t]||{}).length};})
+      .filter(function(x){return x.type.indexOf('기타:')!==0 && x.taken>=2;})
+      .sort(function(a,b){return b.wrong-a.wrong;});
+    var areaRates=['독서','문학','선택'].map(function(a){return {area:a,wrong:areaWrong[a]||0,taken:areaTaken[a]||0,
+      rate:areaTaken[a]?Math.round((areaWrong[a]||0)/areaTaken[a]*1000)/10:0};}).filter(function(x){return x.taken>0;})
+      .sort(function(a,b){return b.rate-a.rate;});
+    // 대비: 관계·검증 유형 vs 순수 독해
+    function grpC(names){var w=0,t=0;names.forEach(function(nm){w+=typeWrong[nm]||0;t+=typeTaken[nm]||0;});return t?{rate:Math.round(w/t*1000)/10,wrong:w,taken:t}:null;}
+    var relC=grpC(['보기·외적준거 적용','추론·근거 판단']), compC=grpC(['내용·세부 파악']);
+    // 등급 시뮬: 최대 누수 유형을 모두 맞혔다면 등급이 어떻게 바뀌는가
+    var leak=typeRates.length?typeRates[0].type:null, gradeSim=[];
+    if(leak){ seq.forEach(function(r){var d=st.rounds[r],qm=QMAP[r]||{},uni=UNIFIED[r],ch=(st.sub==='lm')?'lm':'hs',gc=GRADECUTS[r];
+        if(!gc)return; var cutArr=uni?(gc.common||gc[ch]):(gc[ch]||gc.common); if(!cutArr||!cutArr.length)return;
+        var rec=0; d.wrongs.forEach(function(w){var wc=w;if(uni){var mm=/-(\d+)$/.exec(w);if(mm)wc='common-'+mm[1];}var meta=qm[wc];
+          if(meta&&rNormType(meta.type)===leak)rec+=(meta.three?3:2);});
+        function gd(raw){for(var i=0;i<cutArr.length;i++){if(raw>=cutArr[i].raw)return cutArr[i].grade;}return 9;}
+        var cur=gd(d.raw),nw=gd(d.raw+rec);
+        gradeSim.push({rid:r,raw:d.raw,nraw:d.raw+rec,cur:cur,nw:nw,gain:rec,up:nw<cur});});
+    }
     var typeTop=Object.keys(typeAgg).map(function(t){var o=typeAgg[t];return {type:t,cnt:o.cnt,rounds:Object.keys(o.rounds).length,rem:o.rem,core:o.core,area:o.area};})
       .sort(function(a,b){return (b.rounds-a.rounds)||(b.cnt-a.cnt);});
     var thinkTop=Object.keys(thinkAgg).map(function(t){return {k:t,cnt:thinkAgg[t],pct:thinkTotal?Math.round(thinkAgg[t]/thinkTotal*100):0};})
@@ -835,7 +879,8 @@ function buildReports(){
     master.push({name:nm,school:st.school,sub:st.sub,n:n,raws:raws,grades:grades,trend:repTrend(raws),
       total_wrong:total,low_freq:lowfreq,big_pct:bigPct,small_pct:smallPct,per_round:perRound,recurring:recurring,
       weak_labels:weakLabels,time_seq:timeSeq,time_mode:timeMode,time_all_same:allSame,
-      type_top:typeTop,think_top:thinkTop,think_total:thinkTotal});
+      type_top:typeTop,think_top:thinkTop,think_total:thinkTotal,
+      type_rates:typeRates,area_rates:areaRates,rel_contrast:relC,comp_contrast:compC,leak_type:leak,grade_sim:gradeSim});
   });
   master.sort(function(a,b){if(b.n!==a.n)return b.n-a.n;var ga=a.grades[a.grades.length-1]||9,gb=b.grades[b.grades.length-1]||9;
     if(ga!==gb)return ga-gb;return a.name.localeCompare(b.name,'ko');});
@@ -865,35 +910,30 @@ function rDonut(m){var sp=m.small_pct,bp=m.big_pct,segs=[];
   var ctr='<text x="'+CX+'" y="'+(CY-4)+'" text-anchor="middle" class="rdonut-num">'+gong+'%</text><text x="'+CX+'" y="'+(CY+13)+'" text-anchor="middle" class="rdonut-lab">공통</text>';
   var leg=segs.map(function(s){return '<div class="rlg"><span class="rlg-dot" style="background:'+s[2]+'"></span><span class="rlg-name">'+s[0]+'</span><span class="rlg-val">'+s[1]+'%</span></div>';}).join("");
   return '<div class="rdonut-wrap"><svg viewBox="0 0 128 128" class="rdonut"><circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="none" stroke="var(--bg-dark)" stroke-width="'+SW+'"/>'+arcs+ctr+'</svg><div class="rlegend">'+leg+'</div></div>';}
-function rIntegrated(m){var out=[],n=m.n,rec=m.recurring;
-  var tt=m.think_top||[], ty=m.type_top||[];
-  // 1) 요구 사고 진단 — '확인'이 새는가, '적용·추론'에서 무너지는가
-  if(m.think_total>=3 && tt.length){
-    var hi=0,conf=0; tt.forEach(function(x){ if(x.k==='적용'||x.k==='추론'||x.k==='종합')hi+=x.pct; if(x.k==='확인')conf+=x.pct; });
-    if(hi>=55) out.push('오답의 <b>'+hi+'%가 ‘적용·추론·종합’</b> 사고에 몰려 있다. 개념·본문은 알지만 그것을 〈보기〉나 낯선 사례에 옮기는 단계에서 무너지는 것으로 보인다 — 암기보다 ‘적용 훈련’이 필요해 보인다.');
-    else if(conf>=55) out.push('오답의 <b>'+conf+'%가 ‘확인(내용 일치)’</b>에 몰려 있다. 본문을 정확히·끝까지 읽는 기본 독해에서 새고 있을 가능성이 있어, 속도보다 정독을 먼저 점검해 볼 만하다.');
-    else if(tt[0]) out.push('요구 사고별로는 <b>‘'+tt[0].k+'’('+tt[0].pct+'%)</b>에서 오답이 가장 많다.');
+function rIntegrated(m){var out=[],n=m.n;
+  var tr=m.type_rates||[], ar=m.area_rates||[], gs=m.grade_sim||[];
+  // 1) 핵심 대비 — 순수 독해 vs 관계·검증(어디서 무너지는가)
+  if(m.rel_contrast && m.comp_contrast && m.comp_contrast.taken>=4 && m.rel_contrast.taken>=4){
+    var rel=m.rel_contrast, comp=m.comp_contrast;
+    var mult=comp.rate>0?Math.round(rel.rate/comp.rate*10)/10:null;
+    out.push('순수 독해(내용·세부)는 <b>'+comp.rate+'%</b>만 틀리지만, <b>관계·검증 유형(보기·외적준거+추론·근거)</b>은 <b>'+rel.rate+'%</b>'+((mult&&mult>=1.4)?('로 약 <b>'+mult+'배</b>'):'')+'다. 지문을 못 읽어서가 아니라 <b>두 자료의 관계를 선지로 옮겨 검증하는 단계</b>에서 실점하는 것으로 보인다.');
   }
-  // 2) 반복 유형 + 실제 처방(문항 JSON 기반)
-  if(ty.length){
-    var top=ty[0];
-    var kw=(top.rounds>=2)?(n+'회 중 '+top.rounds+'회 반복'):'누적';
-    var coreShort=top.core?top.core.replace(/\s*—.*$/,'').replace(/\s*\([^)]*\)\s*/g,'').trim().slice(0,46):'';
-    out.push('가장 자주 틀린 유형은 <b>‘'+top.type+'’</b>다 — '+kw+', 누적 '+top.cnt+'문항'+(coreShort?('. 이 유형이 묻는 핵심은 “'+coreShort+'…”'):'.'));
-    if(top.rem) out.push('<b>처방 방향</b> — '+top.rem);
-    if(ty[1]&&ty[1].cnt>=2) out.push('이어서 <b>‘'+ty[1].type+'’</b>('+ty[1].cnt+'문항)에서도 오답이 반복된다.');
+  // 2) 최대 누수 유형 — 출제 대비 실제 오답률(틀린 개수 아님)
+  if(tr.length){var t0=tr[0];
+    out.push('최대 누수는 <b>‘'+t0.type+'’</b> — 실제 응시 <b>'+t0.taken+'문항 중 '+t0.wrong+'개('+t0.rate+'%)</b>'+((t0.rounds>=2)?(', '+t0.rounds+'개 회차에 반복'):'')+'. <span style="color:var(--text-muted)">(틀린 개수가 아니라 출제 대비 비율로 본 값)</span>');
+    if(tr[1]&&tr[1].rate>=25) out.push('이어 <b>‘'+tr[1].type+'’</b>도 출제 대비 <b>'+tr[1].rate+'%</b>('+tr[1].wrong+'/'+tr[1].taken+')로 높다.');
   }
-  if(m.low_freq>=3){
-    out.push('또래 대부분(80%↑)이 맞힌 <b>저빈도 오답이 누적 '+m.low_freq+'개</b>다. 고난도만의 문제가 아니라 쉬운 문항의 검산·판단 기준도 흔들릴 수 있다는 신호로 보인다 <span style="color:var(--text-muted)">— 시간 압박에서 확인 절차가 먼저 무너지는지는 다음 회차에서 확인이 필요하다.</span>');
+  // 3) 영역 정규화 — '오답 비중' 착시 교정
+  if(ar.length>=2){var a0=ar[0];
+    out.push('영역은 <b>출제 대비</b>로 보면 <b>'+a0.area+' '+a0.rate+'%</b>'+(ar[1]?(' &gt; '+ar[1].area+' '+ar[1].rate+'%'):'')+(ar[2]?(' &gt; '+ar[2].area+' '+ar[2].rate+'%'):'')+'다 — 오답 개수 비중이 아니라 <b>맞혀야 할 문항 대비</b>라 순위가 뒤집힐 수 있다.');
   }
-  // 3) 영역 + 추이 (맥락)
-  if(rec.length){var t0=rec[0];
-    out.push('영역으로는 <b>'+t0.area+'</b>('+t0.pct+'%)에 오답이 집중돼 있다'+(rec[1]?(' · '+rec[1].area+' '+rec[1].pct+'%'):'')+'.');}
-  if(n>=2){
-    if(m.trend==="상승")out.push('점수는 우상향('+m.raws[0]+'→'+m.raws[m.raws.length-1]+'점)이지만, 위 약점은 회차 내내 줄지 않았다 — 이 지점을 직접 잡으면 추가 상승 여지가 있어 보인다.');
-    else if(m.trend==="하락")out.push('점수 하락('+m.raws[0]+'→'+m.raws[m.raws.length-1]+'점)과 맞물려 위 약점이 최근 회차에서 더 두드러진다. 우선 보강해 볼 지점으로 보인다.');
-    else out.push('점수는 '+m.grades[0]+'~'+m.grades[m.grades.length-1]+'등급대에 머물러 있다 — 위 유형의 반복 실점이 원인일 가능성이 크며, 이 지점이 등급 변화의 관건으로 보인다.');
+  // 4) 등급 시뮬 — 최대 누수 유형을 모두 맞혔다면
+  if(gs.length && m.leak_type){var ups=gs.filter(function(x){return x.up;});
+    if(ups.length){out.push('<b>‘'+m.leak_type+'’를 모두 맞혔다면</b> — '+ups.map(function(x){return REP.labelMap[x.rid]+' '+x.cur+'→'+x.nw+'등급';}).join(', ')+' <b>상승</b> <span style="color:var(--text-muted)">(이 유형만 제거한 가정)</span>.');}
+    else{var tot=gs.reduce(function(a,x){return a+x.gain;},0); if(tot>0)out.push('<b>‘'+m.leak_type+'’를 모두 맞혀도</b> 등급 경계는 못 넘지만 누적 <b>+'+tot+'점</b> 여지가 있다 — 상위 등급을 뚫으려면 다른 유형까지 함께 잡아야 한다.');}
   }
+  // 5) 쉬운 문항 오답 — 지식보다 검증 습관 신호
+  if(m.low_freq>=3) out.push('또래 80% 이상이 맞힌 문항도 <b>'+m.low_freq+'개</b> 틀렸다 — 후반부에 몰리지 않는다면 시간 압박보다 <b>검증 절차가 습관화되지 않은</b> 신호에 가깝다.');
   if(!out.length)out.push('표시할 만한 누적 오답이 없다. 안정적으로 풀어낸 회차들이다.');
   return out;}
 function rDiagnose(m){var parts=[],raws=m.raws,grades=m.grades,n=m.n;
@@ -905,11 +945,9 @@ function rDiagnose(m){var parts=[],raws=m.raws,grades=m.grades,n=m.n;
     else if(m.trend==="하락")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+Math.abs(d)+'점 하락</b>('+grades[0]+'→'+grades[grades.length-1]+'등급)했다. 회차 난도 탓인지 시간 붕괴 탓인지는 나눠 볼 필요가 있다.');
     else parts.push(raws.join("→")+'점으로 '+grades[0]+'~'+grades[grades.length-1]+'등급대에 <b>머물러 있다</b>.');
   } else parts.push(raws[0]+'점·'+grades[grades.length-1]+'등급 단일 응시다. 다음 회차부터 추이 비교가 가능하다.');
-  var bp=m.big_pct,sm=m.small_pct;
-  if(Object.keys(bp).length){var gong=bp["공통"]||0,sun=bp["선택"]||0;
-    if(gong>=sun){var sd=[];if(sm["독서"])sd.push('독서 '+sm["독서"]+'%');if(sm["문학"])sd.push('문학 '+sm["문학"]+'%');
-      parts.push('오답의 <b>'+gong+'%가 공통(독서·문학)</b>에 몰려 있다('+sd.join(" · ")+'). 공통 독해력이 우선 과제로 보인다.');
-    } else parts.push('오답의 <b>'+sun+'%가 선택('+(m.sub==="lm"?"언어와 매체":"화법과 작문")+')</b>에 몰려 있다. 선택과목 집중 보강이 효율적일 수 있다.');}
+  if(m.leak_type){
+    parts.push('우선 과제는 영역 전체가 아니라 <b>‘'+m.leak_type+'’ 유형</b>이다 — 위 약점 분석대로 <b>지문·〈보기〉의 관계를 선지로 옮겨 검증하는 절차</b>를 매 문항 고정하는 것이 등급 상승의 지렛대로 보인다.');
+  }
   return parts;}
 function rSpark(m){var W=300,H=72,pad=10,n=REP.sel.length,bw=Math.max(14,Math.min(34,Math.floor((W-2*pad-(n-1)*8)/Math.max(1,n)))),gap=n>1?(W-2*pad-bw*n)/(n-1):0,bars="";
   REP.sel.forEach(function(r,i){var x=pad+i*(bw+gap),pr=m.per_round[i];
