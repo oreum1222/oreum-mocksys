@@ -1089,14 +1089,19 @@ function repDrawSlice(pdf,canvas,srcY,srcH,destMM){var W=canvas.width,h=Math.max
   ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,h);ctx.drawImage(canvas,0,srcY,W,h,0,0,W,h);
   pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',0,destMM,210,(h/W)*210);}
 // 블록 단위로 A4에 배치 — 남은 공간에 안 들어가면 통째로 새 페이지(블록 중간 절대 안 자름). 블록이 A4보다 클 때만 강제 분할
-function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.height,pageHpx=W*297/210,EPS=2,pageY=0;
-  function newPage(){if(state.added)pdf.addPage();state.added=true;pdf.setFillColor(20,28,22);pdf.rect(0,0,210,297,'F');pageY=0;}
-  newPage();
-  blocks.forEach(function(b){var y0=b.f0*H,y1=b.f1*H,h=y1-y0;
-    if(b.brk&&pageY>EPS)newPage();                    // 지정 블록(진단 약점·서술형) 앞에서 강제 새 페이지
-    if(h>pageHpx+EPS){var s=y0;while(s<y1-1){if(pageY>EPS)newPage();var seg=Math.min(pageHpx,y1-s);repDrawSlice(pdf,canvas,s,seg,pageY/W*210);pageY+=seg;s+=seg;}return;}
-    if(pageY+h>pageHpx+EPS)newPage();
-    repDrawSlice(pdf,canvas,y0,h,pageY/W*210);pageY+=h;});}
+// 그룹 = 정확히 한 A4 페이지. brk 블록(진단 약점·서술형) 앞에서 그룹 분리.
+// 각 그룹을 한 장에 담고, 297mm 넘치면 그 페이지만 비율 축소(빈 페이지·중간 잘림 없음)
+function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.height;
+  var starts=[0];for(var i=1;i<blocks.length;i++){if(blocks[i].brk)starts.push(i);}
+  var groups=[];for(var g=0;g<starts.length;g++){var si=starts[g],ei=(g+1<starts.length)?starts[g+1]:blocks.length;
+    groups.push({f0:blocks[si].f0,f1:blocks[ei-1].f1});}
+  groups.forEach(function(gr){var y0=Math.round(gr.f0*H),y1=Math.round(gr.f1*H),sh=Math.max(1,y1-y0);
+    var tmp=document.createElement('canvas');tmp.width=W;tmp.height=sh;var ctx=tmp.getContext('2d');
+    ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,sh);ctx.drawImage(canvas,0,y0,W,sh,0,0,W,sh);
+    if(state.added)pdf.addPage();state.added=true;
+    pdf.setFillColor(20,28,22);pdf.rect(0,0,210,297,'F');
+    var wmm=210,hmm=sh/W*210;if(hmm>297){var s=297/hmm;wmm=210*s;hmm=297;}
+    pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',(210-wmm)/2,0,wmm,hmm);});}
 async function printOneReport(id){var t=document.getElementById(id);if(!t)return;
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
   var name=t.dataset.name||'학생';repOverlay(name+' PDF 생성 중…');
