@@ -157,6 +157,9 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rdlist b{color:var(--cream);font-weight:600}
 .rtime{background:var(--bg-dark);border:1px solid var(--border-line);border-left:3px solid var(--gold);border-radius:8px;padding:14px 18px}
 .rtime .tc{font-size:0.86rem;color:var(--text-secondary);line-height:1.6}.rtime .tc b{color:var(--gold);font-weight:600}
+.narr-btn{background:var(--bg-card-hover);border:1px solid var(--border-line);color:var(--text-secondary);border-radius:4px;padding:2px 9px;margin-left:5px;font-size:0.72rem;font-weight:400;letter-spacing:0;cursor:pointer}
+.narr-btn:hover{border-color:var(--gold);color:var(--gold)}
+.narr-body[contenteditable="true"]{background:var(--bg-card)}
 /* PDF 인쇄용 라이트 테마(흰 배경·네이비 포인트) — 화면 대시보드는 그대로, PDF 캡처 때만 적용 */
 .repcard.pdf-print{--green-deep:#1F3A5F;--gold:#1F3A5F;--gold-soft:#2C4A6E;
   --cream:#182430;--text-primary:#182430;--text-secondary:#38424c;--text-muted:#6d767e;
@@ -190,7 +193,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 <div class="wrap">
 
 <h1>오름 모의고사 진단 — 강사 대시보드</h1>
-<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B16</span></p>
+<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B17</span></p>
 
 <!-- 비밀번호 게이트 -->
 <div id="gate" class="section">
@@ -1031,6 +1034,24 @@ function rNarrative(m){
   P.push(five);
   return P;
 }
+// ─── 서술형 소견 인라인 편집·저장(브라우저 localStorage) ───
+function narrKey(n){return 'oreum_narr_'+n;}
+function narrGet(n){try{return localStorage.getItem(narrKey(n));}catch(e){return null;}}
+function narrTools(blk,editing){[].slice.call(blk.querySelectorAll('.narr-tools .narr-btn')).forEach(function(b){
+  var isEdit=(b.textContent.indexOf('수정')>=0||b.textContent.indexOf('자동생성')>=0);
+  b.style.display=editing?(isEdit?'none':''):(isEdit?'':'none');});}
+function narrEdit(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
+  body.dataset.orig=body.innerHTML;body.setAttribute('contenteditable','true');
+  body.style.outline='1px dashed var(--gold)';body.style.padding='6px';body.style.borderRadius='4px';
+  narrTools(blk,true);body.focus();}
+function narrSave(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
+  try{localStorage.setItem(narrKey(body.dataset.student),body.innerHTML);}catch(e){alert('저장 실패: '+(e.message||e));return;}
+  body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);renderReports();}
+function narrCancel(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
+  body.innerHTML=body.dataset.orig||body.innerHTML;body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);}
+function narrReset(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
+  if(!confirm('직접 수정한 소견을 지우고 자동 생성 문구로 되돌릴까요?'))return;
+  try{localStorage.removeItem(narrKey(body.dataset.student));}catch(e){}renderReports();}
 function renderReports(){
   var root=document.getElementById('reportRoot');
   var note=document.getElementById('repNote');
@@ -1043,7 +1064,8 @@ function renderReports(){
     var timeBlock=tc?'<div class="tc">'+tc+'</div>':'<div class="tc" style="color:var(--text-muted)">시간 진단 데이터 없음</div>';
     var diag=rDiagnose(m).map(function(d){return '<li>'+d+'</li>';}).join("");
     var integ=rIntegrated(m).map(function(d){return '<li>'+d+'</li>';}).join("");
-    var narr=rNarrative(m).map(function(p){return '<p style="margin:0 0 11px;line-height:1.8;font-size:0.9rem;color:var(--text-secondary)">'+p+'</p>';}).join("");
+    var savedNarr=narrGet(m.name);
+    var narr=(savedNarr!=null)?savedNarr:rNarrative(m).map(function(p){return '<p style="margin:0 0 11px;line-height:1.8;font-size:0.9rem;color:var(--text-secondary)">'+p+'</p>';}).join("");
     var sid="rep-"+i;
     html+='<div class="repcard" id="'+sid+'" data-n="'+m.n+'" data-trend="'+m.trend+'" data-name="'+m.name+'">'
       +'<div class="rc-head"><div><div class="rc-name">'+m.name+'</div><div class="rc-meta">'+school+' · '+sub+' · '+m.n+'/'+REP.sel.length+'회 응시</div></div>'
@@ -1057,7 +1079,16 @@ function renderReports(){
       +'<div class="rc-blk rweak"><div class="rblk-t gold">진단 약점 <span class="rblk-sub">(1~'+REP.sel.length+'회 통합 분석)</span></div><ul class="rdlist">'+integ+'</ul></div>'
       +'<div class="rc-blk rtime"><div class="rblk-t gold">시간 관리</div>'+timeBlock+'</div>'
       +'<div class="rc-blk rdiag"><div class="rblk-t gold">진단 종합</div><ul class="rdlist">'+diag+'</ul></div>'
-      +'<div class="rc-blk rnarr" style="border:1px solid var(--border-line);border-radius:8px;padding:15px 17px;background:rgba(74,169,126,0.05)"><div class="rblk-t gold">서술형 소견 <span class="rblk-sub">(학생·학부모용)</span></div>'+narr+'</div>'
+      +'<div class="rc-blk rnarr" style="border:1px solid var(--border-line);border-radius:8px;padding:15px 17px;background:rgba(74,169,126,0.05)">'
+      +'<div class="rblk-t gold" style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+      +'<span>서술형 소견 <span class="rblk-sub">(학생·학부모용)'+(savedNarr!=null?' · <span style="color:var(--gold)">직접 수정됨</span>':'')+'</span></span>'
+      +'<span class="no-print narr-tools">'
+      +'<button class="narr-btn" onclick="narrEdit(this)">✎ 수정</button>'
+      +'<button class="narr-btn" onclick="narrSave(this)" style="display:none">저장</button>'
+      +'<button class="narr-btn" onclick="narrCancel(this)" style="display:none">취소</button>'
+      +'<button class="narr-btn" onclick="narrReset(this)" title="자동 생성으로 되돌리기">자동생성</button>'
+      +'</span></div>'
+      +'<div class="narr-body" data-student="'+m.name+'">'+narr+'</div></div>'
       +rCaveat()
       +'<div class="rc-foot"><span class="m">가경T · 오름 국어 연구소</span><span class="n">'+(i+1)+' / '+REP.master.length+'</span></div></div>';
   });
@@ -1088,7 +1119,7 @@ async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn
     var trs=e.querySelectorAll?e.querySelectorAll('.rtbl2 tbody tr'):[];
     [].slice.call(trs).forEach(function(tr){var rr=tr.getBoundingClientRect();blk.rows.push((rr.bottom-cr.top)/CH);});
     blocks.push(blk);});
-  var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:CW,windowWidth:CW+40});
+  var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:CW,windowWidth:CW+40,ignoreElements:function(el){return el.classList&&el.classList.contains('no-print');}});
   t.style.width=ow; t.style.maxWidth=omw;
   t.classList.remove('pdf-print');
   if(btn)btn.style.visibility=pv;
