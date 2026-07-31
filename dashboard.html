@@ -1080,10 +1080,9 @@ function repA4(pdf,c,first){var pw=210,ph=297;if(!first)pdf.addPage();pdf.setFil
 function repBlocks(card){var kids=card.children,items=[],H=card.scrollHeight||1;
   for(var i=0;i<kids.length;i++){var e=kids[i];if(e.classList&&e.classList.contains('no-print'))continue;
     var brk=e.classList&&(e.classList.contains('rweak')||e.classList.contains('rnarr'));
-    items.push({top:e.offsetTop,brk:!!brk});}
-  if(!items.length)return [{f0:0,f1:1,brk:false}];
-  var out=[];for(var k=0;k<items.length;k++){var t0=(k===0)?0:items[k].top,t1=(k+1<items.length)?items[k+1].top:H;
-    out.push({f0:t0/H,f1:t1/H,brk:items[k].brk});}return out;}
+    items.push({top:e.offsetTop/H,bot:(e.offsetTop+e.offsetHeight)/H,brk:!!brk});}  // top·bottom 둘 다(그룹 경계는 블록 하단으로)
+  if(!items.length)items=[{top:0,bot:1,brk:false}];
+  return items;}
 function repDrawSlice(pdf,canvas,srcY,srcH,destMM){var W=canvas.width,h=Math.max(1,Math.round(srcH));
   var tmp=document.createElement('canvas');tmp.width=W;tmp.height=h;var ctx=tmp.getContext('2d');
   ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,h);ctx.drawImage(canvas,0,srcY,W,h,0,0,W,h);
@@ -1094,7 +1093,7 @@ function repDrawSlice(pdf,canvas,srcY,srcH,destMM){var W=canvas.width,h=Math.max
 function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.height;
   var starts=[0];for(var i=1;i<blocks.length;i++){if(blocks[i].brk)starts.push(i);}
   var groups=[];for(var g=0;g<starts.length;g++){var si=starts[g],ei=(g+1<starts.length)?starts[g+1]:blocks.length;
-    groups.push({f0:blocks[si].f0,f1:blocks[ei-1].f1});}
+    groups.push({f0:(si===0?0:blocks[si].top),f1:blocks[ei-1].bot});}  // 그룹 끝=마지막 블록 하단(다음 블록 여백·테두리 배제)
   groups.forEach(function(gr){var y0=Math.round(gr.f0*H),y1=Math.round(gr.f1*H),sh=Math.max(1,y1-y0);
     var tmp=document.createElement('canvas');tmp.width=W;tmp.height=sh;var ctx=tmp.getContext('2d');
     ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,sh);ctx.drawImage(canvas,0,y0,W,sh,0,0,W,sh);
