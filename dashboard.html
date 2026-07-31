@@ -193,7 +193,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 <div class="wrap">
 
 <h1>오름 모의고사 진단 — 강사 대시보드</h1>
-<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B17</span></p>
+<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B18</span></p>
 
 <!-- 비밀번호 게이트 -->
 <div id="gate" class="section">
@@ -253,6 +253,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
         <button class="rfbtn" data-rf="상승" onclick="repFilter('상승',this)">상승</button>
         <button class="rfbtn" data-rf="하락" onclick="repFilter('하락',this)">하락</button>
         <button class="rfbtn pdf" id="repAllPdf" onclick="printAllReports()">전체 PDF 저장</button>
+        <button class="rfbtn" id="repMigrate" onclick="migrateNarrToServer()" title="이 브라우저에 저장된 소견 수정본을 서버(구글 시트)로 올려 다른 기기에서도 보이게 합니다">💾 소견 서버 이관</button>
         <input class="rep-search" id="repSearch" placeholder="이름 검색" oninput="repSearchFn(this.value)">
       </div>
       <div id="repNote" style="color:var(--text-muted);font-size:0.8rem;margin-bottom:18px"></div>
@@ -473,7 +474,7 @@ function loadData(){
       ALL_DATA = dedupeData(Array.isArray(d) ? d : (d.data || []));
       renderDedupNotice();
       const ids = [...new Set(ALL_DATA.map(r=>normExamId(r.exam||r['회차ID']||r['시험']||'')).filter(Boolean))];
-      loadGradeCuts(ids).then(()=>{
+      Promise.all([loadGradeCuts(ids), loadNarrEdits()]).then(()=>{
         populateExamSelect();
         renderStatsAndTable();
         renderGradeDist();
@@ -1034,9 +1035,22 @@ function rNarrative(m){
   P.push(five);
   return P;
 }
-// ─── 서술형 소견 인라인 편집·저장(브라우저 localStorage) ───
-function narrKey(n){return 'oreum_narr_'+n;}
-function narrGet(n){try{return localStorage.getItem(narrKey(n));}catch(e){return null;}}
+// ─── 서술형 소견 편집·저장: 구글 시트 서버 저장 + 로컬 백업, 무회귀 폴백 ───
+var NARR_LS='oreum_narr_edits_v1';
+var NARR_SERVER={};          // {학생명:{html,ts,editor}} 서버 동기화본
+var NARR_SERVER_READY=false; // 백엔드(narrEdits) 배포 여부
+function _narrLocal(){try{return JSON.parse(localStorage.getItem(NARR_LS)||'{}');}catch(e){return {};}}
+function _narrLocalSet(k,html,ts){try{var m=_narrLocal();m[k]={html:html,ts:ts};localStorage.setItem(NARR_LS,JSON.stringify(m));return true;}catch(e){return false;}}
+function narrPick(name){var sv=NARR_SERVER[name],lo=_narrLocal()[name];
+  if(sv&&lo)return (Number(sv.ts||0)>=Number(lo.ts||0))?{v:sv,loc:'server'}:{v:lo,loc:'local'};
+  if(sv)return {v:sv,loc:'server'}; if(lo)return {v:lo,loc:'local'}; return null;}
+function narrGet(name){var p=narrPick(name);return p?p.v.html:null;}          // 렌더용 HTML(없으면 null)
+function narrLoc(name){var p=narrPick(name);return p?p.loc:null;}             // 저장 위치 배지용
+// 대시보드 로드 시 1회 — 서버 편집본 조회. 구버전 백엔드면 {error}/unknown → 로컬 전용 폴백(무회귀)
+function loadNarrEdits(){ if(!SCRIPT_URL) return Promise.resolve();
+  return fetch(SCRIPT_URL+'?action=narrEdits').then(function(r){return r.json();})
+    .then(function(d){ if(d&&!d.error){NARR_SERVER=d||{};NARR_SERVER_READY=true;} else {NARR_SERVER_READY=false;} })
+    .catch(function(){NARR_SERVER_READY=false;});}
 function narrTools(blk,editing){[].slice.call(blk.querySelectorAll('.narr-tools .narr-btn')).forEach(function(b){
   var isEdit=(b.textContent.indexOf('수정')>=0||b.textContent.indexOf('자동생성')>=0);
   b.style.display=editing?(isEdit?'none':''):(isEdit?'':'none');});}
@@ -1045,13 +1059,35 @@ function narrEdit(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.na
   body.style.outline='1px dashed var(--gold)';body.style.padding='6px';body.style.borderRadius='4px';
   narrTools(blk,true);body.focus();}
 function narrSave(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
-  try{localStorage.setItem(narrKey(body.dataset.student),body.innerHTML);}catch(e){alert('저장 실패: '+(e.message||e));return;}
-  body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);renderReports();}
+  var name=body.dataset.student, html=body.innerHTML, ts=Date.now();
+  _narrLocalSet(name,html,ts);                                    // 항상 로컬 백업
+  body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);
+  if(NARR_SERVER_READY){ NARR_SERVER[name]={html:html,ts:ts};     // 낙관적 반영 + 서버 저장
+    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'narrEditSave',auth:DASH_PASSWORD,key:name,html:html,ts:ts,editor:''})})
+      .then(function(r){return r.json();}).then(function(){renderReports();}).catch(function(){renderReports();});
+  } else { renderReports(); }}
 function narrCancel(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
   body.innerHTML=body.dataset.orig||body.innerHTML;body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);}
 function narrReset(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
   if(!confirm('직접 수정한 소견을 지우고 자동 생성 문구로 되돌릴까요?'))return;
-  try{localStorage.removeItem(narrKey(body.dataset.student));}catch(e){}renderReports();}
+  var name=body.dataset.student;
+  try{var m=_narrLocal();delete m[name];localStorage.setItem(NARR_LS,JSON.stringify(m));}catch(e){}
+  delete NARR_SERVER[name];
+  if(NARR_SERVER_READY){fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'narrEditDelete',auth:DASH_PASSWORD,key:name})}).catch(function(){});}
+  renderReports();}
+// 이 기기 로컬 편집본을 전부 서버로 이관
+function migrateNarrToServer(){
+  if(!NARR_SERVER_READY){alert('서버 백엔드가 아직 준비되지 않았습니다. Code.gs 새 버전 배포 후 다시 시도하세요.');return;}
+  var m=_narrLocal(),keys=Object.keys(m);
+  if(!keys.length){alert('이 기기에 저장된 소견 편집본이 없습니다.');return;}
+  if(!confirm('이 기기 소견 편집본 '+keys.length+'개를 서버로 올릴까요? (다른 기기에서도 보이게 됩니다)'))return;
+  var done=0,fail=0;
+  var jobs=keys.map(function(k){return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'narrEditSave',auth:DASH_PASSWORD,key:k,html:m[k].html,ts:m[k].ts||Date.now(),editor:''})})
+    .then(function(r){return r.json();}).then(function(d){if(d&&d.error){fail++;}else{done++;NARR_SERVER[k]={html:m[k].html,ts:m[k].ts||Date.now()};}}).catch(function(){fail++;});});
+  Promise.all(jobs).then(function(){alert('업로드 완료: 성공 '+done+'개'+(fail?(' / 실패 '+fail+'개'):''));renderReports();});}
 function renderReports(){
   var root=document.getElementById('reportRoot');
   var note=document.getElementById('repNote');
@@ -1064,7 +1100,7 @@ function renderReports(){
     var timeBlock=tc?'<div class="tc">'+tc+'</div>':'<div class="tc" style="color:var(--text-muted)">시간 진단 데이터 없음</div>';
     var diag=rDiagnose(m).map(function(d){return '<li>'+d+'</li>';}).join("");
     var integ=rIntegrated(m).map(function(d){return '<li>'+d+'</li>';}).join("");
-    var savedNarr=narrGet(m.name);
+    var savedNarr=narrGet(m.name), narrLocv=narrLoc(m.name);
     var narr=(savedNarr!=null)?savedNarr:rNarrative(m).map(function(p){return '<p style="margin:0 0 11px;line-height:1.8;font-size:0.9rem;color:var(--text-secondary)">'+p+'</p>';}).join("");
     var sid="rep-"+i;
     html+='<div class="repcard" id="'+sid+'" data-n="'+m.n+'" data-trend="'+m.trend+'" data-name="'+m.name+'">'
@@ -1081,7 +1117,7 @@ function renderReports(){
       +'<div class="rc-blk rdiag"><div class="rblk-t gold">진단 종합</div><ul class="rdlist">'+diag+'</ul></div>'
       +'<div class="rc-blk rnarr" style="border:1px solid var(--border-line);border-radius:8px;padding:15px 17px;background:rgba(74,169,126,0.05)">'
       +'<div class="rblk-t gold" style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
-      +'<span>서술형 소견 <span class="rblk-sub">(학생·학부모용)'+(savedNarr!=null?' · <span style="color:var(--gold)">직접 수정됨</span>':'')+'</span></span>'
+      +'<span>서술형 소견 <span class="rblk-sub">(학생·학부모용)'+(savedNarr!=null?' · <span style="color:var(--gold)">직접 수정됨'+(narrLocv==='server'?' · 서버 저장':' · 이 브라우저')+'</span>':'')+'</span></span>'
       +'<span class="no-print narr-tools">'
       +'<button class="narr-btn" onclick="narrEdit(this)">✎ 수정</button>'
       +'<button class="narr-btn" onclick="narrSave(this)" style="display:none">저장</button>'
