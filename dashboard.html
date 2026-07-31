@@ -190,7 +190,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 <div class="wrap">
 
 <h1>오름 모의고사 진단 — 강사 대시보드</h1>
-<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B12</span></p>
+<p class="sub">가경T · 오름 국어 연구소 <span style="opacity:.5;font-size:.8em">· build 0731-B13</span></p>
 
 <!-- 비밀번호 게이트 -->
 <div id="gate" class="section">
@@ -1078,8 +1078,11 @@ function repSearchFn(q){q=q.trim();
 function getJsPDF(){if(window.jspdf&&window.jspdf.jsPDF)return window.jspdf.jsPDF;if(window.jsPDF)return window.jsPDF;return null;}
 function repLibsReady(){return !!(window.html2canvas&&getJsPDF());}
 async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn.style.visibility:'';if(btn)btn.style.visibility='hidden';
-  t.classList.add('pdf-print');   // 인쇄용 라이트 테마 적용 후 캡처
-  var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:t.scrollWidth});
+  t.classList.add('pdf-print');   // 인쇄용 라이트 테마
+  var CW=1000, ow=t.style.width, omw=t.style.maxWidth;   // 창 폭 무관하게 항상 고정 폭으로 캡처(좁은 창에서 세로로 길어져 찌그러지는 문제 방지)
+  t.style.width=CW+'px'; t.style.maxWidth='none';
+  var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:CW,windowWidth:CW+40});
+  t.style.width=ow; t.style.maxWidth=omw;
   t.classList.remove('pdf-print');
   if(btn)btn.style.visibility=pv;return c;}
 function repA4(pdf,c,first){var pw=210,ph=297;if(!first)pdf.addPage();pdf.setFillColor(26,31,21);pdf.rect(0,0,pw,ph,'F');
