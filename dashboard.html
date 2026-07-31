@@ -167,9 +167,12 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 @keyframes pdfspin{to{transform:rotate(360deg)}}
 
 @media print{
+  @page{size:A4;margin:10mm}
   body{background:#fff}
   .tabs,.rep-toolbar,.no-print,h1,.sub{display:none!important}
-  .repcard{break-inside:avoid;page-break-after:always;border:1px solid #ccc;background:#fff}
+  .repcard{break-inside:auto;page-break-after:always;border:1px solid #ccc;background:#fff;overflow:visible}
+  .rc-blk,.rc-row1,.rc-head,.rtbl2,.rnarr,.rweak,.rdiag,.rtime{break-inside:avoid;page-break-inside:avoid}
+  .rtbl2 tr{break-inside:avoid;page-break-inside:avoid}
 }
 @media (max-width:640px){
   .rc-row1{grid-template-columns:1fr}.rspark{width:100%}.rdonut-wrap{flex-direction:column;align-items:flex-start}
@@ -1072,14 +1075,31 @@ async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn
 function repA4(pdf,c,first){var pw=210,ph=297;if(!first)pdf.addPage();pdf.setFillColor(26,31,21);pdf.rect(0,0,pw,ph,'F');
   var ratio=c.height/c.width,w=pw,h=w*ratio;if(h>ph){h=ph;w=h/ratio;}var x=(pw-w)/2,y=(ph-h)/2;
   pdf.addImage(c.toDataURL('image/jpeg',0.92),'JPEG',x,y,w,h);}
+// 카드 캔버스를 '블록 경계'에서 A4 페이지로 분할해 담기 (긴 카드도 깨알 축소 없이 여러 장으로)
+function repBreakYs(card,scale){var ys=[];var k=card.children;for(var i=0;i<k.length;i++){var e=k[i];
+  if(e.classList&&e.classList.contains('no-print'))continue; ys.push((e.offsetTop+e.offsetHeight)*scale);}return ys;}
+function addCardPaged(pdf,canvas,breakYs,state){var W=canvas.width,H=canvas.height,pageH=W*297/210;
+  var by=breakYs.filter(function(y){return y>0&&y<H;});by.sort(function(a,b){return a-b;});by.push(H);
+  var start=0,guard=0;
+  while(start<H-1&&guard++<300){var target=start+pageH,cut=-1;
+    for(var i=0;i<by.length;i++){if(by[i]>start+4&&by[i]<=target+0.5)cut=by[i];}
+    if(cut<0)cut=Math.min(target,H);                 // 한 블록이 A4보다 길면 강제 분할
+    var sliceH=Math.max(1,Math.round(cut-start));
+    var tmp=document.createElement('canvas');tmp.width=W;tmp.height=sliceH;
+    var ctx=tmp.getContext('2d');ctx.fillStyle='#141c16';ctx.fillRect(0,0,W,sliceH);
+    ctx.drawImage(canvas,0,start,W,sliceH,0,0,W,sliceH);
+    if(state.added)pdf.addPage();
+    pdf.setFillColor(20,28,22);pdf.rect(0,0,210,297,'F');
+    pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,(sliceH/W)*210);
+    state.added=true;start=cut;}}
 async function printOneReport(id){var t=document.getElementById(id);if(!t)return;
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
   var name=t.dataset.name||'학생';repOverlay(name+' PDF 생성 중…');
   try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(e){}
   await new Promise(function(r){setTimeout(r,120);});
-  try{var c=await repCapture(t);var jsPDF=getJsPDF();var ratio=c.height/c.width;
-    var pdf=new jsPDF({orientation:(210*ratio)>=210?'portrait':'landscape',unit:'mm',format:[210,210*ratio]});
-    pdf.setFillColor(26,31,21);pdf.rect(0,0,210,210*ratio,'F');pdf.addImage(c.toDataURL('image/jpeg',0.95),'JPEG',0,0,210,210*ratio);
+  try{var c=await repCapture(t);var jsPDF=getJsPDF();var scale=c.width/t.offsetWidth;
+    var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    addCardPaged(pdf,c,repBreakYs(t,scale),{added:false});
     pdf.save('오름_'+name+'_진단리포트.pdf');
   }catch(err){alert('PDF 생성 오류: '+(err.message||err));}finally{repHideOverlay();}}
 async function printAllReports(){
@@ -1090,11 +1110,12 @@ async function printAllReports(){
   repOverlay('전체 PDF 생성 준비 중… (0/'+cards.length+')');
   try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(e){}
   await new Promise(function(r){setTimeout(r,150);});
-  try{var jsPDF=getJsPDF();var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  try{var jsPDF=getJsPDF();var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});var state={added:false};
     for(var i=0;i<cards.length;i++){var name=cards[i].dataset.name||('학생'+(i+1));
       repOverlay('전체 PDF 생성 중… ('+(i+1)+'/'+cards.length+') · '+name);
       await new Promise(function(r){setTimeout(r,20);});
-      var c=await repCapture(cards[i]);repA4(pdf,c,i===0);c.width=0;c.height=0;}
+      var c=await repCapture(cards[i]);var scale=c.width/cards[i].offsetWidth;
+      addCardPaged(pdf,c,repBreakYs(cards[i],scale),state);c.width=0;c.height=0;}  // 학생마다 새 A4 페이지에서 시작
     repOverlay('PDF 저장 중…');await new Promise(function(r){setTimeout(r,30);});
     pdf.save('오름_학생별_개별리포트_전체.pdf');
   }catch(err){alert('전체 PDF 오류: '+(err.message||err));}finally{if(btn)btn.disabled=false;repHideOverlay();}}
