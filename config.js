@@ -10,6 +10,6 @@ window.OREUM_CONFIG = {
   SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz_wJDjne4Y1Bok4GmK09aZqqUkgmW-m-OEyLGuMo7KiOJYYEIF3bEUIxkyXvxOxRui/exec",
 
   // 강사 대시보드 비밀번호 — 본인만 알기 (필요 시 수정)
-  DASH_PASSWORD: "oreum2025"
+  DASH_PASSWORD: "74527697"
 
 };
