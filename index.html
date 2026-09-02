@@ -292,7 +292,7 @@ const EXAM_LIST = [
   {
     id: '2027-09', file: 'data/mock-2027-09.json',
     no: '제 23 회', tagDate: '2026년 9월 · 한국교육과정평가원',
-    status: 'tentative', statusLabel: '가채점 (등급컷 미정)'
+    status: 'tentative', statusLabel: '가채점 (메가 예상 등급컷)'
   },
   {
     id: 'sss4-02', file: 'data/mock-2027-sss4-02.json',
@@ -1028,7 +1028,7 @@ function renderStep4(){
     ),
     el('div',{class:'score-card'},
       el('div',{class:'score-label'},'백분위'),
-      el('div',{class:'score-num'}, STATE.data.gradeCutsPending ? '미정' : ((r.gradeCut.pct||0)+'%')),
+      el('div',{class:'score-num'}, STATE.data.gradeCutsPending ? '미정' : (r.gradeCut.pct!=null ? r.gradeCut.pct+'%' : '-')),
       el('div',{class:'score-num-sub'},'예상')
     )
   ));
