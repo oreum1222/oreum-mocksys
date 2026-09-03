@@ -97,6 +97,14 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rp-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:16px;border:1px solid var(--border-line);background:transparent;color:var(--text-secondary);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:border-color .15s,background .15s}
 .rp-chip:hover{border-color:var(--gold)}
 .rp-chip.on{background:rgba(74,169,126,0.14);border-color:var(--gold);color:var(--cream)}
+.rp-groups{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed var(--border-line)}
+.rp-gcat{font-size:0.72rem;color:var(--text-muted);letter-spacing:1.5px;margin:0 2px 0 6px}
+.rp-gcat:first-child{margin-left:0}
+.rp-gbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;border:1px solid var(--border-soft);background:rgba(201,168,76,0.05);color:var(--text-secondary);font-family:inherit;font-size:0.8rem;font-weight:500;cursor:pointer;transition:all .15s}
+.rp-gbtn:hover{border-color:var(--gold);color:var(--cream)}
+.rp-gbtn.on{background:var(--gold);border-color:var(--gold);color:var(--bg-dark)}
+.rp-gbtn.part{border-style:dashed;border-color:var(--gold);color:var(--cream)}
+.rp-gbtn .rp-gn{font-size:0.72rem;opacity:.75}
 .rp-ord{font-weight:700;color:var(--gold);font-size:0.74rem;letter-spacing:0.3px}
 .rp-cnt{font-size:0.68rem;color:var(--text-muted)}
 #reportPane .rep-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
@@ -745,6 +753,54 @@ function repToggleRound(id){
   next=availIds.filter(function(x){return next.indexOf(x)>=0;});
   repSetSel(next); renderRoundPicker(); buildReports();
 }
+// ── 회차 묶음 규칙: 실전(시행 연도별) / 역대 수능 / 사설(상상N·이감N·바탕) ──
+function repGroupOf(a){
+  var n=String(a.name||'');
+  if(/대학수학능력시험/.test(n)) return {key:'suneung',label:'역대 수능',cat:'실전',ord:1};
+  if(/(학평|학력평가|모평|모의평가)/.test(n)){
+    var y=/(20\d\d)\s*학년도/.exec(n); var yr=y?+y[1]:0;
+    if(yr && /(모평|모의평가)/.test(n)) yr-=1;            // 모평은 학년도-1 = 시행 연도
+    return {key:'silj'+yr,label:'실전 '+(yr||''),cat:'실전',ord:0,yr:yr};
+  }
+  var m=/(상상|이감)\s*시즌\s*(\d+)/.exec(n); if(m) return {key:m[1]+m[2],label:m[1]+m[2],cat:'사설',ord:2};
+  if(/바탕/.test(n)) return {key:'batang',label:'바탕',cat:'사설',ord:3};
+  return {key:'etc',label:'기타',cat:'사설',ord:9};
+}
+function repGroups(){
+  var g={}, order=[];
+  (REP.avail||[]).forEach(function(a){
+    var r=repGroupOf(a);
+    if(!g[r.key]){ g[r.key]={key:r.key,label:r.label,cat:r.cat,ord:r.ord,yr:r.yr||0,ids:[]}; order.push(r.key); }
+    g[r.key].ids.push(a.id);
+  });
+  return order.map(function(k){return g[k];}).sort(function(x,y){
+    if(x.cat!==y.cat) return x.cat==='실전'?-1:1;
+    if(x.ord!==y.ord) return x.ord-y.ord;
+    if(x.yr!==y.yr) return y.yr-x.yr;                     // 실전은 최신 연도 먼저
+    return x.label.localeCompare(y.label);
+  });
+}
+function repToggleGroup(key){
+  var grp=repGroups().filter(function(x){return x.key===key;})[0]; if(!grp) return;
+  var availIds=REP.avail.map(function(a){return a.id;});
+  var allOn=grp.ids.every(function(id){return REP.sel.indexOf(id)>=0;});
+  var next=allOn? REP.sel.filter(function(x){return grp.ids.indexOf(x)<0;})
+                : REP.sel.concat(grp.ids.filter(function(id){return REP.sel.indexOf(id)<0;}));
+  if(!next.length) next=[grp.ids[grp.ids.length-1]];   // 최소 1개
+  next=availIds.filter(function(x){return next.indexOf(x)>=0;});
+  repSetSel(next); renderRoundPicker(); buildReports();
+}
+function renderRoundGroups(){
+  var groups=repGroups(); if(!groups.length) return '';
+  var html='', lastCat='';
+  groups.forEach(function(g){
+    if(g.cat!==lastCat){ html+='<span class="rp-gcat">'+g.cat+'</span>'; lastCat=g.cat; }
+    var onCnt=g.ids.filter(function(id){return REP.sel.indexOf(id)>=0;}).length;
+    var cls=onCnt===g.ids.length?' on':(onCnt>0?' part':'');
+    html+='<button class="rp-gbtn'+cls+'" onclick="repToggleGroup(\''+g.key+'\')" title="'+g.ids.length+'개 회차 한 번에 선택/해제">'+escape(g.label)+'<span class="rp-gn">'+onCnt+'/'+g.ids.length+'</span></button>';
+  });
+  return '<div class="rp-groups">'+html+'</div>';
+}
 function renderRoundPicker(){
   var box=document.getElementById('roundPicker'); if(!box) return;
   if(!REP.avail.length){ box.innerHTML=''; return; }
@@ -753,7 +809,7 @@ function renderRoundPicker(){
     var ord=on?('<span class="rp-ord">'+REP.labelMap[a.id]+'</span>'):'';
     return '<button class="rp-chip'+(on?' on':'')+'" onclick="repToggleRound(\''+a.id+'\')">'+ord+escape(a.name)+'<span class="rp-cnt">'+a.cnt+'</span></button>';
   }).join('');
-  box.innerHTML='<div class="rp-label">리포트 회차 구성 <span class="rp-hint">· 선택한 회차가 시간순으로 1회·2회…로 매겨집니다 (기본 최근 4회, 최소 1개)</span></div><div class="rp-chips">'+chips+'</div>';
+  box.innerHTML='<div class="rp-label">리포트 회차 구성 <span class="rp-hint">· 선택한 회차가 시간순으로 1회·2회…로 매겨집니다 (기본 최근 4회, 최소 1개) · 묶음 버튼을 누르면 해당 회차가 한 번에 선택/해제됩니다</span></div>'+renderRoundGroups()+'<div class="rp-chips">'+chips+'</div>';
 }
 
 function switchTab(t){
