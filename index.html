@@ -406,6 +406,18 @@ const EXAM_LIST = [
   }
 ];
 
+// 특별 진단 — 오답 마킹 진단과 별개로 응시 태도와 EBS 연계 체감을 스스로 적는 설문
+const SPECIAL_LIST = [
+  {
+    href: 'special-2027-09.html',
+    no: '특별 01', statusLabel: '설문',
+    label: '2027학년도 9월 평가원 특별 진단',
+    tagDate: '2026년 9월 · 한국교육과정평가원',
+    asks: '세트별 <strong>체감 난이도와 그 이유</strong>, EBS <strong>연계 체감과 기억의 수준</strong>, 틀린 문항의 이유, 푼 순서, 시간 운영',
+    how: '휴대폰으로 작성 · 답은 기기에 저장 · 끝까지 쓰면 요약이 자동으로 나오고 결과를 복사해 제출'
+  }
+];
+
 const root = document.getElementById('root');
 
 // ─────────────────── Utils ───────────────────
@@ -469,6 +481,35 @@ function renderRouter(){
     list.appendChild(card);
   });
 
+  // 특별 진단 — 오답 마킹과 별개로 시험 운영과 EBS 연계 체감을 스스로 적는 설문
+  const specialLabel = el('div',{class:'section-label'},'특별 진단');
+  const specialList = el('div',{class:'exam-list'});
+  SPECIAL_LIST.forEach(sp=>{
+    const card = el('a',{class:'exam-card', href:sp.href});
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-meta-left">
+          <span class="card-num">${escape(sp.no)}</span>
+          <span class="card-grade">고3</span>
+          <span class="card-status status-tentative">${escape(sp.statusLabel)}</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2 class="card-name">${escape(sp.label)}</h2>
+      <p class="card-date">${escape(sp.tagDate)}</p>
+      <div class="card-body">
+        <div class="card-body-block">
+          <div class="body-label">묻는 것</div>
+          <div class="body-value">${sp.asks}</div>
+        </div>
+        <div class="card-body-block">
+          <div class="body-label">방식</div>
+          <div class="body-value">${escape(sp.how)}</div>
+        </div>
+      </div>`;
+    specialList.appendChild(card);
+  });
+
   const footer = el('footer',{class:'footer',
     html:'<span class="footer-mark">가경T · 오름 국어 연구소</span>오름 국어학원 고3 정규반 · 학원등록번호 제2474호<br>문의 사항은 가경T에게 직접 전달해 주시기 바랍니다.'
   });
@@ -476,6 +517,8 @@ function renderRouter(){
   root.appendChild(wrapHeader);
   root.appendChild(sectionLabel);
   root.appendChild(list);
+  root.appendChild(specialLabel);
+  root.appendChild(specialList);
   root.appendChild(footer);
 
   // 카드별 메타 비동기 로드

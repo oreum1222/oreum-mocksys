@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2027학년도 9월 평가원 특별 진단</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>:root{--navy:#c9a84c;--navy2:#a98d3f;--soft:#7d9863;--tint:#2d3326;--tint2:#39412f;--rule:rgba(244,237,224,.12);--ink:#f4ede0;--muted:#b8b09e;--warn:#cc6666;--warnbg:rgba(204,102,102,.14);--warnFg:#e8a49c;--ok:#7d9863;--paper:#252b1f;--paper2:#21261b;--field:#2d3326;--bg:#1a1f15;--btnFg:#1a1f15;--chipFg:#e6dfd0;--headerBg:#1a1f15;--headerFg:#f4ede0}
+*{margin:0;padding:0;box-sizing:border-box}
+__ROOT__
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Malgun Gothic','맑은 고딕',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;font-size:15px;line-height:1.65;word-break:keep-all;padding-bottom:90px}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+header{background:var(--headerBg);color:var(--headerFg);padding:26px 0 22px;margin-bottom:16px;border-bottom:1px solid var(--rule)}
+header .lab{font-size:12px;letter-spacing:.16em;opacity:.75;margin-bottom:8px}
+header h1{font-size:25px;font-weight:700;letter-spacing:-.02em}
+header p{font-size:13.5px;opacity:.85;margin-top:8px;line-height:1.6}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:16px 15px;margin-bottom:12px}
+.card.me{border-color:var(--navy2)}
+.sethead{display:flex;align-items:flex-start;gap:10px;margin:-16px -15px 14px;padding:12px 15px;background:var(--tint);border-bottom:1px solid var(--tint2);border-radius:10px 10px 0 0}
+.rng{font-weight:700;color:var(--navy);font-size:17px;white-space:nowrap}
+.stitle{font-size:13.5px;color:var(--muted);line-height:1.45}
+.stitle b{color:var(--ink);font-size:14.5px;display:block;font-weight:600}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;margin-top:5px}
+.b-full{background:var(--navy);color:var(--btnFg)}.b-part{background:var(--soft);color:var(--btnFg)}.b-weak{background:var(--tint2);color:var(--ink)}.b-none{background:var(--tint);color:var(--muted)}
+.q{margin-top:14px}
+.q:first-child{margin-top:0}
+.q>label.qt,.qt{display:block;font-weight:700;font-size:14px;color:var(--navy);margin-bottom:7px}
+.qt span{font-weight:400;color:var(--muted);font-size:12.5px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;width:0;height:0}
+.opt span{display:inline-block;border:1px solid var(--rule);background:var(--field);border-radius:99px;padding:7px 13px;font-size:13.5px;cursor:pointer;transition:.12s;color:var(--chipFg)}
+.opt input:checked+span{background:var(--navy);border-color:var(--navy);color:var(--btnFg);font-weight:600}
+.opt.warnopt input:checked+span{background:var(--warn);border-color:var(--warn);color:var(--btnFg)}
+.grid{display:flex;flex-wrap:wrap;gap:6px}
+.nq{width:46px;text-align:center}
+.nq input:checked+span{background:var(--warn);border-color:var(--warn);color:var(--btnFg)}
+.nq span{width:46px;padding:8px 0;border-radius:8px;font-weight:600}
+.linked-n span:after{content:'ᴱ';font-size:10px;vertical-align:super;opacity:.7}
+.sub{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.wrongbox{margin-top:10px;border:1px dashed var(--rule);border-radius:8px;padding:10px;background:var(--paper2)}
+.wrongrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;border-bottom:1px dotted var(--rule)}
+.wrongrow:last-child{border-bottom:0}
+.wn{font-weight:700;color:var(--warn);min-width:42px}
+select,input[type=text],input[type=number],textarea{font-family:inherit;font-size:14px;color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:8px 10px;background:var(--field);width:100%}
+select{max-width:230px}
+textarea{min-height:76px;resize:vertical;line-height:1.6}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row .fld{flex:1 1 150px}
+.row .fld label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.hint{font-size:12.5px;color:var(--muted);background:var(--tint);border-radius:8px;padding:9px 11px;margin-top:9px;line-height:1.55}
+.hint.warn{background:var(--warnbg);color:var(--warnFg)}
+h2.sec{font-size:16px;color:var(--navy);font-weight:700;margin:22px 0 10px;padding-left:10px;border-left:4px solid var(--navy)}
+.orderbar{position:sticky;top:0;z-index:5;background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;box-shadow:0 2px 8px rgba(20,35,60,.06)}
+.orderbar b{color:var(--navy)}
+.orderbar .dup{color:var(--warn);font-weight:700}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--rule);padding:10px 14px;display:flex;gap:8px;align-items:center;justify-content:space-between;z-index:20}
+.bar .prog{font-size:12.5px;color:var(--muted)}
+button{font-family:inherit;font-size:14px;font-weight:700;border:0;border-radius:8px;padding:11px 16px;cursor:pointer}
+.btn{background:var(--navy);color:var(--btnFg)}
+.btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--navy)}
+#report{display:none}
+#report.on{display:block}
+.rcard{background:var(--paper);border:1px solid var(--rule);border-left:4px solid var(--navy);border-radius:8px;padding:13px 14px;margin-bottom:9px}
+.rcard.bad{border-left-color:var(--warn)}
+.rcard.good{border-left-color:var(--ok)}
+.rcard h4{font-size:14px;color:var(--navy);margin-bottom:4px}
+.rcard.bad h4{color:var(--warn)}
+.rcard.good h4{color:var(--ok)}
+.rcard p{font-size:13.5px;line-height:1.6}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;background:var(--paper)}
+.tbl th{background:var(--navy2);color:var(--btnFg);font-size:11.5px;font-weight:600;padding:7px 6px;text-align:left}
+.tbl td{padding:7px 6px;border-bottom:1px solid var(--rule);vertical-align:top}
+.tbl td.c{text-align:center}
+.foot{font-size:12px;color:var(--muted);text-align:center;padding:18px 0 6px}
+@media print{
+ body{background:#fff;padding:0;font-size:11px}
+ header{background:#fff;color:var(--navy);border-bottom:2px solid var(--navy);padding:0 0 8px}
+ .bar,.orderbar{display:none}
+ .card{break-inside:avoid;page-break-inside:avoid;margin-bottom:8px}
+ .opt span{padding:3px 8px;font-size:10.5px}
+ #report{display:block}
+}
+body{font-family:'Noto Sans KR',sans-serif}header h1,h2.sec,.rng{font-family:'Noto Serif KR',serif;letter-spacing:.01em}header .lab{font-family:'Noto Serif KR',serif;letter-spacing:.18em}@media print{:root{--navy:#1F3A5F;--navy2:#2C4A6E;--ink:#111;--muted:#555;--paper:#fff;--paper2:#fff;--field:#fff;--bg:#fff;--tint:#EEF2F7;--tint2:#E1E8F0;--rule:#CCC;--btnFg:#fff;--chipFg:#333;--headerBg:#fff;--headerFg:#1F3A5F}}</style></head>
+<body>
+<header><div class="wrap">
+<a href="index.html" style="display:inline-block;color:var(--muted);font-size:13px;text-decoration:none;margin-bottom:10px">← 진단 시스템으로</a><br><div class="lab">김가경 국어 연구소</div>
+<h1>2027학년도 9월 평가원 <span style="color:var(--navy)">특별 진단</span></h1>
+<p>오답 마킹 진단과 별개로, 이번 시험을 어떻게 치렀는지 스스로 적는 설문입니다. 세트마다 체감 난이도와 EBS 연계가 실제로 쓰였는지, 무엇 때문에 틀렸는지, 어떤 순서로 풀었는지를 기록합니다. 끝까지 쓰면 요약이 자동으로 나옵니다. 답은 이 기기에만 저장됩니다.</p>
+</div></header>
+
+<div class="wrap">
+<div class="card me">
+ <div class="row">
+  <div class="fld"><label>이름</label><input type="text" data-g="name" placeholder="이름"></div>
+  <div class="fld"><label>반</label><input type="text" data-g="klass" placeholder="반"></div>
+ </div>
+ <div class="q"><div class="qt">선택과목</div><div class="opts"><label class="opt"><input type="radio" name="track" value="H"><span>화법과 작문</span></label><label class="opt"><input type="radio" name="track" value="E"><span>언어와 매체</span></label></div></div>
+</div>
+
+<div class="orderbar" id="orderbar"></div>
+<h2 class="sec">세트별 진단</h2>
+<div id="sets"></div>
+
+<h2 class="sec">시간 운영</h2>
+<div class="card">
+ <div class="q"><div class="qt">1. 80분을 어떻게 썼습니까</div><div class="opts"><label class="opt warnopt"><input type="radio" name="tLeft" value="over"><span>다 풀지 못했다</span></label><label class="opt"><input type="radio" name="tLeft" value="tight"><span>겨우 맞췄다</span></label><label class="opt"><input type="radio" name="tLeft" value="ok"><span>5분쯤 남았다</span></label><label class="opt"><input type="radio" name="tLeft" value="much"><span>10분 이상 남았다</span></label></div></div>
+ <div class="q"><div class="qt">2. 시간을 가장 많이 쓴 곳은 어디입니까 <span>세트 번호로 적습니다</span></div>
+  <input type="text" data-g="tSlow" placeholder="예: 10~13, 22~27"></div>
+ <div class="row" style="margin-top:12px">
+  <div class="fld"><label>찍은 문항 수</label><input type="number" data-g="tGuess" min="0" max="45" placeholder="0"></div>
+  <div class="fld"><label>독서 전체에 쓴 시간(분)</label><input type="number" data-g="tTotal" min="0" max="80" placeholder="분"></div>
+ </div>
+ <div class="hint">시험장에서 시간을 잰 적이 없다면 대략으로 적습니다. 다음 시험에서 무엇을 줄일지 정하는 데 씁니다.</div>
+</div>
+
+<h2 class="sec">스스로 내리는 진단</h2>
+<div class="card">
+ <div class="q"><div class="qt">1. 이번 시험에서 드러난 내 문제를 한 문장으로 적습니다</div>
+  <textarea data-g="free1" placeholder="예: 지문은 이해했는데 선지의 조건을 끝까지 확인하지 않는다"></textarea></div>
+ <div class="q"><div class="qt">2. 다음 시험에서 바꿀 행동 하나를 적습니다 <span>시험 중에 실제로 할 수 있는 동작으로</span></div>
+  <textarea data-g="free2" placeholder="예: 부정 발문에는 발문 옆에 X를 적고 선지마다 O X를 표시한다"></textarea></div>
+</div>
+
+<div id="report"><h2 class="sec">요약</h2><div id="rbody"></div>
+ <div class="hint">이 요약은 스스로 적은 내용만으로 만들어집니다. 아래 복사 단추로 선생님께 제출합니다.</div>
+</div>
+
+<div class="foot">2027학년도 9월 모의평가 자기 진단 설문 · 김가경 국어 연구소</div>
+</div>
+
+<div class="bar">
+ <span class="prog" id="prog">작성 0%</span>
+ <span style="display:flex;gap:6px">
+  <button class="btn ghost" id="btnReset">지우기</button>
+  <button class="btn ghost" id="btnPrint">인쇄</button>
+  <button class="btn ghost" id="btnCopy">결과 복사</button>
+  <button class="btn" id="btnReport">요약 보기</button>
+ </span>
+</div>
+<script>
+const D = {"sets": [{"key": "D1", "rng": "1~3", "area": "독서론", "title": "전기류를 활용한 진로 독서", "track": "C", "items": [1, 2, 3], "rates": {"1": 94, "2": 92, "3": 86}, "link": "none", "linkSrc": "", "linkItems": [], "linkMemo": "", "linkLabel": "비연계"}, {"key": "D2", "rng": "4~9", "area": "인문 (주제 통합)", "title": "(가) 종 차별주의 옹호 논변과 한계 / (나) 인공 행위자의 도덕적 지위", "track": "C", "items": [4, 5, 6, 7, 8, 9], "rates": {"4": 80, "5": 67, "6": 73, "7": 29, "8": 52, "9": 89}, "link": "full", "linkSrc": "수능특강 독서 88~92쪽 「종 차별주의와 종 중첩 논증」", "linkItems": [4, 5, 7, 8], "linkMemo": "연계 체감도가 가장 높았던 지문. (가)에 교재 핵심 정보가 그대로 쓰였다.", "linkLabel": "지문 또는 작품 연계"}, {"key": "D3", "rng": "10~13", "area": "기술", "title": "어댑터의 선형 방식과 스위칭 방식", "track": "C", "items": [10, 11, 12, 13], "rates": {"10": 55, "11": 60, "12": 54, "13": 14}, "link": "part", "linkSrc": "수능특강 독서 17~19쪽 「전류 밀도의 개념과 특징」", "linkItems": [10, 11, 12], "linkMemo": "교재의 발열 부분을 어댑터로 바꿔 썼다. 소재만 같고 설명 대상이 다르다.", "linkLabel": "부분 연계"}, {"key": "D4", "rng": "14~17", "area": "사회", "title": "오피니언 리더와 커뮤니케이션 2단계 유통 이론", "track": "C", "items": [14, 15, 16, 17], "rates": {"14": 73, "15": 57, "16": 55, "17": 88}, "link": "weak", "linkSrc": "수능특강 독서 109~113쪽 「리더십 이론」", "linkItems": [14, 15, 16], "linkMemo": "키워드 수준의 연계. 교재를 봤어도 새 지문처럼 읽어야 했다.", "linkLabel": "키워드 수준 연계"}, {"key": "M1", "rng": "18~21", "area": "고전 소설", "title": "작자 미상 「금환기봉」", "track": "C", "items": [18, 19, 20, 21], "rates": {"18": 82, "19": 65, "20": 64, "21": 78}, "link": "full", "linkSrc": "수능특강 문학 322~325쪽 「금환기봉」", "linkItems": [18, 19, 20, 21], "linkMemo": "교재 수록 지문의 대부분이 그대로 나왔다.", "linkLabel": "지문 또는 작품 연계"}, {"key": "M2", "rng": "22~27", "area": "갈래 복합", "title": "(가) 장옥관 「가오리 날아오르다」 / (나) 김혜순 「잘 익은 사과」 / (다) 박지원 「공작관문고 자서」", "track": "C", "items": [22, 23, 24, 25, 26, 27], "rates": {"22": 85, "23": 29, "24": 47, "25": 76, "26": 80, "27": 62}, "link": "part", "linkSrc": "수능특강 문학 298~302쪽 「잘 익은 사과」 (나)만 연계", "linkItems": [22, 24, 27], "linkMemo": "(나)는 전문 그대로. (가) 장옥관 시와 (다) 박지원 수필은 비연계.", "linkLabel": "부분 연계"}, {"key": "M3", "rng": "28~31", "area": "현대 소설", "title": "박화성 「고향 없는 사람들」", "track": "C", "items": [28, 29, 30, 31], "rates": {"28": 68, "29": 82, "30": 84, "31": 75}, "link": "none", "linkSrc": "", "linkItems": [], "linkMemo": "", "linkLabel": "비연계"}, {"key": "M4", "rng": "32~34", "area": "고전 시가", "title": "이진유 「속사미인곡」", "track": "C", "items": [32, 33, 34], "rates": {"32": 66, "33": 76, "34": 75}, "link": "full", "linkSrc": "수능특강 문학 67~70쪽 「속사미인곡」", "linkItems": [32, 33, 34], "linkMemo": "교재 수록 지문의 대부분이 그대로 나왔다.", "linkLabel": "지문 또는 작품 연계"}, {"key": "H1", "rng": "35~37", "area": "화법", "title": "강연 — 해양 유물의 발굴과 보존 처리", "track": "H", "items": [35, 36, 37], "rates": {"35": 97, "36": 89, "37": 37}, "link": "part", "linkSrc": "수능특강 화작 41~42쪽 1번 (매머드 복원 강연)", "linkItems": [35], "linkMemo": "지문이 아니라 말하기 방식을 묻는 문항 유형이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "H2", "rng": "38~42", "area": "화법과 작문 융합", "title": "(가) 동아리 대화 (수리 배움터) / (나) 교지 소개 글 초고", "track": "H", "items": [38, 39, 40, 41, 42], "rates": {"38": 97, "39": 98, "40": 68, "41": 83, "42": 89}, "link": "part", "linkSrc": "수능완성 100~102쪽 3번 (생태 모방 기술 초고)", "linkItems": [42], "linkMemo": "고쳐 쓰기 문항 유형이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "H3", "rng": "43~45", "area": "작문", "title": "지역신문 기고 초고 (활성화 방안)", "track": "H", "items": [43, 44, 45], "rates": {"43": 96, "44": 81, "45": 49}, "link": "part", "linkSrc": "수능완성 264쪽 44번 (종자 산업 자료 활용)", "linkItems": [45], "linkMemo": "자료 활용 문항 유형이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "E1", "rng": "35~39", "area": "언어", "title": "35~36 색채어 지문형 / 37 대용 표현 ‘자기’ / 38 한자어 ‘ㄹ’ 뒤 경음화 / 39 문장 성분과 안긴절", "track": "E", "items": [35, 36, 37, 38, 39], "rates": {"35": 55, "36": 43, "37": 52, "38": 70, "39": 64}, "link": "part", "linkSrc": "수능특강 언매 71쪽 6번, 13쪽, 25~27쪽", "linkItems": [36, 38, 39], "linkMemo": "분류 학습활동 형식과 경음화, 문장 성분 개념이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "E2", "rng": "40~45", "area": "매체", "title": "40~43 인터넷 방송과 카드 뉴스 (옥스퍼드 사전의 한국어) / 44~45 둘레길 앱과 누리 소통망 대화", "track": "E", "items": [40, 41, 42, 43, 44, 45], "rates": {"40": 92, "41": 74, "42": 98, "43": 94, "44": 69, "45": 96}, "link": "none", "linkSrc": "", "linkItems": [], "linkMemo": "", "linkLabel": "비연계"}], "reasonHard": ["지문 내용 자체가 이해되지 않았다", "정보가 많아 머릿속에서 정리되지 않았다", "소재가 낯설었다", "선지 두 개 사이에서 계속 흔들렸다", "〈보기〉를 어떻게 쓰는지 몰랐다", "지문으로 돌아가 근거를 찾지 못했다", "시간에 쫓겨 제대로 읽지 못했다", "작품의 상황과 인물 관계가 안 잡혔다"], "reasonEasy": ["아는 소재라 이해가 빨랐다", "EBS에서 본 지문이라 빨랐다", "구조가 눈에 들어와 정리가 됐다", "선지 근거가 지문에 그대로 있었다", "〈보기〉가 방향을 잡아 주었다", "쉽게 느꼈지만 실제로는 틀렸다"], "wrongReason": ["지문을 잘못 이해했다", "선지를 잘못 읽었다 (부정 발문, 조건 놓침)", "근거를 못 찾아 감으로 골랐다", "두 개로 좁혔다가 바꿔서 틀렸다", "시간이 없어 찍었다", "실수 (마킹, 번호 밀림)"]};
+const KEY = 'survey2609';
+const CIRC = '①②③④⑤';
+let S = JSON.parse(localStorage.getItem(KEY) || '{}');
+if (!S.sets) S.sets = {};
+const $ = (q, r) => (r || document).querySelector(q);
+const $$ = (q, r) => [...(r || document).querySelectorAll(q)];
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+function st(k) { if (!S.sets[k]) S.sets[k] = { wrong: [], why: [], wr: {} }; return S.sets[k]; }
+function visibleSets() { return D.sets.filter(s => s.track === 'C' || s.track === (S.track || 'H')); }
+
+function optHtml(name, val, label, cls) {
+  return '<label class="opt ' + (cls || '') + '"><input type="radio" name="' + name + '" value="' + esc(val) + '"><span>' + esc(label) + '</span></label>';
+}
+function setCard(s) {
+  const L = s.link !== 'none';
+  let h = '<div class="card" id="card-' + s.key + '"><div class="sethead"><div class="rng">' + s.rng + '</div><div class="stitle"><b>' + esc(s.area) + '</b>' + esc(s.title) +
+    '<div class="badge b-' + s.link + '">' + s.linkLabel + '</div></div></div>';
+  // 1 순서
+  h += '<div class="q"><div class="qt">1. 이 세트를 몇 번째로 풀었습니까 <span>시험장에서 실제로 푼 차례</span></div>' +
+    '<select data-k="order" data-s="' + s.key + '"><option value="">선택</option></select>' +
+    '<span class="sub" id="dup-' + s.key + '"></span></div>';
+  // 2 체감 난이도
+  h += '<div class="q"><div class="qt">2. 풀 때 느낌은 어땠습니까</div><div class="opts">' +
+    ['쉬웠다', '보통이었다', '어려웠다', '매우 어려웠다'].map((t, i) => optHtml('lvl-' + s.key, String(i + 1), t, i >= 2 ? 'warnopt' : '')).join('') + '</div></div>';
+  // 3 이유
+  h += '<div class="q"><div class="qt">3. 그렇게 느낀 이유는 무엇입니까 <span>해당하는 것 모두</span></div><div class="opts" id="why-' + s.key + '"></div>' +
+    '<input type="text" data-k="whyEtc" data-s="' + s.key + '" placeholder="다른 이유가 있다면 적습니다" style="margin-top:7px">' +
+    '<div class="hint" id="whyhint-' + s.key + '" style="display:none"></div></div>';
+  // 4 연계
+  if (L) {
+    h += '<div class="q"><div class="qt">4. 시험장에서 이 지문이나 작품을 EBS에서 봤다는 것을 알아챘습니까</div><div class="opts">' +
+      [['yes', '네, 풀면서 알아챘습니다'], ['after', '아니요, 시험이 끝난 뒤 알았습니다'], ['now', '아니요, 지금 알았습니다']].map(o => optHtml('lk-' + s.key, o[0], o[1])).join('') + '</div>' +
+      '<div class="sub">연계 부분: ' + esc(s.linkSrc) + (s.linkItems.length ? ' (문항 ' + s.linkItems.join(', ') + ')' : '') + '</div></div>';
+    h += '<div class="q lkq" id="mem-' + s.key + '" style="display:none"><div class="qt">5. 얼마나 기억났습니까</div><div class="opts">' +
+      [['full', '내용이 거의 다 기억났다'], ['most', '대략적인 내용은 충분히 기억났다'], ['seen', '봤다는 것만 기억났다'], ['wrong', '기억이 어긋나 오히려 헷갈렸다']].map(o => optHtml('mem-' + s.key, o[0], o[1], o[0] === 'wrong' ? 'warnopt' : '')).join('') + '</div></div>';
+    h += '<div class="q lkq" id="help-' + s.key + '" style="display:none"><div class="qt">6. 그 기억이 푸는 데 도움이 되었습니까</div><div class="opts">' +
+      [['time', '시간을 줄여 주었다'], ['read', '이해가 빨라졌다'], ['none', '별 차이 없었다'], ['harm', '오히려 넘겨짚어 방해가 됐다']].map(o => optHtml('help-' + s.key, o[0], o[1], o[0] === 'harm' ? 'warnopt' : '')).join('') + '</div>' +
+      '<div class="hint" id="helphint-' + s.key + '" style="display:none"></div></div>';
+  }
+  // 틀린 문항
+  h += '<div class="q"><div class="qt">' + (L ? '7' : '4') + '. 틀린 문항을 모두 고릅니다 <span>맞았으면 비워 둡니다</span></div><div class="grid" id="wr-' + s.key + '"></div>' +
+    '<div class="wrongbox" id="wb-' + s.key + '" style="display:none"></div></div>';
+  return h + '</div>';
+}
+
+function buildForm() {
+  const vs = visibleSets();
+  $('#sets').innerHTML = vs.map(setCard).join('');
+  vs.forEach(s => {
+    const sel = $('select[data-s="' + s.key + '"]');
+    sel.innerHTML = '<option value="">선택</option>' + vs.map((_, i) => '<option value="' + (i + 1) + '">' + (i + 1) + '번째</option>').join('');
+    const why = $('#why-' + s.key);
+    why.innerHTML = D.reasonEasy.map(t => ['easy', t]).concat(D.reasonHard.map(t => ['hard', t])).map(p =>
+      '<label class="opt" data-grp="' + p[0] + '"><input type="checkbox" data-k="why" data-s="' + s.key + '" value="' + esc(p[1]) + '"><span>' + esc(p[1]) + '</span></label>').join('');
+    const wr = $('#wr-' + s.key);
+    wr.innerHTML = s.items.map(n => '<label class="opt nq ' + (s.linkItems.includes(n) ? 'linked-n' : '') + '"><input type="checkbox" data-k="wrong" data-s="' + s.key + '" value="' + n + '"><span>' + n + '</span></label>').join('');
+    restore(s);
+  });
+  bind();
+  refreshOrder();
+}
+
+function restore(s) {
+  const d = st(s.key);
+  const sel = $('select[data-s="' + s.key + '"]'); if (d.order) sel.value = d.order;
+  if (d.lvl) { const r = $('input[name="lvl-' + s.key + '"][value="' + d.lvl + '"]'); if (r) r.checked = true; }
+  (d.why || []).forEach(v => { const c = $$('input[data-k="why"][data-s="' + s.key + '"]').find(x => x.value === v); if (c) c.checked = true; });
+  const we = $('input[data-k="whyEtc"][data-s="' + s.key + '"]'); if (we && d.whyEtc) we.value = d.whyEtc;
+  ['lk', 'mem', 'help'].forEach(k => { if (d[k]) { const r = $('input[name="' + k + '-' + s.key + '"][value="' + d[k] + '"]'); if (r) r.checked = true; } });
+  (d.wrong || []).forEach(n => { const c = $$('input[data-k="wrong"][data-s="' + s.key + '"]').find(x => +x.value === +n); if (c) c.checked = true; });
+  syncSet(s);
+}
+
+function syncSet(s) {
+  const d = st(s.key);
+  // 체감에 맞는 이유만 보여 준다 (고른 것은 계속 보인다)
+  const grp = d.lvl === '1' || d.lvl === '2' ? 'easy' : (d.lvl ? 'hard' : '');
+  $$('#why-' + s.key + ' .opt').forEach(o => {
+    const keep = !grp || o.dataset.grp === grp || $('input', o).checked;
+    o.style.display = keep ? '' : 'none';
+  });
+  // 연계 후속 질문
+  if (s.link !== 'none') {
+    const on = d.lk === 'yes';
+    $('#mem-' + s.key).style.display = on ? '' : 'none';
+    $('#help-' + s.key).style.display = on ? '' : 'none';
+    const hh = $('#helphint-' + s.key);
+    const wrongLinked = (d.wrong || []).filter(n => s.linkItems.includes(+n)).length;
+    if (on && wrongLinked > 0) {
+      hh.style.display = ''; hh.className = 'hint warn';
+      hh.textContent = '연계된 문항 ' + s.linkItems.length + '개 중 ' + wrongLinked + '개를 틀렸습니다. 봤다는 기억이 점수로 이어지지 않았다는 뜻입니다. 무엇까지 기억했고 무엇을 다시 읽어야 했는지 아래에 적습니다.';
+    } else if (hh) { hh.style.display = 'none'; }
+  }
+  // 쉽다고 했는데 틀림
+  const wh = $('#whyhint-' + s.key), nw = (d.wrong || []).length;
+  if (wh) {
+    if (d.lvl === '1' && nw > 0) { wh.style.display = ''; wh.className = 'hint warn'; wh.textContent = '쉽다고 느꼈는데 ' + nw + '개를 틀렸습니다. 이 세트가 이번 시험에서 가장 위험한 지점입니다.'; }
+    else if ((d.lvl === '3' || d.lvl === '4') && nw === 0) { wh.style.display = ''; wh.className = 'hint'; wh.textContent = '어렵게 느꼈지만 다 맞았습니다. 시간을 얼마나 썼는지 확인해 보십시오.'; }
+    else wh.style.display = 'none';
+  }
+  // 오답 이유 줄
+  const wb = $('#wb-' + s.key), list = (d.wrong || []).map(Number).sort((a, b) => a - b);
+  if (!list.length) { wb.style.display = 'none'; wb.innerHTML = ''; }
+  else {
+    wb.style.display = '';
+    wb.innerHTML = '<div class="qt" style="margin-bottom:6px">틀린 이유를 하나씩 고릅니다</div>' + list.map(n =>
+      '<div class="wrongrow"><span class="wn">' + n + '번</span><div class="opts">' +
+      D.wrongReason.map(t => '<label class="opt"><input type="radio" name="wr-' + s.key + '-' + n + '" data-k="wr" data-s="' + s.key + '" data-n="' + n + '" value="' + esc(t) + '"' + ((d.wr || {})[n] === t ? ' checked' : '') + '><span>' + esc(t) + '</span></label>').join('') +
+      '</div></div>').join('');
+  }
+}
+
+function refreshOrder() {
+  const vs = visibleSets(), used = {};
+  vs.forEach(s => { const o = st(s.key).order; if (o) used[o] = (used[o] || 0) + 1; });
+  vs.forEach(s => {
+    const o = st(s.key).order, el = $('#dup-' + s.key);
+    if (el) el.innerHTML = o && used[o] > 1 ? '<span style="color:var(--warn);font-weight:700">같은 차례를 두 번 골랐습니다</span>' : '';
+  });
+  const done = vs.filter(s => st(s.key).order).length;
+  const seq = vs.filter(s => st(s.key).order).sort((a, b) => st(a.key).order - st(b.key).order).map(s => s.rng);
+  $('#orderbar').innerHTML = '<b>푼 순서</b> ' + (seq.length ? seq.join(' → ') : '아직 고르지 않았습니다') +
+    (done < vs.length ? ' <span style="color:var(--muted)">(' + done + '/' + vs.length + ')</span>' : '') +
+    (Object.values(used).some(v => v > 1) ? ' <span class="dup">차례가 겹칩니다</span>' : '');
+  progress();
+}
+
+function progress() {
+  const vs = visibleSets();
+  let need = 0, got = 0;
+  vs.forEach(s => {
+    const d = st(s.key);
+    need += 2; if (d.order) got++; if (d.lvl) got++;
+    if (s.link !== 'none') { need++; if (d.lk) got++; }
+    (d.wrong || []).forEach(n => { need++; if ((d.wr || {})[n]) got++; });
+  });
+  need += 3; ['tTotal', 'tLeft', 'tGuess'].forEach(k => { if (S[k]) got++; });
+  $('#prog').textContent = '작성 ' + Math.round(got / need * 100) + '%';
+}
+
+function bind() {
+  document.addEventListener('change', e => {
+    const t = e.target, k = t.dataset.k, sk = t.dataset.s;
+    if (sk && k) {
+      const d = st(sk);
+      if (k === 'order') { d.order = t.value; refreshOrder(); }
+      else if (k === 'why') { d.why = $$('input[data-k="why"][data-s="' + sk + '"]:checked').map(x => x.value); }
+      else if (k === 'whyEtc') d.whyEtc = t.value;
+      else if (k === 'wrong') { d.wrong = $$('input[data-k="wrong"][data-s="' + sk + '"]:checked').map(x => +x.value); }
+      else if (k === 'wr') { d.wr = d.wr || {}; d.wr[t.dataset.n] = t.value; }
+    }
+    if (t.name && t.name.includes('-')) {
+      const [pre, key] = [t.name.split('-')[0], t.name.split('-')[1]];
+      if (['lvl', 'lk', 'mem', 'help'].includes(pre) && D.sets.some(s => s.key === key)) st(key)[pre] = t.value;
+    }
+    if (t.dataset.g) { S[t.dataset.g] = t.type === 'radio' || t.type === 'text' || t.type === 'number' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' ? t.value : t.value; }
+    if (t.name === 'track') { S.track = t.value; save(); buildForm(); return; }
+    const s = D.sets.find(x => x.key === (sk || (t.name || '').split('-')[1]));
+    if (s) syncSet(s);
+    save(); progress();
+  });
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (t.dataset.g) { S[t.dataset.g] = t.value; save(); progress(); }
+    if (t.dataset.k === 'whyEtc') { st(t.dataset.s).whyEtc = t.value; save(); }
+  });
+}
+
+// ---------- 요약 ----------
+function report() {
+  const vs = visibleSets();
+  let R = [];
+  const nWrong = k => (st(k).wrong || []).length;
+  const total = vs.reduce((a, s) => a + nWrong(s.key), 0);
+  R.push('<div class="rcard"><h4>틀린 문항 ' + total + '개</h4><p>' +
+    vs.filter(s => nWrong(s.key)).map(s => s.rng + ' ' + nWrong(s.key) + '개').join(', ') + '</p></div>');
+  // 과신
+  const over = vs.filter(s => st(s.key).lvl === '1' && nWrong(s.key) > 0);
+  if (over.length) R.push('<div class="rcard bad"><h4>쉽다고 느꼈는데 틀린 세트</h4><p>' + over.map(s => s.rng + ' ' + s.area + ' (' + nWrong(s.key) + '개)').join(' / ') +
+    '. 어렵게 느낀 세트보다 먼저 다시 봐야 합니다. 틀린 줄 몰랐다는 것은 판단 기준이 잘못 서 있다는 뜻입니다.</p></div>');
+  // 연계가 점수로 이어지지 않은 세트
+  const noPay = vs.filter(s => s.link !== 'none' && st(s.key).lk === 'yes' && (st(s.key).wrong || []).some(n => s.linkItems.includes(+n)));
+  if (noPay.length) R.push('<div class="rcard bad"><h4>연계를 알고도 틀린 세트</h4><p>' + noPay.map(s => s.rng + ' (' + s.linkSrc.split(' (')[0] + ')').join(' / ') +
+    '. EBS에서 봤다는 기억이 점수로 바뀌지 않았습니다. 교재를 다시 볼 때 줄거리가 아니라 인물 관계, 개념의 조건, 문장 사이의 관계를 정리해야 합니다.</p></div>');
+  // 기억 수준
+  const mem = vs.filter(s => st(s.key).mem);
+  if (mem.length) {
+    const cnt = { full: 0, most: 0, seen: 0, wrong: 0 }; mem.forEach(s => cnt[st(s.key).mem]++);
+    const lab = { full: '거의 다 기억', most: '대략 기억', seen: '봤다는 것만 기억', wrong: '기억이 어긋남' };
+    R.push('<div class="rcard"><h4>연계 기억의 수준</h4><p>' + Object.keys(cnt).filter(k => cnt[k]).map(k => lab[k] + ' ' + cnt[k] + '세트').join(', ') +
+      (cnt.seen + cnt.wrong >= 2 ? '. 봤다는 기억만 남은 세트가 많습니다. 지금 EBS 교재를 다시 보는 방식이 시험장에서 쓰이지 않는 방식이라는 뜻입니다.' : '.') + '</p></div>');
+  }
+  // 오답 이유 집계
+  const rc = {};
+  vs.forEach(s => Object.values(st(s.key).wr || {}).forEach(v => rc[v] = (rc[v] || 0) + 1));
+  const rk = Object.keys(rc).sort((a, b) => rc[b] - rc[a]);
+  if (rk.length) R.push('<div class="rcard"><h4>가장 많이 나온 오답 이유</h4><p>' + rk.slice(0, 3).map(k => k + ' ' + rc[k] + '개').join(' / ') +
+    '. 이 가운데 첫 번째가 다음 시험에서 고칠 하나입니다.</p></div>');
+  // 순서와 시간
+  const seq = vs.filter(s => st(s.key).order).sort((a, b) => st(a.key).order - st(b.key).order);
+  if (seq.length) {
+    const full = seq.length >= vs.length - 1;
+    const late = full ? seq.slice(Math.ceil(seq.length / 2)).filter(s => nWrong(s.key) >= 2) : [];
+    R.push('<div class="rcard' + (late.length ? ' bad' : '') + '"><h4>푼 순서</h4><p>' + seq.map(s => s.rng).join(' → ') +
+      (late.length ? '. 뒤쪽에 푼 ' + late.map(s => s.rng).join(', ') + '에서 오답이 몰렸습니다. 이 세트를 앞으로 당겨 보는 것을 다음 시험에서 시험해 보십시오.' : '') +
+      (full ? '' : ' (순서를 다 고르지 않아 순서와 오답의 관계는 따지지 않았습니다)') + '</p></div>');
+  }
+  if (S.tLeft) {
+    const m = { over: '시간이 모자라 다 풀지 못했습니다', tight: '겨우 시간에 맞췄습니다', ok: '5분 이상 남았습니다', much: '10분 이상 남았습니다' }[S.tLeft];
+    R.push('<div class="rcard' + (S.tLeft === 'over' ? ' bad' : (S.tLeft === 'much' ? ' good' : '')) + '"><h4>시간 운영</h4><p>' + m +
+      (S.tGuess ? '. 찍은 문항은 ' + S.tGuess + '개입니다' : '') + (S.tSlow ? '. 시간을 가장 많이 쓴 곳은 ' + esc(S.tSlow) + '입니다' : '') + '.</p></div>');
+  }
+  $('#rbody').innerHTML = R.join('');
+  $('#report').classList.add('on');
+  $('#report').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function textOut() {
+  const vs = visibleSets();
+  let L = ['[2027학년도 9월 모의평가 자기 진단]', '이름 ' + (S.name || '') + ' / 반 ' + (S.klass || '') + ' / 선택 ' + (S.track === 'E' ? '언어와 매체' : '화법과 작문')];
+  const seq = vs.filter(s => st(s.key).order).sort((a, b) => st(a.key).order - st(b.key).order).map(s => s.rng);
+  L.push('푼 순서: ' + (seq.join(' > ') || '미기재'));
+  const LV = { '1': '쉬움', '2': '보통', '3': '어려움', '4': '매우 어려움' };
+  vs.forEach(s => {
+    const d = st(s.key), w = (d.wrong || []).sort((a, b) => a - b);
+    let line = '- ' + s.rng + ' ' + s.area + ' | 체감 ' + (LV[d.lvl] || '-') + ' | 오답 ' + (w.length ? w.join(',') : '없음');
+    if (s.link !== 'none') line += ' | 연계 인지 ' + ({ yes: 'O', after: '사후', now: 'X' }[d.lk] || '-') + (d.mem ? ' 기억 ' + ({ full: '거의다', most: '대략', seen: '봤다는것만', wrong: '어긋남' }[d.mem]) : '') + (d.help ? ' 도움 ' + ({ time: '시간단축', read: '이해빨라짐', none: '없음', harm: '방해' }[d.help]) : '');
+    if ((d.why || []).length) line += ' | 이유 ' + d.why.join(';');
+    if (d.whyEtc) line += ' | 메모 ' + d.whyEtc;
+    Object.keys(d.wr || {}).forEach(n => line += ' | ' + n + '번 ' + d.wr[n]);
+    L.push(line);
+  });
+  L.push('시간: ' + ({ over: '못 풀었음', tight: '빠듯함', ok: '5분+', much: '10분+' }[S.tLeft] || '-') + ' / 찍은 문항 ' + (S.tGuess || '-') + ' / 오래 걸린 곳 ' + (S.tSlow || '-'));
+  if (S.free1) L.push('스스로 내린 진단: ' + S.free1);
+  if (S.free2) L.push('다음 시험에서 바꿀 것: ' + S.free2);
+  return L.join('\n');
+}
+function copyOut() {
+  const t = textOut();
+  navigator.clipboard.writeText(t).then(() => alert('복사했습니다. 선생님께 붙여넣어 제출하십시오.'),
+    () => { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); alert('복사했습니다.'); });
+}
+function resetAll() { if (confirm('작성한 내용을 모두 지웁니다.')) { localStorage.removeItem(KEY); location.reload(); } }
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (S.track) { const r = $('input[name="track"][value="' + S.track + '"]'); if (r) r.checked = true; } else S.track = 'H';
+  ['name', 'klass', 'tTotal', 'tGuess', 'tSlow', 'free1', 'free2'].forEach(k => { const el = $('[data-g="' + k + '"]'); if (el && S[k]) el.value = S[k]; });
+  if (S.tLeft) { const r = $('input[name="tLeft"][value="' + S.tLeft + '"]'); if (r) r.checked = true; }
+  $$('input[name="tLeft"]').forEach(r => r.addEventListener('change', () => { S.tLeft = r.value; save(); progress(); }));
+  buildForm();
+  $('#btnReport').addEventListener('click', report);
+  $('#btnCopy').addEventListener('click', copyOut);
+  $('#btnPrint').addEventListener('click', () => window.print());
+  $('#btnReset').addEventListener('click', resetAll);
+});
+</script>
+</body></html>
