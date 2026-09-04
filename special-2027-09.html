@@ -85,7 +85,7 @@ body{font-family:'Noto Sans KR',sans-serif}header h1,h2.sec,.rng{font-family:'No
 <header><div class="wrap">
 <a href="index.html" style="display:inline-block;color:var(--muted);font-size:13px;text-decoration:none;margin-bottom:10px">← 진단 시스템으로</a><br><div class="lab">김가경 국어 연구소</div>
 <h1>2027학년도 9월 평가원 <span style="color:var(--navy)">특별 진단</span></h1>
-<p>오답 마킹 진단과 별개로, 이번 시험을 어떻게 치렀는지 스스로 적는 설문입니다. 세트마다 체감 난이도와 EBS 연계가 실제로 쓰였는지, 무엇 때문에 틀렸는지, 어떤 순서로 풀었는지를 기록합니다. 끝까지 쓰면 요약이 자동으로 나옵니다. 답은 이 기기에만 저장됩니다.</p>
+<p>오답 마킹 진단과 별개로, 이번 시험을 어떻게 치렀는지 스스로 적는 설문입니다. 세트마다 체감 난이도와 EBS 연계가 실제로 쓰였는지, 무엇 때문에 틀렸는지, 어떤 순서로 풀었는지를 기록합니다. 끝까지 쓰면 요약이 자동으로 나오고, 이름을 적어 제출하면 선생님께 바로 전달됩니다.</p>
 </div></header>
 
 <div class="wrap">
@@ -122,9 +122,14 @@ body{font-family:'Noto Sans KR',sans-serif}header h1,h2.sec,.rng{font-family:'No
 </div>
 
 <div id="report"><h2 class="sec">요약</h2><div id="rbody"></div>
- <div class="hint">이 요약은 스스로 적은 내용만으로 만들어집니다. 아래 복사 단추로 선생님께 제출합니다.</div>
+ <div class="hint">이 요약은 스스로 적은 내용만으로 만들어집니다.</div>
 </div>
 
+<h2 class="sec">제출</h2>
+<div class="card">
+ <p style="font-size:13.5px;color:var(--muted);line-height:1.6">이름을 적고 제출을 누르면 선생님께 바로 전달됩니다. 고쳐서 다시 제출해도 되고, 마지막 제출을 기준으로 확인합니다. 작성 중인 내용은 이 기기에도 저장되어 있어 창을 닫았다 열어도 남습니다.</p>
+ <div class="hint" id="subfb" style="display:none"></div>
+</div>
 <div class="foot">2027학년도 9월 모의평가 자기 진단 설문 · 김가경 국어 연구소</div>
 </div>
 
@@ -134,9 +139,12 @@ body{font-family:'Noto Sans KR',sans-serif}header h1,h2.sec,.rng{font-family:'No
   <button class="btn ghost" id="btnReset">지우기</button>
   <button class="btn ghost" id="btnPrint">인쇄</button>
   <button class="btn ghost" id="btnCopy">결과 복사</button>
-  <button class="btn" id="btnReport">요약 보기</button>
+  <button class="btn ghost" id="btnReport">요약 보기</button>
+  <button class="btn" id="btnSubmit">제출</button>
  </span>
 </div>
+<script src="config.js"></script>
+<script>const EXAM_ID = "2027-09"; const EXAM_LABEL = "2027\ud559\ub144\ub3c4 9\uc6d4 \ud3c9\uac00\uc6d0 \ud2b9\ubcc4 \uc9c4\ub2e8";</script>
 <script>
 const D = {"sets": [{"key": "D1", "rng": "1~3", "area": "독서론", "title": "전기류를 활용한 진로 독서", "track": "C", "items": [1, 2, 3], "rates": {"1": 94, "2": 92, "3": 86}, "link": "none", "linkSrc": "", "linkItems": [], "linkMemo": "", "linkLabel": "비연계"}, {"key": "D2", "rng": "4~9", "area": "인문 (주제 통합)", "title": "(가) 종 차별주의 옹호 논변과 한계 / (나) 인공 행위자의 도덕적 지위", "track": "C", "items": [4, 5, 6, 7, 8, 9], "rates": {"4": 80, "5": 67, "6": 73, "7": 29, "8": 52, "9": 89}, "link": "full", "linkSrc": "수능특강 독서 88~92쪽 「종 차별주의와 종 중첩 논증」", "linkItems": [4, 5, 7, 8], "linkMemo": "연계 체감도가 가장 높았던 지문. (가)에 교재 핵심 정보가 그대로 쓰였다.", "linkLabel": "지문 또는 작품 연계"}, {"key": "D3", "rng": "10~13", "area": "기술", "title": "어댑터의 선형 방식과 스위칭 방식", "track": "C", "items": [10, 11, 12, 13], "rates": {"10": 55, "11": 60, "12": 54, "13": 14}, "link": "part", "linkSrc": "수능특강 독서 17~19쪽 「전류 밀도의 개념과 특징」", "linkItems": [10, 11, 12], "linkMemo": "교재의 발열 부분을 어댑터로 바꿔 썼다. 소재만 같고 설명 대상이 다르다.", "linkLabel": "부분 연계"}, {"key": "D4", "rng": "14~17", "area": "사회", "title": "오피니언 리더와 커뮤니케이션 2단계 유통 이론", "track": "C", "items": [14, 15, 16, 17], "rates": {"14": 73, "15": 57, "16": 55, "17": 88}, "link": "weak", "linkSrc": "수능특강 독서 109~113쪽 「리더십 이론」", "linkItems": [14, 15, 16], "linkMemo": "키워드 수준의 연계. 교재를 봤어도 새 지문처럼 읽어야 했다.", "linkLabel": "키워드 수준 연계"}, {"key": "M1", "rng": "18~21", "area": "고전 소설", "title": "작자 미상 「금환기봉」", "track": "C", "items": [18, 19, 20, 21], "rates": {"18": 82, "19": 65, "20": 64, "21": 78}, "link": "full", "linkSrc": "수능특강 문학 322~325쪽 「금환기봉」", "linkItems": [18, 19, 20, 21], "linkMemo": "교재 수록 지문의 대부분이 그대로 나왔다.", "linkLabel": "지문 또는 작품 연계"}, {"key": "M2", "rng": "22~27", "area": "갈래 복합", "title": "(가) 장옥관 「가오리 날아오르다」 / (나) 김혜순 「잘 익은 사과」 / (다) 박지원 「공작관문고 자서」", "track": "C", "items": [22, 23, 24, 25, 26, 27], "rates": {"22": 85, "23": 29, "24": 47, "25": 76, "26": 80, "27": 62}, "link": "part", "linkSrc": "수능특강 문학 298~302쪽 「잘 익은 사과」 (나)만 연계", "linkItems": [22, 24, 27], "linkMemo": "(나)는 전문 그대로. (가) 장옥관 시와 (다) 박지원 수필은 비연계.", "linkLabel": "부분 연계"}, {"key": "M3", "rng": "28~31", "area": "현대 소설", "title": "박화성 「고향 없는 사람들」", "track": "C", "items": [28, 29, 30, 31], "rates": {"28": 68, "29": 82, "30": 84, "31": 75}, "link": "none", "linkSrc": "", "linkItems": [], "linkMemo": "", "linkLabel": "비연계"}, {"key": "M4", "rng": "32~34", "area": "고전 시가", "title": "이진유 「속사미인곡」", "track": "C", "items": [32, 33, 34], "rates": {"32": 66, "33": 76, "34": 75}, "link": "full", "linkSrc": "수능특강 문학 67~70쪽 「속사미인곡」", "linkItems": [32, 33, 34], "linkMemo": "교재 수록 지문의 대부분이 그대로 나왔다.", "linkLabel": "지문 또는 작품 연계"}, {"key": "H1", "rng": "35~37", "area": "화법", "title": "강연 — 해양 유물의 발굴과 보존 처리", "track": "H", "items": [35, 36, 37], "rates": {"35": 97, "36": 89, "37": 37}, "link": "part", "linkSrc": "수능특강 화작 41~42쪽 1번 (매머드 복원 강연)", "linkItems": [35], "linkMemo": "지문이 아니라 말하기 방식을 묻는 문항 유형이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "H2", "rng": "38~42", "area": "화법과 작문 융합", "title": "(가) 동아리 대화 (수리 배움터) / (나) 교지 소개 글 초고", "track": "H", "items": [38, 39, 40, 41, 42], "rates": {"38": 97, "39": 98, "40": 68, "41": 83, "42": 89}, "link": "part", "linkSrc": "수능완성 100~102쪽 3번 (생태 모방 기술 초고)", "linkItems": [42], "linkMemo": "고쳐 쓰기 문항 유형이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "H3", "rng": "43~45", "area": "작문", "title": "지역신문 기고 초고 (활성화 방안)", "track": "H", "items": [43, 44, 45], "rates": {"43": 96, "44": 81, "45": 49}, "link": "part", "linkSrc": "수능완성 264쪽 44번 (종자 산업 자료 활용)", "linkItems": [45], "linkMemo": "자료 활용 문항 유형이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "E1", "rng": "35~39", "area": "언어", "title": "35~36 색채어 지문형 / 37 대용 표현 ‘자기’ / 38 한자어 ‘ㄹ’ 뒤 경음화 / 39 문장 성분과 안긴절", "track": "E", "items": [35, 36, 37, 38, 39], "rates": {"35": 55, "36": 43, "37": 52, "38": 70, "39": 64}, "link": "part", "linkSrc": "수능특강 언매 71쪽 6번, 13쪽, 25~27쪽", "linkItems": [36, 38, 39], "linkMemo": "분류 학습활동 형식과 경음화, 문장 성분 개념이 연계되었다.", "linkLabel": "부분 연계"}, {"key": "E2", "rng": "40~45", "area": "매체", "title": "40~43 인터넷 방송과 카드 뉴스 (옥스퍼드 사전의 한국어) / 44~45 둘레길 앱과 누리 소통망 대화", "track": "E", "items": [40, 41, 42, 43, 44, 45], "rates": {"40": 92, "41": 74, "42": 98, "43": 94, "44": 69, "45": 96}, "link": "none", "linkSrc": "", "linkItems": [], "linkMemo": "", "linkLabel": "비연계"}], "reasonHard": ["지문 내용 자체가 이해되지 않았다", "정보가 많아 머릿속에서 정리되지 않았다", "소재가 낯설었다", "선지 두 개 사이에서 계속 흔들렸다", "〈보기〉를 어떻게 쓰는지 몰랐다", "지문으로 돌아가 근거를 찾지 못했다", "시간에 쫓겨 제대로 읽지 못했다", "작품의 상황과 인물 관계가 안 잡혔다"], "reasonEasy": ["아는 소재라 이해가 빨랐다", "EBS에서 본 지문이라 빨랐다", "구조가 눈에 들어와 정리가 됐다", "선지 근거가 지문에 그대로 있었다", "〈보기〉가 방향을 잡아 주었다", "쉽게 느꼈지만 실제로는 틀렸다"], "wrongReason": ["지문을 잘못 이해했다", "선지를 잘못 읽었다 (부정 발문, 조건 놓침)", "근거를 못 찾아 감으로 골랐다", "두 개로 좁혔다가 바꿔서 틀렸다", "시간이 없어 찍었다", "실수 (마킹, 번호 밀림)"]};
 const KEY = 'survey2609';
@@ -384,6 +392,59 @@ function copyOut() {
 }
 function resetAll() { if (confirm('작성한 내용을 모두 지웁니다.')) { localStorage.removeItem(KEY); location.reload(); } }
 
+// ---------- 제출 (구글 시트) ----------
+function scriptUrl() {
+  try { return (window.OREUM_CONFIG && window.OREUM_CONFIG.SCRIPT_URL) || ''; } catch (e) { return ''; }
+}
+function submitPayload() {
+  const vs = visibleSets();
+  const seq = vs.filter(s => st(s.key).order).sort((a, b) => st(a.key).order - st(b.key).order);
+  const wrongPairs = vs.filter(s => (st(s.key).wrong || []).length)
+    .map(s => s.rng + ':' + (st(s.key).wrong || []).slice().sort((a, b) => a - b).join(','));
+  const aware = vs.filter(s => s.link !== 'none' && st(s.key).lk === 'yes').map(s => s.rng);
+  const failed = vs.filter(s => s.link !== 'none' && st(s.key).lk === 'yes' && (st(s.key).wrong || []).some(n => s.linkItems.includes(+n))).map(s => s.rng);
+  const TL = { over: '다 풀지 못함', tight: '겨우 맞춤', ok: '5분쯤 남음', much: '10분 이상 남음' };
+  return {
+    kind: 'survey', timestamp: new Date().toISOString(),
+    exam: EXAM_ID, examLabel: EXAM_LABEL,
+    name: S.name || '', klass: S.klass || '',
+    choice: S.track === 'E' ? '언어와 매체' : '화법과 작문',
+    order: seq.map(s => s.rng).join(' > '),
+    wrongCount: vs.reduce((a, s) => a + (st(s.key).wrong || []).length, 0),
+    wrongList: wrongPairs.join(' | '),
+    linkAware: aware.join(', '), linkFailed: failed.join(', '),
+    timeLeft: TL[S.tLeft] || '', guessCount: S.tGuess || '', slowAt: S.tSlow || '',
+    free1: S.free1 || '', free2: S.free2 || '',
+    setsJson: JSON.stringify(vs.map(s => Object.assign({ set: s.rng, area: s.area, link: s.link }, st(s.key)))),
+    summaryText: textOut()
+  };
+}
+function submitToSheet() {
+  const url = scriptUrl();
+  const fb = $('#subfb');
+  if (!url) { fb.className = 'hint warn'; fb.textContent = '제출 주소가 설정되지 않았습니다. 결과 복사를 눌러 선생님께 보내 주십시오.'; fb.style.display = ''; return; }
+  if (!(S.name || '').trim()) { fb.className = 'hint warn'; fb.textContent = '이름을 먼저 적어 주십시오.'; fb.style.display = ''; $('[data-g="name"]').focus(); return; }
+  const vs = visibleSets();
+  const filled = vs.filter(s => st(s.key).lvl).length;
+  if (filled < vs.length && !confirm('아직 다 적지 않은 세트가 있습니다. 그래도 제출할까요?')) return;
+  const btn = $('#btnSubmit'); btn.disabled = true; btn.textContent = '보내는 중';
+  const iframe = document.createElement('iframe');
+  iframe.name = 'sub_' + Date.now(); iframe.style.display = 'none'; document.body.appendChild(iframe);
+  const form = document.createElement('form');
+  form.method = 'POST'; form.action = url; form.target = iframe.name;
+  Object.entries(submitPayload()).forEach(([k, v]) => {
+    const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = String(v); form.appendChild(i);
+  });
+  document.body.appendChild(form); form.submit();
+  setTimeout(() => {
+    btn.disabled = false; btn.textContent = '다시 제출';
+    fb.className = 'hint'; fb.style.display = '';
+    fb.textContent = '제출했습니다. 고친 뒤 다시 제출해도 됩니다. 마지막 제출을 기준으로 확인합니다.';
+    S.submitted = new Date().toISOString(); save();
+    try { document.body.removeChild(form); document.body.removeChild(iframe); } catch (e) {}
+  }, 1400);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   if (S.track) { const r = $('input[name="track"][value="' + S.track + '"]'); if (r) r.checked = true; } else S.track = 'H';
   ['name', 'klass', 'tTotal', 'tGuess', 'tSlow', 'free1', 'free2'].forEach(k => { const el = $('[data-g="' + k + '"]'); if (el && S[k]) el.value = S[k]; });
@@ -392,6 +453,7 @@ window.addEventListener('DOMContentLoaded', () => {
   buildForm();
   $('#btnReport').addEventListener('click', report);
   $('#btnCopy').addEventListener('click', copyOut);
+  const bs = $('#btnSubmit'); if (bs) bs.addEventListener('click', submitToSheet);
   $('#btnPrint').addEventListener('click', () => window.print());
   $('#btnReset').addEventListener('click', resetAll);
 });
