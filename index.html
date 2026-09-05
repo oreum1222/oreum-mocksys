@@ -314,7 +314,7 @@ const EXAM_LIST = [
   {
     id: 'g2-2026-09', file: 'data/mock-g2-2026-09.json', course: 'g2',
     no: '제 1 회', tagDate: '2026년 9월 · 전국연합학력평가(교육청)',
-    status: 'tentative', statusLabel: '가채점 (등급컷 추정)'
+    status: 'tentative', statusLabel: '가채점 (EBSi 예상 등급컷)'
   },
   {
     id: '2027-09', file: 'data/mock-2027-09.json',
@@ -597,7 +597,12 @@ function buildCardContent(meta, data=null){
     const lmCuts = [lm[0],lm[1],lm[2]].filter(Boolean);
     const hsCuts = [hs[0],hs[1],hs[2]].filter(Boolean);
     const tentMark = tentative ? '<span class="cut-tentative-mark">잠정</span>' : '';
-    cutHtml = `
+    const uni = !!(data.examMeta && data.examMeta.unified);
+    const cc = data.gradeCuts.common || lm;
+    const cCuts = [cc[0],cc[1],cc[2]].filter(Boolean);
+    cutHtml = uni ? `
+      <div class="cut-row"><span class="cut-pill">공통 <span class="cut-num">${cCuts[0]?.raw||'-'}</span></span><span class="cut-divider">/</span><span class="cut-pill"><span class="cut-num">${cCuts[1]?.raw||'-'}</span></span><span class="cut-divider">/</span><span class="cut-pill"><span class="cut-num">${cCuts[2]?.raw||'-'}</span></span>${tentMark}</div>
+    ` : `
       <div class="cut-row"><span class="cut-pill">언매 <span class="cut-num">${lmCuts[0]?.raw||'-'}</span></span><span class="cut-divider">/</span><span class="cut-pill"><span class="cut-num">${lmCuts[1]?.raw||'-'}</span></span><span class="cut-divider">/</span><span class="cut-pill"><span class="cut-num">${lmCuts[2]?.raw||'-'}</span></span>${tentMark}</div>
       <div class="cut-row"><span class="cut-pill">화작 <span class="cut-num">${hsCuts[0]?.raw||'-'}</span></span><span class="cut-divider">/</span><span class="cut-pill"><span class="cut-num">${hsCuts[1]?.raw||'-'}</span></span><span class="cut-divider">/</span><span class="cut-pill"><span class="cut-num">${hsCuts[2]?.raw||'-'}</span></span>${tentMark}</div>
     `;
