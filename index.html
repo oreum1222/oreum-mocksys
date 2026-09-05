@@ -312,6 +312,11 @@ const LOGO_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+
 
 const EXAM_LIST = [
   {
+    id: 'g2-2026-09', file: 'data/mock-g2-2026-09.json', course: 'g2',
+    no: '제 1 회', tagDate: '2026년 9월 · 전국연합학력평가(교육청)',
+    status: 'tentative', statusLabel: '가채점 (등급컷 추정)'
+  },
+  {
     id: '2027-09', file: 'data/mock-2027-09.json',
     no: '제 23 회', tagDate: '2026년 9월 · 한국교육과정평가원',
     status: 'tentative', statusLabel: '가채점 (메가 예상 등급컷)'
@@ -636,7 +641,7 @@ function loadExam(examId){
     STATE.data = d;
     STATE.view = 'diag';
     STATE.step = 1;
-    STATE.student = { name:'', school:'', grade: courseOf(meta)==='g2' ? '고2' : '고3', choice:null, raw:null };
+    STATE.student = { name:'', school:'', grade: courseOf(STATE.data && STATE.data.examMeta)==='g2' ? '고2' : '고3', choice:null, raw:null };
     STATE.wrong = new Set();
     STATE.timeAns = {};
     STATE.result = null;
@@ -811,7 +816,7 @@ function renderStep1(){
     formRow('학년','select','grade', STATE.student.grade, null, [STATE.student.grade || '고3']),
     isUnified() ? el('div',{class:'form-row'},
       el('label',{},'선택 과목'),
-      el('div',{class:'unified-note'},'이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
+      el('div',{class:'unified-note'}, courseOf(STATE.data && STATE.data.examMeta)==='g2' ? '고2 학력평가는 선택과목 없이 1~45번 전체가 공통입니다.' : '이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
     ) : el('div',{class:'form-row'},
       el('label',{},'선택 과목 ', el('span',{class:'req'},'*')),
       el('div',{class:'radio-group'},
