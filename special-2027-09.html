@@ -428,21 +428,24 @@ function submitToSheet() {
   const filled = vs.filter(s => st(s.key).lvl).length;
   if (filled < vs.length && !confirm('아직 다 적지 않은 세트가 있습니다. 그래도 제출할까요?')) return;
   const btn = $('#btnSubmit'); btn.disabled = true; btn.textContent = '보내는 중';
-  const iframe = document.createElement('iframe');
-  iframe.name = 'sub_' + Date.now(); iframe.style.display = 'none'; document.body.appendChild(iframe);
-  const form = document.createElement('form');
-  form.method = 'POST'; form.action = url; form.target = iframe.name;
-  Object.entries(submitPayload()).forEach(([k, v]) => {
-    const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = String(v); form.appendChild(i);
-  });
-  document.body.appendChild(form); form.submit();
-  setTimeout(() => {
+  fb.className = 'hint'; fb.style.display = ''; fb.textContent = '보내는 중입니다. 잠시 기다려 주십시오.';
+  const payload = submitPayload();
+  const fail = (why) => {
     btn.disabled = false; btn.textContent = '다시 제출';
-    fb.className = 'hint'; fb.style.display = '';
-    fb.textContent = '제출했습니다. 고친 뒤 다시 제출해도 됩니다. 마지막 제출을 기준으로 확인합니다.';
+    fb.className = 'hint warn';
+    fb.textContent = '제출이 되지 않았습니다(' + why + '). 다시 제출을 눌러 보고, 그래도 안 되면 결과 복사를 눌러 카톡으로 보내 주십시오.';
+  };
+  const done = () => {
+    btn.disabled = false; btn.textContent = '다시 제출';
+    fb.className = 'hint';
+    fb.textContent = '제출이 확인되었습니다. 고친 뒤 다시 제출해도 됩니다. 마지막 제출을 기준으로 확인합니다.';
     S.submitted = new Date().toISOString(); save();
-    try { document.body.removeChild(form); document.body.removeChild(iframe); } catch (e) {}
-  }, 1400);
+  };
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 25000);
+  fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), signal: ctrl.signal })
+    .then(r => r.json())
+    .then(d => { clearTimeout(timer); if (d && d.ok) done(); else fail(d && d.error ? d.error : '서버 응답 오류'); })
+    .catch(e => { clearTimeout(timer); fail(e && e.name === 'AbortError' ? '응답 없음' : '네트워크'); });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
