@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>오름 국어 · 모의고사 진단 시스템</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,6 +77,12 @@ body{
 
 /* ─── Exam cards (회차 선택) ─── */
 .exam-list{display:grid;gap:20px;grid-template-columns:1fr}
+.course-tabs{display:flex;gap:10px;justify-content:center;margin:-28px 0 40px;flex-wrap:wrap}
+.course-tab{padding:12px 26px;border:1px solid var(--border-soft);background:transparent;color:var(--text-muted);border-radius:4px;font-family:inherit;font-size:0.95rem;letter-spacing:0.5px;cursor:pointer;transition:all .15s}
+.course-tab:hover{border-color:var(--gold);color:var(--gold)}
+.course-tab.on{background:var(--gold);color:var(--bg-dark);border-color:var(--gold);font-weight:500}
+.course-tab.on:hover{color:var(--bg-dark)}
+.exam-empty{padding:44px 20px;text-align:center;color:var(--text-muted);border:1px dashed var(--border-soft);border-radius:4px;line-height:1.8}
 .exam-card{
   display:block;background:var(--bg-card);
   border:1px solid var(--border-line);border-radius:6px;
@@ -251,7 +260,7 @@ body{
 }
 @media print{
   body{background:#fff;color:#000}
-  .header,.back-bar,.diag-header,.btn-row,#submitFeedback,.loading,.exam-list,.section-label,.footer{display:none !important}
+  .header,.back-bar,.diag-header,.btn-row,#submitFeedback,.loading,.exam-list,.section-label,.course-tabs,.footer{display:none !important}
   .result-hero,.score-block,.diag-section{break-inside:avoid;page-break-inside:avoid}
   .pattern,.q-detail{break-inside:avoid;page-break-inside:avoid}
   .score-card{border:1px solid #888 !important;background:#fff !important}
@@ -272,6 +281,19 @@ body{
 <script>
 // ─────────────────── State ───────────────────
 const DATA_VER = '20260728';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+// 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
+const COURSES = [
+  { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
+  { key:'g2', label:'고2 수능 정규반', short:'고2', footer:'오름 국어학원 고2 수능 정규반', empty:'고2 수능 정규반 회차는 준비 중입니다.<br>첫 회차가 올라오면 이 자리에 표시됩니다.' }
+];
+function courseOf(meta){ return (meta && meta.course) || 'g3'; }
+function courseInfo(key){ return COURSES.find(c=>c.key===key) || COURSES[0]; }
+function currentCourse(){
+  try{ const q=new URLSearchParams(location.search).get('course'); if(q && COURSES.some(c=>c.key===q)) return q; }catch(e){}
+  try{ const c=localStorage.getItem('oreum_course'); if(c && COURSES.some(x=>x.key===c)) return c; }catch(e){}
+  return 'g3';
+}
+function setCourse(key){ try{ localStorage.setItem('oreum_course',key); }catch(e){} STATE.course=key; renderRouter(); }
 
 const STATE = {
   view: 'router',         // 'router' | 'diag'
@@ -472,25 +494,35 @@ function renderRouter(){
     el('p',{class:'lead',html:'오답 마킹부터 시간 진단까지 4단계로 자기 약점을 정확히 짚어내는 도구입니다.<br>응시한 회차를 선택해 주세요.'})
   );
 
+  const course = currentCourse(); STATE.course = course; const cinfo = courseInfo(course);
+  const tabs = el('div',{class:'course-tabs', role:'tablist'});
+  COURSES.forEach(c=>{
+    const b = el('button',{class:'course-tab'+(c.key===course?' on':''), role:'tab', onclick:()=>setCourse(c.key)}, c.label);
+    tabs.appendChild(b);
+  });
+  const exams = EXAM_LIST.filter(m=>courseOf(m)===course);
+  const specials = SPECIAL_LIST.filter(sp=>courseOf(sp)===course);
+
   const sectionLabel = el('div',{class:'section-label'},'회차 목록');
   const list = el('div',{class:'exam-list'});
 
-  EXAM_LIST.forEach(meta=>{
+  exams.forEach(meta=>{
     const card = el('button',{class:'exam-card', onclick:()=>loadExam(meta.id)});
     card.appendChild(buildCardContent(meta));
     list.appendChild(card);
   });
+  if(!exams.length) list.appendChild(el('div',{class:'exam-empty', html: cinfo.empty || '등록된 회차가 없습니다.'}));
 
   // 특별 진단 — 오답 마킹과 별개로 시험 운영과 EBS 연계 체감을 스스로 적는 설문
   const specialLabel = el('div',{class:'section-label'},'특별 진단');
   const specialList = el('div',{class:'exam-list'});
-  SPECIAL_LIST.forEach(sp=>{
+  specials.forEach(sp=>{
     const card = el('a',{class:'exam-card', href:sp.href});
     card.innerHTML = `
       <div class="card-top">
         <div class="card-meta-left">
           <span class="card-num">${escape(sp.no)}</span>
-          <span class="card-grade">고3</span>
+          <span class="card-grade">${escape(cinfo.short)}</span>
           <span class="card-status status-tentative">${escape(sp.statusLabel)}</span>
         </div>
         <span class="card-arrow">→</span>
@@ -511,18 +543,18 @@ function renderRouter(){
   });
 
   const footer = el('footer',{class:'footer',
-    html:'<span class="footer-mark">가경T · 오름 국어 연구소</span>오름 국어학원 고3 정규반 · 학원등록번호 제2474호<br>문의 사항은 가경T에게 직접 전달해 주시기 바랍니다.'
+    html:'<span class="footer-mark">가경T · 오름 국어 연구소</span>'+cinfo.footer+' · 학원등록번호 제2474호<br>문의 사항은 가경T에게 직접 전달해 주시기 바랍니다.'
   });
 
   root.appendChild(wrapHeader);
-  root.appendChild(specialLabel);
-  root.appendChild(specialList);
+  root.appendChild(tabs);
+  if(specials.length){ root.appendChild(specialLabel); root.appendChild(specialList); }
   root.appendChild(sectionLabel);
   root.appendChild(list);
   root.appendChild(footer);
 
   // 카드별 메타 비동기 로드
-  EXAM_LIST.forEach((meta, idx)=>{
+  exams.forEach((meta, idx)=>{
     fetch(meta.file+'?v='+DATA_VER).then(r=>r.json()).then(d=>{
       const cardEl = list.children[idx];
       clear(cardEl);
@@ -572,7 +604,7 @@ function buildCardContent(meta, data=null){
     <div class="card-top">
       <div class="card-meta-left">
         <span class="card-num">${escape(meta.no)}</span>
-        <span class="card-grade">고3</span>
+        <span class="card-grade">${escape(courseInfo(courseOf(meta)).short)}</span>
         <span class="card-status ${meta.status==='active'?'status-active':'status-tentative'}">${escape(meta.statusLabel)}</span>
       </div>
       <span class="card-arrow">→</span>
@@ -604,7 +636,7 @@ function loadExam(examId){
     STATE.data = d;
     STATE.view = 'diag';
     STATE.step = 1;
-    STATE.student = { name:'', school:'', grade:'고3', choice:null, raw:null };
+    STATE.student = { name:'', school:'', grade: courseOf(meta)==='g2' ? '고2' : '고3', choice:null, raw:null };
     STATE.wrong = new Set();
     STATE.timeAns = {};
     STATE.result = null;
@@ -776,7 +808,7 @@ function renderStep1(){
     el('p',{class:'section-desc'},'결과 리포트가 학원 시트에 누적됩니다. 정확히 입력해 주세요.'),
     formRow('이름','text','name', STATE.student.name),
     formRow('학교','text','school', STATE.student.school, '예: 산본고'),
-    formRow('학년','select','grade', STATE.student.grade, null, ['고3']),
+    formRow('학년','select','grade', STATE.student.grade, null, [STATE.student.grade || '고3']),
     isUnified() ? el('div',{class:'form-row'},
       el('label',{},'선택 과목'),
       el('div',{class:'unified-note'},'이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
