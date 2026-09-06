@@ -89,6 +89,12 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .tab:hover{color:var(--text-secondary);background:transparent}
 .tab.on{color:var(--gold);border-bottom-color:var(--gold)}
 
+/* ── 상단 반(수업) 선택 ── */
+.classbar{display:flex;gap:8px;margin:0 0 22px;padding-bottom:18px;border-bottom:1px solid var(--border-soft)}
+.classtab{flex:0 0 auto;background:transparent;color:var(--text-secondary);border:1px solid var(--border-soft);border-radius:6px;padding:11px 28px;font-family:'Noto Serif KR',serif;font-size:1rem;font-weight:500;letter-spacing:0.5px;cursor:pointer;transition:all .15s}
+.classtab:hover{border-color:var(--gold);color:var(--cream)}
+.classtab.on{background:var(--gold);color:var(--bg-dark);border-color:var(--gold);font-weight:700}
+
 /* ── 개별 리포트 ── */
 .round-picker{margin:2px 0 18px;padding:14px 16px;background:var(--bg-card);border:1px solid var(--border-line);border-radius:8px}
 .rp-label{font-size:0.82rem;color:var(--cream);margin-bottom:10px;font-weight:500}
@@ -217,6 +223,12 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 <!-- 메인 -->
 <div id="main" class="hide">
 
+  <!-- 맨 위 반(수업) 선택 -->
+  <div class="classbar">
+    <button class="classtab on" id="clsOreum" onclick="switchClass('oreum')">[오름] 수능</button>
+    <button class="classtab" id="clsMexx" onclick="switchClass('mexx')">MEXX 수능</button>
+  </div>
+
   <div id="dedupNotice"></div>
 
   <div class="tabs">
@@ -296,6 +308,27 @@ function loadConfig(){
 }
 
 let ALL_DATA = [];
+
+// ─── 상단 반(수업) 선택: 'oreum'(오름 수능) | 'mexx'(MEXX 수능) ───
+// 회차별 브랜드는 data/mock-<id>.json 의 examMeta.brand(또는 course)로 판별하고,
+// 값이 없으면 회차ID에 'mexx'가 들어간 경우만 MEXX, 나머지는 오름으로 본다.
+let CLASS_SEL = 'oreum';
+const BRAND = {};                 // examId -> 'oreum' | 'mexx'
+function brandOf(id){ id = normExamId(id); return BRAND[id] || (/mexx/i.test(id) ? 'mexx' : 'oreum'); }
+function rowInClass(r){ return brandOf(val(r,'exam','회차ID')) === CLASS_SEL; }
+function DATA(){ return (ALL_DATA||[]).filter(rowInClass); }
+function switchClass(c){
+  if(c!=='oreum' && c!=='mexx') return;
+  CLASS_SEL = c;
+  var o=document.getElementById('clsOreum'), m=document.getElementById('clsMexx');
+  if(o) o.classList.toggle('on', c==='oreum');
+  if(m) m.classList.toggle('on', c==='mexx');
+  if(!ALL_DATA.length) return;
+  populateExamSelect();
+  renderStatsAndTable();
+  renderGradeDist();
+  buildReports();
+}
 
 // ─── 중복 응답 정리 (비파괴: 시트 원본 유지, 통계/표/리포트에서만 제외) ───
 //  같은 시험·같은 학생이 2건↑일 때
@@ -386,8 +419,10 @@ function loadGradeCuts(ids){
         });
         QMAP[id]=m;
         UNIFIED[id]=!!(d.examMeta && d.examMeta.unified);
+        var _b=((d.examMeta && (d.examMeta.brand || d.examMeta.course)) || '').toString().toLowerCase();
+        BRAND[id]= (/mexx/.test(_b) || /mexx/i.test(id)) ? 'mexx' : 'oreum';
       })
-      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; })
+      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; BRAND[id]= /mexx/i.test(id)?'mexx':'oreum'; })
   ));
 }
 function computeGradeFromRaw(examId, choice, raw){
@@ -502,7 +537,7 @@ function populateExamSelect(){
 
   // 회차ID + 회차이름을 unique하게 모음
   const examMap = new Map();
-  ALL_DATA.forEach(r => {
+  DATA().forEach(r => {
     const id = (r.exam || r['회차ID'] || r['시험'] || '').toString().trim();
     const name = (r.examLabel || r['회차이름'] || '').toString().trim();
     if(id && !examMap.has(id)){
@@ -543,7 +578,7 @@ function renderGradeDist(){
   var box=document.getElementById('gradeDistBox'); if(!box) return;
   var rounds=repAvailRounds(); if(!rounds.length){ box.innerHTML=''; return; }
   var byId={};
-  (ALL_DATA||[]).forEach(function(r){
+  DATA().forEach(function(r){
     var who=val(r,'name','이름').trim(); if(!who||EXCLUDE[who])return;
     var id=normExamId(val(r,'exam','회차ID')); if(!id)return;
     (byId[id]=byId[id]||[]).push(r);
@@ -586,7 +621,7 @@ function renderStatsAndTable(){
   const examFilter = document.getElementById('examSelect').value;
   const search = document.getElementById('searchInput').value.toLowerCase().trim();
 
-  let rows = ALL_DATA.slice();
+  let rows = DATA().slice();
   if(examFilter !== 'all'){
     rows = rows.filter(r => (r.exam||r['회차ID']||r['시험']||'').toString() === examFilter);
   }
@@ -712,7 +747,7 @@ function repRoundName(id, fullName){
 }
 function repAvailRounds(){
   var map={};
-  (ALL_DATA||[]).forEach(function(r){
+  DATA().forEach(function(r){
     var who=val(r,'name','이름').trim();
     if(!who || EXCLUDE[who]) return;                 // 더미 제출자(클로드·테스트·실험용) 제외
     var id=normExamId(val(r,'exam','회차ID')); if(!id)return;
@@ -857,7 +892,7 @@ function buildReports(){
   repInitSel();
   renderRoundPicker();
   var students={};
-  (ALL_DATA||[]).forEach(function(r){
+  DATA().forEach(function(r){
     var name=val(r,'name','이름').trim();
     if(!name||EXCLUDE[name])return;
     if(ALIAS[name])name=ALIAS[name];
