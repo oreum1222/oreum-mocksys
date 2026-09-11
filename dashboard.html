@@ -321,16 +321,38 @@ const CLASSES = [
   { key:'mexx', btn:'clsMexx', label:'MEXX 수능' }
 ];
 let CLASS_SEL = 'g3';
-const BRAND = {};                 // examId -> 'g3' | 'g2' | 'mexx'
-function classFromMeta(id, brand, course){
-  var b = String(brand||'').toLowerCase(), c = String(course||'').toLowerCase();
-  if(/mexx/.test(b) || /mexx/.test(c) || /mexx/i.test(id)) return 'mexx';
-  if(c==='g2' || /(^|[-_])g2([-_]|$)/i.test(id)) return 'g2';
-  return 'g3';
+const BRAND = {};                 // examId -> ['g3'] | ['g2'] | ['g2','mexx'] ...
+// 회차 하나가 여러 반에 속할 수 있다(예: 고2 9월 학평 = 오름 고2 + MEXX).
+// 우선순위 1) examMeta.classes 배열을 그대로 사용
+//          2) 없으면 course(g2 여부)로 학년 반을 정하고, mexx 표시가 있으면 MEXX를 겸한다
+function normClassKey(v){
+  v = String(v==null?'':v).trim().toLowerCase();
+  if(v==='mexx') return 'mexx';
+  if(v==='g2' || v==='고2') return 'g2';
+  if(v==='g3' || v==='고3' || v==='oreum') return 'g3';
+  return '';
 }
-function classOf(id){ id = normExamId(id); return BRAND[id] || classFromMeta(id,'',''); }
-function brandOf(id){ return classOf(id); }   // 예전 이름 호환
-function rowInClass(r){ return classOf(val(r,'exam','회차ID')) === CLASS_SEL; }
+function classesFromMeta(id, meta){
+  meta = meta || {};
+  var out = [], raw = meta.classes;
+  if(typeof raw === 'string') raw = raw.split(/[,\s/]+/);
+  if(Object.prototype.toString.call(raw)==='[object Array]'){
+    raw.forEach(function(v){ var k=normClassKey(v); if(k && out.indexOf(k)<0) out.push(k); });
+    if(out.length) return out;
+  }
+  var b = String(meta.brand||'').toLowerCase();
+  var c = String(meta.course||'').toLowerCase();
+  var i = String(id||'').toLowerCase();
+  var isMexx = /mexx/.test(b) || /mexx/.test(c) || /mexx/.test(i);
+  var isG2   = (c==='g2') || /(^|[-_])g2([-_]|$)/.test(i);
+  out.push(isG2 ? 'g2' : 'g3');
+  if(isMexx && out.indexOf('mexx')<0) out.push('mexx');
+  return out;
+}
+function classesOf(id){ id = normExamId(id); return BRAND[id] || classesFromMeta(id, {}); }
+function classOf(id){ return classesOf(id)[0]; }   // 대표 반
+function brandOf(id){ return classOf(id); }        // 예전 이름 호환
+function rowInClass(r){ return classesOf(val(r,'exam','회차ID')).indexOf(CLASS_SEL) >= 0; }
 function DATA(){ return (ALL_DATA||[]).filter(rowInClass); }
 function classLabel(k){ var f=CLASSES.filter(function(x){return x.key===k;})[0]; return f?f.label:k; }
 function switchClass(c){
@@ -437,9 +459,9 @@ function loadGradeCuts(ids){
         });
         QMAP[id]=m;
         UNIFIED[id]=!!(d.examMeta && d.examMeta.unified);
-        BRAND[id]= classFromMeta(id, (d.examMeta&&d.examMeta.brand)||'', (d.examMeta&&d.examMeta.course)||'');
+        BRAND[id]= classesFromMeta(id, d.examMeta||{});
       })
-      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; BRAND[id]= classFromMeta(id,'',''); })
+      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; BRAND[id]= classesFromMeta(id,{}); })
   ));
 }
 function computeGradeFromRaw(examId, choice, raw){

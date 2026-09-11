@@ -11,6 +11,10 @@
   "totalQuestions": 45,
   "gradeCutsPending": false,
   "course": "g2",
+  "classes": [
+   "g2",
+   "mexx"
+  ],
   "meanScore": 51.09,
   "std": 21.74,
   "maxStd": 145,
