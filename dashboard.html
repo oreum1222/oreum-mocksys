@@ -225,7 +225,8 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 
   <!-- 맨 위 반(수업) 선택 -->
   <div class="classbar">
-    <button class="classtab on" id="clsOreum" onclick="switchClass('oreum')">[오름] 수능</button>
+    <button class="classtab on" id="clsG3" onclick="switchClass('g3')">[오름] 고3</button>
+    <button class="classtab" id="clsG2" onclick="switchClass('g2')">[오름] 고2</button>
     <button class="classtab" id="clsMexx" onclick="switchClass('mexx')">MEXX 수능</button>
   </div>
 
@@ -309,20 +310,37 @@ function loadConfig(){
 
 let ALL_DATA = [];
 
-// ─── 상단 반(수업) 선택: 'oreum'(오름 수능) | 'mexx'(MEXX 수능) ───
-// 회차별 브랜드는 data/mock-<id>.json 의 examMeta.brand(또는 course)로 판별하고,
-// 값이 없으면 회차ID에 'mexx'가 들어간 경우만 MEXX, 나머지는 오름으로 본다.
-let CLASS_SEL = 'oreum';
-const BRAND = {};                 // examId -> 'oreum' | 'mexx'
-function brandOf(id){ id = normExamId(id); return BRAND[id] || (/mexx/i.test(id) ? 'mexx' : 'oreum'); }
-function rowInClass(r){ return brandOf(val(r,'exam','회차ID')) === CLASS_SEL; }
+// ─── 상단 반(수업) 선택: 'g3'([오름] 고3) | 'g2'([오름] 고2) | 'mexx'(MEXX 수능) ───
+// 회차의 반은 data/mock-<id>.json 의 examMeta.brand 와 examMeta.course 로 판별한다.
+//   brand 또는 course 에 'mexx'  → MEXX
+//   course 가 'g2'               → 오름 고2   (회차ID가 g2- 로 시작해도 동일)
+//   그 외(값 없음 포함)          → 오름 고3   (기존 회차 전부가 여기)
+const CLASSES = [
+  { key:'g3',   btn:'clsG3',   label:'[오름] 고3' },
+  { key:'g2',   btn:'clsG2',   label:'[오름] 고2' },
+  { key:'mexx', btn:'clsMexx', label:'MEXX 수능' }
+];
+let CLASS_SEL = 'g3';
+const BRAND = {};                 // examId -> 'g3' | 'g2' | 'mexx'
+function classFromMeta(id, brand, course){
+  var b = String(brand||'').toLowerCase(), c = String(course||'').toLowerCase();
+  if(/mexx/.test(b) || /mexx/.test(c) || /mexx/i.test(id)) return 'mexx';
+  if(c==='g2' || /(^|[-_])g2([-_]|$)/i.test(id)) return 'g2';
+  return 'g3';
+}
+function classOf(id){ id = normExamId(id); return BRAND[id] || classFromMeta(id,'',''); }
+function brandOf(id){ return classOf(id); }   // 예전 이름 호환
+function rowInClass(r){ return classOf(val(r,'exam','회차ID')) === CLASS_SEL; }
 function DATA(){ return (ALL_DATA||[]).filter(rowInClass); }
+function classLabel(k){ var f=CLASSES.filter(function(x){return x.key===k;})[0]; return f?f.label:k; }
 function switchClass(c){
-  if(c!=='oreum' && c!=='mexx') return;
+  if(c==='oreum') c='g3';                                   // 예전 키 호환
+  if(!CLASSES.some(function(x){return x.key===c;})) return;
   CLASS_SEL = c;
-  var o=document.getElementById('clsOreum'), m=document.getElementById('clsMexx');
-  if(o) o.classList.toggle('on', c==='oreum');
-  if(m) m.classList.toggle('on', c==='mexx');
+  CLASSES.forEach(function(x){
+    var el=document.getElementById(x.btn);
+    if(el) el.classList.toggle('on', x.key===c);
+  });
   if(!ALL_DATA.length) return;
   populateExamSelect();
   renderStatsAndTable();
@@ -419,10 +437,9 @@ function loadGradeCuts(ids){
         });
         QMAP[id]=m;
         UNIFIED[id]=!!(d.examMeta && d.examMeta.unified);
-        var _b=((d.examMeta && (d.examMeta.brand || d.examMeta.course)) || '').toString().toLowerCase();
-        BRAND[id]= (/mexx/.test(_b) || /mexx/i.test(id)) ? 'mexx' : 'oreum';
+        BRAND[id]= classFromMeta(id, (d.examMeta&&d.examMeta.brand)||'', (d.examMeta&&d.examMeta.course)||'');
       })
-      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; BRAND[id]= /mexx/i.test(id)?'mexx':'oreum'; })
+      .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; BRAND[id]= classFromMeta(id,'',''); })
   ));
 }
 function computeGradeFromRaw(examId, choice, raw){
@@ -648,7 +665,7 @@ function renderStatsAndTable(){
   // 테이블
   const tableBox = document.getElementById('tableBox');
   if(rows.length === 0){
-    tableBox.innerHTML = '<div class="empty">조건에 해당하는 응답이 없습니다.</div>';
+    tableBox.innerHTML = '<div class="empty">'+(DATA().length ? '조건에 해당하는 응답이 없습니다.' : classLabel(CLASS_SEL)+' 반에 등록된 회차나 제출이 아직 없습니다.')+'</div>';
     return;
   }
   // 최신순 정렬
@@ -1182,7 +1199,12 @@ function migrateNarrToServer(){
 function renderReports(){
   var root=document.getElementById('reportRoot');
   var note=document.getElementById('repNote');
-  if(!REP.master.length){ root.innerHTML='<div class="empty">선택한 회차에 응시한 데이터가 없습니다. 위에서 회차를 바꿔 보세요.</div>'; note.textContent=''; return; }
+  if(!REP.master.length){
+    var _msg = DATA().length
+      ? '선택한 회차에 응시한 데이터가 없습니다. 위에서 회차를 바꿔 보세요.'
+      : classLabel(CLASS_SEL)+' 반에 등록된 회차나 제출이 아직 없습니다. 맨 위에서 반을 바꿔 보세요.';
+    root.innerHTML='<div class="empty">'+_msg+'</div>'; note.textContent=''; return;
+  }
   note.innerHTML='리포트 회차 <b style="color:var(--gold)">'+REP.sel.length+'개</b> · 응시 학생 <b style="color:var(--gold)">'+REP.master.length+'명</b> · 회차 구성은 위 칩에서 변경할 수 있습니다.';
   var html="";
   REP.master.forEach(function(m,i){
