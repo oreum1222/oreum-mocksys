@@ -1039,7 +1039,7 @@ function buildReports(){
 
 function rItemnum(c){var m=/(common|hs|lm)-(\d+)/.exec(c);return m?m[2]+"번":c;}
 function rGcol(g){var R={1:"#2f7d57",2:"#3f9268",3:"#52a87c",4:"#6fbd95",5:"#8fceac",6:"#aadcc1",7:"#c4e7d4",8:"#daf0e4",9:"#ebf6f0"};return R[parseInt(g,10)]||"var(--text-muted)";}
-function rTlabel(t){return{"상승":"▲ 상승","하락":"▼ 하락","유지":"― 유지","단일":"단일 응시"}[t];}
+function rTlabel(t){return{"상승":"▲ 상승","하락":"▼ 하락","유지":"― 유지"}[t]||"";}
 function rTcls(t){return{"상승":"up","하락":"down","유지":"keep","단일":"single"}[t];}
 var R_TIME_DESC={"전체 시간 부족형":"시험 전체에서 시간에 쫓김 — 푸는 속도 자체가 병목","루틴 부재형":"풀이 순서·페이스 루틴이 잡히지 않음","고난도 집착형":"어려운 문항에 시간을 과투입 — 버리는 판단이 늦음","선택과목 지연형":"선택과목(화작/언매)에서 시간이 샘","독서 지연형":"독서 지문에서 시간이 과다 소모","문학 지연형":"문학에서 시간이 과다 소모","시간 안정형":"시간 운용이 안정적"};
 function rTimeComment(m){var seq=m.time_seq;if(!seq.length)return null;var mode=m.time_mode,desc=R_TIME_DESC[mode]||mode;
@@ -1056,8 +1056,11 @@ function rDonut(m){var sp=m.small_pct,bp=m.big_pct,segs=[];
   segs.forEach(function(s){var fr=s[1]/total,dash=C*fr,gap=C-dash;
     arcs+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="none" stroke="'+s[2]+'" stroke-width="'+SW+'" stroke-dasharray="'+dash.toFixed(2)+' '+gap.toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+CX+' '+CY+')"/>';off+=dash;});
   var gong=bp["공통"]||0;
-  var ctr='<text x="'+CX+'" y="'+(CY-4)+'" text-anchor="middle" class="rdonut-num">'+gong+'%</text><text x="'+CX+'" y="'+(CY+13)+'" text-anchor="middle" class="rdonut-lab">공통</text>';
-  var leg=segs.map(function(s){return '<div class="rlg"><span class="rlg-dot" style="background:'+s[2]+'"></span><span class="rlg-name">'+s[0]+'</span><span class="rlg-val">'+s[1]+'%</span></div>';}).join("");
+  // 공통 오답이 없으면 가운데 '0%'를 아예 쓰지 않는다(조교 피드백 2026-09-12)
+  var ctr = gong>0
+    ? '<text x="'+CX+'" y="'+(CY-4)+'" text-anchor="middle" class="rdonut-num">'+gong+'%</text><text x="'+CX+'" y="'+(CY+13)+'" text-anchor="middle" class="rdonut-lab">공통</text>'
+    : '';
+  var leg=segs.filter(function(s){return s[1]>0;}).map(function(s){return '<div class="rlg"><span class="rlg-dot" style="background:'+s[2]+'"></span><span class="rlg-name">'+s[0]+'</span><span class="rlg-val">'+s[1]+'%</span></div>';}).join("");
   return '<div class="rdonut-wrap"><svg viewBox="0 0 128 128" class="rdonut"><circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="none" stroke="var(--bg-dark)" stroke-width="'+SW+'"/>'+arcs+ctr+'</svg><div class="rlegend">'+leg+'</div></div>';}
 function rIntegrated(m){var out=[],n=m.n;
   var tr=m.type_rates||[], ar=m.area_rates||[], gs=m.grade_sim||[];
@@ -1093,7 +1096,7 @@ function rDiagnose(m){var parts=[],raws=m.raws,grades=m.grades,n=m.n;
     if(m.trend==="상승")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+d+'점 상승</b>('+grades[0]+'→'+grades[grades.length-1]+'등급)했다. 우상향이라 현재 방향을 유지하며 변별 문항만 더 잡아 볼 만하다.');
     else if(m.trend==="하락")parts.push('1회 '+raws[0]+'점 → 최근 '+raws[raws.length-1]+'점, <b>'+Math.abs(d)+'점 하락</b>('+grades[0]+'→'+grades[grades.length-1]+'등급)했다. 회차 난도 탓인지 시간 붕괴 탓인지는 나눠 볼 필요가 있다.');
     else parts.push(raws.join("→")+'점으로 '+grades[0]+'~'+grades[grades.length-1]+'등급대에 <b>머물러 있다</b>.');
-  } else parts.push(raws[0]+'점·'+grades[grades.length-1]+'등급 단일 응시다. 다음 회차부터 추이 비교가 가능하다.');
+  }   // 응시 회차가 하나뿐일 때는 추이 문장을 넣지 않는다(조교 피드백 2026-09-12)
   if(m.leak_type){
     parts.push('우선 과제는 영역 전체가 아니라 <b>‘'+m.leak_type+'’ 유형</b>이다 — 위 약점 분석대로 <b>지문·〈보기〉의 관계를 선지로 옮겨 검증하는 절차</b>를 매 문항 고정하는 것이 등급 상승의 지렛대로 보인다.');
   }
@@ -1240,7 +1243,7 @@ function renderReports(){
     var sid="rep-"+i;
     html+='<div class="repcard" id="'+sid+'" data-n="'+m.n+'" data-trend="'+m.trend+'" data-name="'+m.name+'">'
       +'<div class="rc-head"><div><div class="rc-name">'+m.name+'</div><div class="rc-meta">'+school+' · '+sub+' · '+m.n+'/'+REP.sel.length+'회 응시</div></div>'
-      +'<div class="rc-right"><span class="rtrend rtrend-'+rTcls(m.trend)+'">'+rTlabel(m.trend)+'</span><span class="rc-tw">누적 오답 '+m.total_wrong+'개</span>'
+      +'<div class="rc-right">'+(rTlabel(m.trend)?'<span class="rtrend rtrend-'+rTcls(m.trend)+'">'+rTlabel(m.trend)+'</span>':'')+'<span class="rc-tw">누적 오답 '+m.total_wrong+'개</span>'
       +'<button class="rpdf-btn no-print" onclick="printOneReport(\''+sid+'\')">이 학생 PDF</button></div></div>'
       +rMetrics(m)
       +'<div class="rc-row1"><div>'+rSpark(m)+'</div>'
@@ -1281,8 +1284,8 @@ function getJsPDF(){if(window.jspdf&&window.jspdf.jsPDF)return window.jspdf.jsPD
 function repLibsReady(){return !!(window.html2canvas&&getJsPDF());}
 async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn.style.visibility:'';if(btn)btn.style.visibility='hidden';
   t.classList.add('pdf-print');   // 인쇄용 라이트 테마
-  var CW=1000, ow=t.style.width, omw=t.style.maxWidth;   // 창 폭 무관하게 항상 고정 폭으로 캡처(좁은 창에서 세로로 길어져 찌그러지는 문제 방지)
-  t.style.width=CW+'px'; t.style.maxWidth='none';
+  var CW=1000, ow=t.style.width, omw=t.style.maxWidth, oov=t.style.overflow;   // 창 폭 무관하게 항상 고정 폭으로 캡처(좁은 창에서 세로로 길어져 찌그러지는 문제 방지)
+  t.style.width=CW+'px'; t.style.maxWidth='none'; t.style.overflow='visible';   // overflow:hidden이면 가로로 넘친 표가 잘린다
   // 강제 폭 상태에서 블록·표 행 좌표 측정(캔버스와 정확히 일치) — top/bot=블록 경계, rows=표 행 하단(행 중간 분할 방지)
   var CH=t.scrollHeight, cr=t.getBoundingClientRect(), blocks=[];
   [].slice.call(t.children).forEach(function(e){if(e.classList&&e.classList.contains('no-print'))return;
@@ -1291,7 +1294,7 @@ async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn
     [].slice.call(trs).forEach(function(tr){var rr=tr.getBoundingClientRect();blk.rows.push((rr.bottom-cr.top)/CH);});
     blocks.push(blk);});
   var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:CW,windowWidth:CW+40,ignoreElements:function(el){return el.classList&&el.classList.contains('no-print');}});
-  t.style.width=ow; t.style.maxWidth=omw;
+  t.style.width=ow; t.style.maxWidth=omw; t.style.overflow=oov;
   t.classList.remove('pdf-print');
   if(btn)btn.style.visibility=pv;
   c._blocks=blocks; return c;}
@@ -1315,12 +1318,14 @@ function repDrawSlice(pdf,canvas,srcY,srcH,destMM){var W=canvas.width,h=Math.max
 // 각 그룹을 한 장에 담고, 297mm 넘치면 그 페이지만 비율 축소(빈 페이지·중간 잘림 없음)
 // 자연 흐름 배치 — 블록을 위에서부터 빈틈없이 채우고, 남은 공간에 안 들어가는 블록만 다음 장으로.
 // 블록 중간 안 자름(한 블록이 한 페이지보다 크면만 분할). 큰 빈 공간·강제 페이지 분리 없음.
-function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.height,TM=12,BM=8;
-  var availPx=(297-TM-BM)/210*W, gapPx=3/210*W, pageY=0;
+function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.height,TM=12,BM=10,LM=10;
+  // LM = 좌우 여백(mm). 예전에는 210mm를 꽉 채워 그려서 인쇄하면 가장자리가 잘렸다(조교 피드백 2026-09-12).
+  var IW=210-LM*2;                                   // 실제 이미지 폭(mm)
+  var availPx=(297-TM-BM)/IW*W, gapPx=3/IW*W, pageY=0;
   function newPage(){if(state.added)pdf.addPage();state.added=true;pdf.setFillColor(255,255,255);pdf.rect(0,0,210,297,'F');pageY=0;}
   function draw(y0,h,py){var hh=Math.max(1,Math.round(h));var tmp=document.createElement('canvas');tmp.width=W;tmp.height=hh;
     var ctx=tmp.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,hh);ctx.drawImage(canvas,0,y0,W,hh,0,0,W,hh);
-    pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',0,TM+py/W*210,210,hh/W*210);}
+    pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',LM,TM+py/W*IW,IW,hh/W*IW);}
   newPage();
   blocks.forEach(function(b){var y0=b.top*H,y1=b.bot*H,h=y1-y0;
     if(h>0.5*availPx){  // 큰 블록(회차 표 등): 남은 공간부터 채워 이어붙임(페이지 꽉 채움) — 표 행 경계에서만 자름
