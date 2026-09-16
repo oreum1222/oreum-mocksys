@@ -558,9 +558,10 @@ function renderRouter(){
 
   root.appendChild(wrapHeader);
   root.appendChild(tabs);
-  if(specials.length){ root.appendChild(specialLabel); root.appendChild(specialList); }
   root.appendChild(sectionLabel);
   root.appendChild(list);
+  // 특별 진단은 회차 목록 아래에 둔다(2026-09-16, 응시 기간이 끝나 위에서 내림)
+  if(specials.length){ root.appendChild(specialLabel); root.appendChild(specialList); }
   root.appendChild(footer);
 
   // 카드별 메타 비동기 로드
