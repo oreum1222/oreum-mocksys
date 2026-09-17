@@ -225,8 +225,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 
   <!-- 맨 위 반(수업) 선택 -->
   <div class="classbar">
-    <button class="classtab on" id="clsG3" onclick="switchClass('g3')">[오름] 고3</button>
-    <button class="classtab" id="clsG2" onclick="switchClass('g2')">[오름] 고2</button>
+    <button class="classtab on" id="clsG3" onclick="switchClass('g3')">[오름] 수능</button>
     <button class="classtab" id="clsMexx" onclick="switchClass('mexx')">MEXX 수능</button>
   </div>
 
@@ -291,7 +290,15 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 
 <script>
 // config.js 로드
-let SCRIPT_URL = null, DASH_PASSWORD = null;
+let SCRIPT_URL = null;
+// 대시보드 비밀번호는 서버(Apps Script 스크립트 속성 DASH_PASSWORD)에서만 확인한다.
+// 입력값은 이 탭의 sessionStorage에만 두고, 요청 본문(auth)으로 보낸다(2026-09-18 보안 수정).
+const AUTH_KEY = 'oreum_dash_pw';
+function dashAuth(){ try{ return sessionStorage.getItem(AUTH_KEY) || ''; }catch(e){ return ''; } }
+function dashPost(body){
+  return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify(Object.assign({auth:dashAuth()},body))}).then(function(r){return r.json();});
+}
 function loadConfig(){
   return new Promise(resolve=>{
     const s = document.createElement('script');
@@ -299,7 +306,6 @@ function loadConfig(){
     s.onload = ()=>{
       if(window.OREUM_CONFIG){
         SCRIPT_URL = window.OREUM_CONFIG.SCRIPT_URL || null;
-        DASH_PASSWORD = window.OREUM_CONFIG.DASH_PASSWORD || null;
       }
       resolve();
     };
@@ -310,14 +316,13 @@ function loadConfig(){
 
 let ALL_DATA = [];
 
-// ─── 상단 반(수업) 선택: 'g3'([오름] 고3) | 'g2'([오름] 고2) | 'mexx'(MEXX 수능) ───
+// ─── 상단 반(수업) 선택: 'g3'([오름] 수능) | 'mexx'(MEXX 수능)  ※ [오름] 고2 반은 없어 탭을 뺐다(2026-09-18) ───
 // 회차의 반은 data/mock-<id>.json 의 examMeta.brand 와 examMeta.course 로 판별한다.
 //   brand 또는 course 에 'mexx'  → MEXX
 //   course 가 'g2'               → 오름 고2   (회차ID가 g2- 로 시작해도 동일)
 //   그 외(값 없음 포함)          → 오름 고3   (기존 회차 전부가 여기)
 const CLASSES = [
-  { key:'g3',   btn:'clsG3',   label:'[오름] 고3' },
-  { key:'g2',   btn:'clsG2',   label:'[오름] 고2' },
+  { key:'g3',   btn:'clsG3',   label:'[오름] 수능' },
   { key:'mexx', btn:'clsMexx', label:'MEXX 수능' }
 ];
 let CLASS_SEL = 'g3';
@@ -517,28 +522,34 @@ function checkPassword(){
   const pw = document.getElementById('pwInput').value;
   const msg = document.getElementById('gateMsg');
   msg.innerHTML = '';
-  if(!DASH_PASSWORD){
-    msg.innerHTML = '<div class="error">config.js에 DASH_PASSWORD가 설정되지 않았습니다.</div>';
-    return;
-  }
-  if(pw === DASH_PASSWORD){
+  if(!SCRIPT_URL){ msg.innerHTML = '<div class="error">config.js의 SCRIPT_URL이 설정되지 않았습니다.</div>'; return; }
+  if(!pw){ msg.innerHTML = '<div class="error">비밀번호를 입력해 주세요.</div>'; return; }
+  try{ sessionStorage.setItem(AUTH_KEY, pw); }catch(e){}
+  msg.innerHTML = '<div class="empty">확인 중...</div>';
+  dashPost({action:'list'}).then(function(d){
+    if(!d || d.ok !== true){
+      try{ sessionStorage.removeItem(AUTH_KEY); }catch(e){}
+      msg.innerHTML = '<div class="error">비밀번호가 일치하지 않습니다.</div>';
+      return;
+    }
+    msg.innerHTML = '';
     document.getElementById('gate').classList.add('hide');
     document.getElementById('main').classList.remove('hide');
-    sessionStorage.setItem('oreum_dash_auth', '1');
-    loadData();
-  } else {
-    msg.innerHTML = '<div class="error">비밀번호가 일치하지 않습니다.</div>';
-  }
+    loadData(d.rows || []);
+  }).catch(function(err){
+    try{ sessionStorage.removeItem(AUTH_KEY); }catch(e){}
+    msg.innerHTML = '<div class="error">서버에 연결하지 못했습니다: '+err.message+'</div>';
+  });
 }
 
 function logout(){
-  sessionStorage.removeItem('oreum_dash_auth');
+  try{ sessionStorage.removeItem(AUTH_KEY); sessionStorage.removeItem('oreum_dash_auth'); }catch(e){}
   document.getElementById('main').classList.add('hide');
   document.getElementById('gate').classList.remove('hide');
   document.getElementById('pwInput').value = '';
 }
 
-function loadData(){
+function loadData(preloaded){
   const msg = document.getElementById('loadMsg');
   const tableBox = document.getElementById('tableBox');
   msg.innerHTML = '';
@@ -550,10 +561,10 @@ function loadData(){
   }
 
   tableBox.innerHTML = '<div class="empty">불러오는 중...</div>';
-  fetch(SCRIPT_URL + '?action=list')
-    .then(r=>r.json())
+  (preloaded ? Promise.resolve({ok:true, rows:preloaded}) : dashPost({action:'list'}))
     .then(d=>{
-      ALL_DATA = dedupeData(Array.isArray(d) ? d : (d.data || []));
+      if(!d || d.ok !== true){ logout(); document.getElementById('gateMsg').innerHTML = '<div class="error">다시 로그인해 주세요.</div>'; return; }
+      ALL_DATA = dedupeData(d.rows || []);
       renderDedupNotice();
       const ids = [...new Set(ALL_DATA.map(r=>normExamId(r.exam||r['회차ID']||r['시험']||'')).filter(Boolean))];
       Promise.all([loadGradeCuts(ids), loadNarrEdits()]).then(()=>{
@@ -1181,7 +1192,7 @@ function narrGet(name){var p=narrPick(name);return p?p.v.html:null;}          //
 function narrLoc(name){var p=narrPick(name);return p?p.loc:null;}             // 저장 위치 배지용
 // 대시보드 로드 시 1회 — 서버 편집본 조회. 구버전 백엔드면 {error}/unknown → 로컬 전용 폴백(무회귀)
 function loadNarrEdits(){ if(!SCRIPT_URL) return Promise.resolve();
-  return fetch(SCRIPT_URL+'?action=narrEdits').then(function(r){return r.json();})
+  return dashPost({action:'narrEdits'})
     .then(function(d){ if(d&&!d.error){NARR_SERVER=d||{};NARR_SERVER_READY=true;} else {NARR_SERVER_READY=false;} })
     .catch(function(){NARR_SERVER_READY=false;});}
 function narrTools(blk,editing){[].slice.call(blk.querySelectorAll('.narr-tools .narr-btn')).forEach(function(b){
@@ -1196,9 +1207,7 @@ function narrSave(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.na
   _narrLocalSet(name,html,ts);                                    // 항상 로컬 백업
   body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);
   if(NARR_SERVER_READY){ NARR_SERVER[name]={html:html,ts:ts};     // 낙관적 반영 + 서버 저장
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'narrEditSave',auth:DASH_PASSWORD,key:name,html:html,ts:ts,editor:''})})
-      .then(function(r){return r.json();}).then(function(){renderReports();}).catch(function(){renderReports();});
+    dashPost({action:'narrEditSave',key:name,html:html,ts:ts,editor:''}).then(function(){renderReports();}).catch(function(){renderReports();});
   } else { renderReports(); }}
 function narrCancel(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.narr-body');
   body.innerHTML=body.dataset.orig||body.innerHTML;body.setAttribute('contenteditable','false');body.style.outline='';body.style.padding='';narrTools(blk,false);}
@@ -1207,8 +1216,7 @@ function narrReset(btn){var blk=btn.closest('.rnarr'),body=blk.querySelector('.n
   var name=body.dataset.student;
   try{var m=_narrLocal();delete m[name];localStorage.setItem(NARR_LS,JSON.stringify(m));}catch(e){}
   delete NARR_SERVER[name];
-  if(NARR_SERVER_READY){fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'narrEditDelete',auth:DASH_PASSWORD,key:name})}).catch(function(){});}
+  if(NARR_SERVER_READY){dashPost({action:'narrEditDelete',key:name}).catch(function(){});}
   renderReports();}
 // 이 기기 로컬 편집본을 전부 서버로 이관
 function migrateNarrToServer(){
@@ -1217,9 +1225,7 @@ function migrateNarrToServer(){
   if(!keys.length){alert('이 기기에 저장된 소견 편집본이 없습니다.');return;}
   if(!confirm('이 기기 소견 편집본 '+keys.length+'개를 서버로 올릴까요? (다른 기기에서도 보이게 됩니다)'))return;
   var done=0,fail=0;
-  var jobs=keys.map(function(k){return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'narrEditSave',auth:DASH_PASSWORD,key:k,html:m[k].html,ts:m[k].ts||Date.now(),editor:''})})
-    .then(function(r){return r.json();}).then(function(d){if(d&&d.error){fail++;}else{done++;NARR_SERVER[k]={html:m[k].html,ts:m[k].ts||Date.now()};}}).catch(function(){fail++;});});
+  var jobs=keys.map(function(k){return dashPost({action:'narrEditSave',key:k,html:m[k].html,ts:m[k].ts||Date.now(),editor:''}).then(function(d){if(d&&d.error){fail++;}else{done++;NARR_SERVER[k]={html:m[k].html,ts:m[k].ts||Date.now()};}}).catch(function(){fail++;});});
   Promise.all(jobs).then(function(){alert('업로드 완료: 성공 '+done+'개'+(fail?(' / 실패 '+fail+'개'):''));renderReports();});}
 function renderReports(){
   var root=document.getElementById('reportRoot');
@@ -1368,7 +1374,8 @@ function repOverlay(t){var ov=document.getElementById('pdfOverlay');ov.querySele
 function repHideOverlay(){document.getElementById('pdfOverlay').style.display='none';}
 
 loadConfig().then(()=>{
-  if(sessionStorage.getItem('oreum_dash_auth')==='1' && DASH_PASSWORD){
+  try{ sessionStorage.removeItem('oreum_dash_auth'); }catch(e){}   // 예전 방식의 통과 표시는 버린다
+  if(dashAuth() && SCRIPT_URL){
     document.getElementById('gate').classList.add('hide');
     document.getElementById('main').classList.remove('hide');
     loadData();

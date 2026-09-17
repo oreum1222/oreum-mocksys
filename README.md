@@ -7,8 +7,8 @@
 ```
 oreum-mocksys/
 ├── index.html          ← 학생용 진단 페이지
-├── dashboard.html      ← 강사 대시보드 (비밀번호: oreum2025)
-├── config.js           ← SCRIPT_URL · 비밀번호 설정
+├── dashboard.html      ← 강사 대시보드 (비밀번호는 Apps Script 스크립트 속성 DASH_PASSWORD, 저장소에 쓰지 않음)
+├── config.js           ← SCRIPT_URL 설정 (공개 파일, 비밀번호 금지)
 └── data/
     ├── mock-2025-05.json     (1회차 · 25년 5월 학평)
     ├── mock-2027-s2-01.json  (2회차 · 상상 시즌2-1)
