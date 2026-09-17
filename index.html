@@ -175,6 +175,30 @@ body{
 .q-wr{font-size:0.7rem;color:var(--text-muted);margin-left:auto}
 .q-item.wrong .q-wr{color:var(--cream);opacity:0.7}
 
+/* ─── 약술형 논술(가천대) 오답 기입 ─── */
+.yk-q{background:var(--bg-card);border:1px solid var(--border-line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.yk-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.yk-no{font-size:1.05rem;font-weight:700;color:var(--cream)}
+.yk-chip{font-size:.74rem;letter-spacing:.02em;padding:3px 9px;border-radius:999px;border:1px solid var(--border-soft);color:var(--gold-soft)}
+.yk-concept{font-size:.8rem;color:var(--text-muted)}
+.yk-prompt{font-size:.9rem;line-height:1.72;color:var(--text-dim);margin:10px 0 4px}
+.yk-sub{border:1px solid var(--border-line);border-radius:10px;padding:12px 14px;margin:9px 0;transition:border-color .15s, background .15s}
+.yk-sub.on{border-color:var(--gold);background:rgba(201,168,76,.06)}
+.yk-subrow{display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none}
+.yk-mark{font-size:1.02rem;font-weight:700;color:var(--cream);min-width:64px}
+.yk-pts{font-size:.8rem;color:var(--text-muted)}
+.yk-hint{margin-left:auto;font-size:.78rem;color:var(--text-muted)}
+.yk-box{width:100%;margin-top:11px;padding:11px 13px;border-radius:9px;border:1px solid var(--border-soft);
+  background:rgba(0,0,0,.22);color:var(--cream);font-family:inherit;font-size:.93rem;line-height:1.6;resize:vertical;min-height:52px}
+.yk-box::placeholder{color:var(--text-muted);opacity:.8}
+.yk-box:focus{outline:none;border-color:var(--gold);background:rgba(0,0,0,.3)}
+.yk-math{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px}
+.yk-mbtn{min-width:78px;padding:9px 12px;border-radius:9px;border:1px solid var(--border-line);background:transparent;
+  color:var(--text-dim);font-family:inherit;font-size:.9rem;cursor:pointer;transition:all .15s}
+.yk-mbtn.wrong{border-color:#d08a8a;color:#e8b4b4;background:rgba(208,138,138,.08)}
+.yk-sum{text-align:center;font-size:.95rem;color:var(--text-dim);padding:14px 0}
+.yk-sum b{color:var(--gold)}
+
 /* ─── Time survey ─── */
 .time-survey{display:flex;flex-direction:column;gap:32px}
 .tq{padding-bottom:24px;border-bottom:1px solid var(--border-line)}
@@ -435,7 +459,69 @@ const EXAM_LIST = [
     id: '2025-05', file: 'data/mock-2025-05.json',
     no: '제 1 회', tagDate: '2025년 5월 8일 · 경기도교육청',
     status: 'active', statusLabel: '정식 운영'
-  }
+  },
+
+  // ── 약술형 논술 — 가천대 실전 모의고사 (국어 8문항 소문항 기입 + 수학 O, X) ──
+  {
+    id: 'gachon-s1-1', file: 'data/mock-gachon-s1-1.json', course: 'g3', mode: 'yaksul',
+    no: '시즌1 1회', tagDate: '9월 20일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-20',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s1-2', file: 'data/mock-gachon-s1-2.json', course: 'g3', mode: 'yaksul',
+    no: '시즌1 2회', tagDate: '9월 20일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-20',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s1-3', file: 'data/mock-gachon-s1-3.json', course: 'g3', mode: 'yaksul',
+    no: '시즌1 3회', tagDate: '9월 27일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-27',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s1-4', file: 'data/mock-gachon-s1-4.json', course: 'g3', mode: 'yaksul',
+    no: '시즌1 4회', tagDate: '9월 27일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-27',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s2-1', file: 'data/mock-gachon-s2-1.json', course: 'g3', mode: 'yaksul',
+    no: '시즌2 1회', tagDate: '10월 4일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-04',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s2-2', file: 'data/mock-gachon-s2-2.json', course: 'g3', mode: 'yaksul',
+    no: '시즌2 2회', tagDate: '10월 4일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-04',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s2-3', file: 'data/mock-gachon-s2-3.json', course: 'g3', mode: 'yaksul',
+    no: '시즌2 3회', tagDate: '10월 11일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-11',
+    status: 'active', statusLabel: '해설 없음(정답 미입력)'
+  },
+  {
+    id: 'gachon-s2-4', file: 'data/mock-gachon-s2-4.json', course: 'g3', mode: 'yaksul',
+    no: '시즌2 4회', tagDate: '10월 11일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-11',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s3-1', file: 'data/mock-gachon-s3-1.json', course: 'g3', mode: 'yaksul',
+    no: '시즌3 1회', tagDate: '10월 18일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-18',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s3-2', file: 'data/mock-gachon-s3-2.json', course: 'g3', mode: 'yaksul',
+    no: '시즌3 2회', tagDate: '10월 18일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-18',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s3-3', file: 'data/mock-gachon-s3-3.json', course: 'g3', mode: 'yaksul',
+    no: '시즌3 3회', tagDate: '10월 25일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-25',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'gachon-s3-4', file: 'data/mock-gachon-s3-4.json', course: 'g3', mode: 'yaksul',
+    no: '시즌3 4회', tagDate: '10월 25일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-25',
+    status: 'active', statusLabel: '정식 운영'
+  },
 ];
 
 // 특별 진단 — 오답 마킹 진단과 별개로 응시 태도와 EBS 연계 체감을 스스로 적는 설문
@@ -592,6 +678,42 @@ function buildCardContent(meta, data=null){
     }).join(' · ');
   }
 
+  // 약술형 논술 회차: 등급컷과 변별 자리가 없다 → 구성과 점수 입력일을 보여 준다
+  const yak = !!(data && data.examMeta && data.examMeta.mode === 'yaksul') || meta.mode === 'yaksul';
+  if(yak){
+    const em = data ? data.examMeta : null;
+    const nKo = data ? (data.korean||[]).length : 8;
+    const nMa = data ? (data.math||[]).length : 0;
+    const comp = data ? (`국어 <strong>${nKo}문항</strong>` + (nMa ? ` · 수학 <strong>${nMa}문항</strong>` : ' · 수학 없음')
+                        + (em && em.noAnswer ? ' · 정답 미입력' : '')) : '...';
+    const when = (em && em.inputDateLabel) ? em.inputDateLabel : (meta.inputDate ? meta.inputDate.slice(5).replace('-','월 ')+'일' : '');
+    const frag0 = document.createDocumentFragment();
+    const inner0 = document.createElement('div');
+    inner0.innerHTML = `
+    <div class="card-top">
+      <div class="card-meta-left">
+        <span class="card-num">${escape(meta.no)}</span>
+        <span class="card-grade">약술</span>
+        <span class="card-status ${meta.status==='active'?'status-active':'status-tentative'}">${escape(meta.statusLabel)}</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </div>
+    <h2 class="card-name">${escape(examLabel)}</h2>
+    <p class="card-date">${when ? '점수 입력 · '+escape(when) : ''}</p>
+    <div class="card-body">
+      <div class="card-body-block">
+        <span class="body-label">구성</span>
+        <p class="body-value">${comp}</p>
+      </div>
+      <div class="card-body-block">
+        <span class="body-label">기입 방식</span>
+        <p class="body-value">소문항마다 틀린 칸을 체크하고 시험지에 쓴 답을 그대로 적습니다.</p>
+      </div>
+    </div>`;
+    while(inner0.firstChild) frag0.appendChild(inner0.firstChild);
+    return frag0;
+  }
+
   // 등급컷
   let cutHtml = '...';
   if(data && data.gradeCutsPending){
@@ -642,6 +764,12 @@ function buildCardContent(meta, data=null){
 }
 
 // ─────────────────── Load exam ───────────────────
+function isYaksul(){ return !!(STATE.data && STATE.data.examMeta && STATE.data.examMeta.mode==='yaksul'); }
+function yakInit(){ if(!STATE.yak) STATE.yak={subs:{},math:{},mathSkip:false}; return STATE.yak; }
+function yakKey(no,mark){ return no+'-'+mark; }
+function yakSub(no,mark){ const y=yakInit(), k=yakKey(no,mark); if(!y.subs[k]) y.subs[k]={wrong:false,my:''}; return y.subs[k]; }
+function yakKorean(){ return (STATE.data && STATE.data.korean) || []; }
+function yakMath(){ return (STATE.data && STATE.data.math) || []; }
 function loadExam(examId){
   const meta = EXAM_LIST.find(e=>e.id===examId);
   if(!meta) return;
@@ -655,6 +783,7 @@ function loadExam(examId){
     STATE.wrong = new Set();
     STATE.timeAns = {};
     STATE.result = null;
+    STATE.yak = null;
     document.getElementById('loading').style.display = 'none';
     renderDiag();
   }).catch(err=>{
@@ -772,11 +901,11 @@ function renderDiag(){
   const header = el('div',{class:'diag-header'},
     el('span',{class:'exam-tag'},'국어 영역 · 진단'),
     el('h1',{class:'diag-title'},exam.label),
-    el('p',{class:'diag-sub'},'4단계 진단 — 기본 정보 → 오답 마킹 → 시간 진단 → 진단 리포트')
+    el('p',{class:'diag-sub'}, isYaksul() ? '3단계 진단 — 기본 정보 → 오답 기입 → 진단 리포트' : '4단계 진단 — 기본 정보 → 오답 마킹 → 시간 진단 → 진단 리포트')
   );
-  const steps = el('div',{class:'step-bar'},
-    stepEl(1,'기본 정보'),stepEl(2,'오답 마킹'),stepEl(3,'시간 진단'),stepEl(4,'진단 결과')
-  );
+  const steps = isYaksul()
+    ? el('div',{class:'step-bar'}, stepEl(1,'기본 정보'), stepEl(2,'오답 기입'), stepEl(4,'진단 결과'))
+    : el('div',{class:'step-bar'}, stepEl(1,'기본 정보'),stepEl(2,'오답 마킹'),stepEl(3,'시간 진단'),stepEl(4,'진단 결과'));
   root.appendChild(back); root.appendChild(header); root.appendChild(steps);
 
   if(STATE.step===1) renderStep1();
@@ -787,8 +916,9 @@ function renderDiag(){
 }
 function stepEl(n,label){
   const cls = STATE.step===n ? 'step active' : (STATE.step>n ? 'step done' : 'step');
+  const shown = (typeof isYaksul==='function' && isYaksul() && n===4) ? 3 : n;   // 약술은 3단계 흐름
   return el('div',{class:cls},
-    el('span',{class:'step-num'},'STEP '+n),
+    el('span',{class:'step-num'},'STEP '+shown),
     el('span',{class:'step-label'},label)
   );
 }
@@ -876,6 +1006,7 @@ function nextFromStep1(){
 
 // ─── Step 2: 오답 마킹 ───
 function renderStep2(){
+  if(isYaksul()) return renderYakMark();
   const intro = el('div',{class:'section'},
     el('h2',{class:'section-title'},'오답 마킹'),
     el('p',{class:'section-desc', html:'시험에서 틀린 문항을 모두 클릭해 주세요. 다시 클릭하면 해제됩니다. 회색 숫자는 전국 오답률(%)입니다. <strong style="color:var(--gold-soft)">3점</strong> 표시된 문항은 변별이 큰 자리입니다.'})
@@ -928,6 +1059,7 @@ function areaBlock(title, questions, scope){
 
 // ─── Step 3: 시간 진단 ───
 function renderStep3(){
+  if(isYaksul()){ STATE.step=4; return renderDiag(); }   // 약술은 시간 진단 단계가 없다
   const intro = el('div',{class:'section'},
     el('h2',{class:'section-title'},'시간 진단'),
     el('p',{class:'section-desc'},'본 시험에서의 ‘시간 사용 패턴’을 진단합니다. 각 문항에 솔직하게 답해 주세요.')
@@ -977,6 +1109,7 @@ function goToResult(){
 
 // ─────────────────── 진단 계산 엔진 ───────────────────
 function computeResult(){
+  if(isYaksul()) return computeYak();
   const d = STATE.data;
   const choice = STATE.student.choice;
 
@@ -1085,6 +1218,7 @@ function diagnoseTime(answers, codes){
 
 // ─── Step 4: 결과지 ───
 function renderStep4(){
+  if(isYaksul()) return renderYakResult();
   const r = STATE.result;
   const exam = STATE.data.examMeta;
   const choice = STATE.student.choice;
@@ -1207,6 +1341,171 @@ function renderStep4(){
   }
 }
 
+
+/* ════════ 약술형 논술(가천대 실전 모의고사) ════════
+ * 국어: 문항마다 소문항(①②…). 틀린 칸만 체크하고 시험지에 쓴 답을 그대로 적는다.
+ * 수학: 맞음과 틀림만. 미응시면 제외. 회차에 수학이 없으면(noMath) 아예 표시하지 않는다. */
+function renderYakMark(){
+  const y = yakInit(), meta = STATE.data.examMeta;
+  root.appendChild(el('div',{class:'section'},
+    el('h2',{class:'section-title'},'국어 오답 기입'),
+    el('p',{class:'section-desc', html:'맞은 칸은 그대로 두고 <strong>틀린 칸만 체크</strong>해 주세요. 체크하면 답을 적는 칸이 열립니다.'})
+  ));
+  yakKorean().forEach(q=>{
+    const box = el('div',{class:'yk-q'});
+    box.appendChild(el('div',{class:'yk-head'},
+      el('span',{class:'yk-no'},'문제 '+q.no),
+      q.course ? el('span',{class:'yk-chip'}, q.course) : '',
+      q.type ? el('span',{class:'yk-chip'}, q.type) : '',
+      q.concept ? el('span',{class:'yk-concept'}, q.concept) : ''
+    ));
+    if(q.prompt) box.appendChild(el('p',{class:'yk-prompt'}, q.prompt));
+    (q.subs||[]).forEach(sub=>{
+      const st = yakSub(q.no, sub.mark);
+      const row = el('div',{class:'yk-sub'+(st.wrong?' on':'')});
+      const ta = el('textarea',{class:'yk-box', rows:'2',
+        placeholder:'시험지에 적은 대로 정확히 적으세요',
+        style:'display:'+(st.wrong?'block':'none')});
+      ta.value = st.my||'';
+      ta.oninput = ()=>{ st.my = ta.value; };
+      const cb = el('input',{type:'checkbox', style:'width:18px;height:18px;accent-color:var(--gold)'});
+      cb.checked = !!st.wrong;
+      cb.onchange = ()=>{ st.wrong=cb.checked; row.classList.toggle('on',cb.checked);
+        ta.style.display = cb.checked?'block':'none'; if(cb.checked) ta.focus(); yakSum(); };
+      const lab = el('label',{class:'yk-subrow'}, cb,
+        el('span',{class:'yk-mark'}, sub.mark),
+        el('span',{class:'yk-pts'}, sub.points!=null ? (sub.points+'점') : ''),
+        el('span',{class:'yk-hint'},'틀렸으면 체크'));
+      row.appendChild(lab); row.appendChild(ta);
+      box.appendChild(row);
+    });
+    root.appendChild(box);
+  });
+
+  if(!meta.noMath && yakMath().length){
+    const mb = el('div',{class:'section'});
+    mb.appendChild(el('h2',{class:'section-title'},'수학'));
+    mb.appendChild(el('p',{class:'section-desc'},'틀린 문항만 눌러 ✕로 바꿔 주세요.'));
+    const skipRow = el('label',{class:'yk-subrow', style:'margin:10px 0 14px'});
+    const skip = el('input',{type:'checkbox', style:'width:18px;height:18px;accent-color:var(--gold)'});
+    skip.checked = !!y.mathSkip;
+    skip.onchange = ()=>{ y.mathSkip=skip.checked; renderDiag(); };
+    skipRow.appendChild(skip); skipRow.appendChild(el('span',{},'수학 미응시'));
+    mb.appendChild(skipRow);
+    const grid = el('div',{class:'yk-math', style:y.mathSkip?'opacity:.35;pointer-events:none':''});
+    yakMath().forEach(m=>{
+      const wrong = y.math[String(m.no)]===false;
+      const b = el('button',{class:'yk-mbtn'+(wrong?' wrong':''),
+        onclick:()=>{ y.math[String(m.no)] = wrong ? true : false; renderDiag(); }},
+        m.no+'번  '+(wrong?'✕':'○'));
+      grid.appendChild(b);
+    });
+    mb.appendChild(grid);
+    root.appendChild(mb);
+  }
+
+  root.appendChild(el('div',{class:'yk-sum', id:'yakSum'}));
+  root.appendChild(el('div',{class:'btn-row'},
+    el('button',{class:'btn btn-ghost', onclick:()=>{STATE.step=1; renderDiag();}},'← 이전'),
+    el('button',{class:'btn btn-primary', onclick:()=>{ STATE.result=computeResult(); STATE.step=4; renderDiag(); }},'결과 보기 →')
+  ));
+  yakSum();
+}
+function yakSum(){
+  const e = document.getElementById('yakSum'); if(!e) return;
+  const y = yakInit(); let n=0, lost=0;
+  yakKorean().forEach(q=>(q.subs||[]).forEach(s=>{ const st=y.subs[yakKey(q.no,s.mark)]; if(st&&st.wrong){ n++; lost+=(s.points||0); } }));
+  const tot = (STATE.data.scoring&&STATE.data.scoring.koreanTotal)||80;
+  e.innerHTML = '국어 틀린 칸 <b>'+n+'개</b> · 예상 점수 <b>'+Math.max(0,Math.round((tot-lost)*10)/10)+'</b> / '+tot+'점';
+}
+function computeYak(){
+  const y = yakInit(), qs = yakKorean(), meta = STATE.data.examMeta;
+  const tot = (STATE.data.scoring&&STATE.data.scoring.koreanTotal) || qs.reduce((n,q)=>n+(q.total||0),0);
+  const items=[]; let lost=0, wrongSubs=0, totalSubs=0; const byType={}, byCourse={};
+  qs.forEach(q=>{
+    const subs=[];
+    (q.subs||[]).forEach(s=>{ totalSubs++;
+      const st=y.subs[yakKey(q.no,s.mark)];
+      if(st&&st.wrong){ wrongSubs++; lost+=(s.points||0);
+        subs.push({mark:s.mark, points:s.points||0, answer:s.answer||'', my:(st.my||'').trim()}); }
+    });
+    if(subs.length){
+      const t=q.type||'기타', c=q.course||'기타';
+      byType[t]=(byType[t]||0)+subs.length; byCourse[c]=(byCourse[c]||0)+subs.length;
+      items.push({no:q.no, type:q.type||'', course:q.course||'', concept:q.concept||'', prompt:q.prompt||'',
+                  intent:q.intent||'', ebs:q.ebs||'', lost:subs.reduce((n,s)=>n+s.points,0), subs:subs});
+    }
+  });
+  const raw = Math.max(0, Math.round((tot-lost)*10)/10);
+  const math = (meta.noMath || y.mathSkip) ? null : (function(){
+    const ms=yakMath(), w=ms.filter(m=>y.math[String(m.no)]===false).map(m=>m.no);
+    return {total:ms.length, wrong:w, correct:ms.length-w.length};
+  })();
+  const top = Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+  return { yaksul:true, raw:raw, total:tot, rate: tot?Math.round(raw/tot*100):0,
+    wrongSubs:wrongSubs, totalSubs:totalSubs, items:items, byType:byType, byCourse:byCourse,
+    math:math, mathSkip:!!y.mathSkip,
+    patterns: top.slice(0,3).map(([name,n],i)=>({code:'Y'+(i+1), name:name, diag:name+' 유형에서 '+n+'칸을 놓쳤습니다.', action:'', evidence:[]})),
+    grade:'', gradeCut:{}, timeDiag:null };
+}
+function renderYakResult(){
+  const r = STATE.result || (STATE.result = computeResult());
+  const meta = STATE.data.examMeta;
+  root.appendChild(el('div',{class:'result-hero'},
+    el('h2',{class:'result-name'}, STATE.student.name+' 학생'),
+    el('p',{class:'result-meta'}, [STATE.student.school, meta.label].filter(Boolean).join(' · '))
+  ));
+  const cards = el('div',{class:'score-block'});
+  const card=(lab,num,sub)=>el('div',{class:'score-card'}, el('div',{class:'score-label'},lab), el('div',{class:'score-num'},num), el('div',{class:'score-num-sub'},sub));
+  cards.appendChild(card('국어 점수', r.raw, '/ '+r.total+'점'));
+  cards.appendChild(card('국어 정답률', r.rate+'%', '소문항 '+(r.totalSubs-r.wrongSubs)+'/'+r.totalSubs+'칸'));
+  cards.appendChild(card('수학', r.math ? (r.math.correct+' / '+r.math.total) : (meta.noMath?'없음':'미응시'), r.math?'맞은 문항':'기입 안 함'));
+  root.appendChild(cards);
+
+  const bt = Object.entries(r.byType).sort((a,b)=>b[1]-a[1]);
+  if(bt.length){
+    const s = el('div',{class:'section'}, el('h2',{class:'section-title'},'유형별 오답'));
+    bt.forEach(([t,n])=>s.appendChild(el('p',{class:'section-desc', style:'margin:5px 0'}, '· '+t+' — '+n+'칸')));
+    const bc = Object.entries(r.byCourse).sort((a,b)=>b[1]-a[1]);
+    s.appendChild(el('p',{class:'section-desc', style:'margin-top:10px;opacity:.8'}, '과목별: '+bc.map(([c,n])=>c+' '+n+'칸').join(' · ')));
+    root.appendChild(s);
+  }
+  const wd = el('div',{class:'section'}, el('h2',{class:'section-title'},'틀린 문항 — '+r.items.length+'문항'));
+  if(!r.items.length) wd.appendChild(el('p',{class:'section-desc'},'틀린 칸이 없습니다. 만점입니다.'));
+  r.items.forEach(q=>{
+    const b = el('div',{class:'yk-q'});
+    b.appendChild(el('div',{class:'yk-head'},
+      el('span',{class:'yk-no'},'문제 '+q.no),
+      q.course?el('span',{class:'yk-chip'},q.course):'',
+      q.type?el('span',{class:'yk-chip'},q.type):'',
+      el('span',{class:'yk-concept'},'−'+q.lost+'점')));
+    if(q.concept) b.appendChild(el('p',{class:'yk-prompt', style:'margin:6px 0 0'}, q.concept));
+    q.subs.forEach(s=>{
+      b.appendChild(el('div',{style:'margin-top:10px'},
+        el('div',{class:'yk-prompt', style:'margin:0'}, s.mark+' 내가 쓴 답 — '+(s.my||'(적지 않음)')),
+        el('div',{class:'yk-prompt', style:'margin:2px 0 0;color:var(--gold-soft)'},
+          s.mark+' 정답 — '+(s.answer || (meta.noAnswer?'(해설지 미제공)':'-')))
+      ));
+    });
+    if(q.ebs) b.appendChild(el('p',{class:'yk-concept', style:'margin-top:8px'}, '연계: '+q.ebs));
+    wd.appendChild(b);
+  });
+  root.appendChild(wd);
+  if(r.math && r.math.wrong.length){
+    root.appendChild(el('div',{class:'section'}, el('h2',{class:'section-title'},'수학 틀린 문항'),
+      el('p',{class:'section-desc'}, r.math.wrong.join(', ')+'번')));
+  }
+  // 제출(기존 흐름 재사용)
+  const nav = [
+    el('button',{class:'btn btn-ghost', onclick:()=>{ STATE.step=2; renderDiag(); }},'← 오답 기입으로'),
+    el('button',{class:'btn btn-ghost', onclick:()=>window.print()},'PDF 저장 / 인쇄')
+  ];
+  if(!STATE.teacherView) nav.push(el('button',{class:'btn btn-primary', id:'submitBtn', onclick:()=>submitResult(true)},'결과 다시 보내기'));
+  root.appendChild(el('div',{class:'btn-row'}, ...nav));
+  root.appendChild(el('div',{id:'submitFeedback'}));
+  if(!STATE.teacherView && !STATE.autoSubmitted) setTimeout(()=>submitResult(false), 400);
+}
+
 function submitResult(isManual){
   const btn = document.getElementById('submitBtn');
   const fb = document.getElementById('submitFeedback');
@@ -1236,11 +1535,14 @@ function submitResult(isManual){
     choice: s.choice,
     raw: r.raw,
     예상등급: r.grade,
-    표준점수: r.gradeCut.std || '',
-    백분위: r.gradeCut.pct || '',
-    틀린문항: Array.from(STATE.wrong).join(','),
+    표준점수: (r.gradeCut && r.gradeCut.std) || '',
+    백분위: (r.gradeCut && r.gradeCut.pct) || '',
+    // 약술은 소문항 단위라 '문항번호-기호'로 적는다(예: 3-②). 일반 회차는 기존과 같다.
+    틀린문항: isYaksul()
+      ? r.items.map(q=>q.subs.map(s=>q.no+'-'+s.mark).join(',')).join(',')
+      : Array.from(STATE.wrong).join(','),
     핵심패턴: r.patterns.map(p=>p.code+':'+p.name).join('|'),
-    시간진단: r.timeDiag ? r.timeDiag.label : '',
+    시간진단: (!isYaksul() && r.timeDiag) ? r.timeDiag.label : '',
     제출방식: isManual ? '재전송(수동)' : '자동',
     // 강사 메일용 풍부한 진단 데이터
     patternsJson: JSON.stringify(r.patterns.map(p=>({
@@ -1248,7 +1550,7 @@ function submitResult(isManual){
       diag: p.diag||'', action: p.action||'',
       hits: p.evidence||[], scope: p.scope||''
     }))),
-    wrongDetailsJson: JSON.stringify(r.wrongDetails.map(q=>({
+    wrongDetailsJson: JSON.stringify((r.wrongDetails||[]).map(q=>({
       no: q.no, scope: q.scope,
       area: q.area||'', source: q.source||'',
       three: !!q.three, wr: q.wr||null,
@@ -1257,7 +1559,14 @@ function submitResult(isManual){
       remediation: q.remediation||'',
       parentNote: q.parentNote||''
     }))),
-    timeDiagJson: JSON.stringify(r.timeDiag||null)
+    timeDiagJson: JSON.stringify(isYaksul() ? null : (r.timeDiag||null)),
+    // 약술 상세: 점수, 소문항별 내 답과 정답, 유형과 과목 집계, 수학 결과
+    yaksulJson: isYaksul() ? JSON.stringify({
+      score: r.raw, total: r.total, rate: r.rate,
+      wrongSubs: r.wrongSubs, totalSubs: r.totalSubs,
+      byType: r.byType, byCourse: r.byCourse,
+      math: r.math, mathSkip: r.mathSkip, items: r.items
+    }) : ''
   };
 
   // 자동 전송이 일어났음을 기록 (결과 화면을 다시 그려도 중복 자동 전송 안 함)
