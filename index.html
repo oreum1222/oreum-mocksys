@@ -308,7 +308,8 @@ const DATA_VER = '20260728';   // 회차 JSON 캐시 버스터 — 데이터 구
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
-  { key:'g2', label:'고2 수능 정규반', short:'고2', footer:'오름 국어학원 고2 수능 정규반', empty:'고2 수능 정규반 회차는 준비 중입니다.<br>첫 회차가 올라오면 이 자리에 표시됩니다.' }
+  { key:'g2', label:'고2 수능 정규반', short:'고2', footer:'오름 국어학원 고2 수능 정규반', empty:'고2 수능 정규반 회차는 준비 중입니다.<br>첫 회차가 올라오면 이 자리에 표시됩니다.' },
+  { key:'yaksul', label:'약술형 논술', short:'약술', footer:'오름 국어학원 약술형 논술', empty:'약술형 논술 회차는 준비 중입니다.' }
 ];
 function courseOf(meta){ return (meta && meta.course) || 'g3'; }
 function courseInfo(key){ return COURSES.find(c=>c.key===key) || COURSES[0]; }
@@ -463,62 +464,62 @@ const EXAM_LIST = [
 
   // ── 약술형 논술 — 가천대 실전 모의고사 (국어 8문항 소문항 기입 + 수학 O, X) ──
   {
-    id: 'gachon-s1-1', file: 'data/mock-gachon-s1-1.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s1-1', file: 'data/mock-gachon-s1-1.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌1 1회', tagDate: '9월 20일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-20',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s1-2', file: 'data/mock-gachon-s1-2.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s1-2', file: 'data/mock-gachon-s1-2.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌1 2회', tagDate: '9월 20일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-20',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s1-3', file: 'data/mock-gachon-s1-3.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s1-3', file: 'data/mock-gachon-s1-3.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌1 3회', tagDate: '9월 27일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-27',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s1-4', file: 'data/mock-gachon-s1-4.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s1-4', file: 'data/mock-gachon-s1-4.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌1 4회', tagDate: '9월 27일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-09-27',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s2-1', file: 'data/mock-gachon-s2-1.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s2-1', file: 'data/mock-gachon-s2-1.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌2 1회', tagDate: '10월 4일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-04',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s2-2', file: 'data/mock-gachon-s2-2.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s2-2', file: 'data/mock-gachon-s2-2.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌2 2회', tagDate: '10월 4일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-04',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s2-3', file: 'data/mock-gachon-s2-3.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s2-3', file: 'data/mock-gachon-s2-3.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌2 3회', tagDate: '10월 11일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-11',
     status: 'active', statusLabel: '해설 없음(정답 미입력)'
   },
   {
-    id: 'gachon-s2-4', file: 'data/mock-gachon-s2-4.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s2-4', file: 'data/mock-gachon-s2-4.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌2 4회', tagDate: '10월 11일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-11',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s3-1', file: 'data/mock-gachon-s3-1.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s3-1', file: 'data/mock-gachon-s3-1.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌3 1회', tagDate: '10월 18일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-18',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s3-2', file: 'data/mock-gachon-s3-2.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s3-2', file: 'data/mock-gachon-s3-2.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌3 2회', tagDate: '10월 18일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-18',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s3-3', file: 'data/mock-gachon-s3-3.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s3-3', file: 'data/mock-gachon-s3-3.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌3 3회', tagDate: '10월 25일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-25',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'gachon-s3-4', file: 'data/mock-gachon-s3-4.json', course: 'g3', mode: 'yaksul',
+    id: 'gachon-s3-4', file: 'data/mock-gachon-s3-4.json', course: 'yaksul', mode: 'yaksul',
     no: '시즌3 4회', tagDate: '10월 25일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-10-25',
     status: 'active', statusLabel: '정식 운영'
   },
