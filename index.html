@@ -227,6 +227,10 @@ body{
 .yk-ev{font-size:.84rem;color:var(--text-muted);line-height:1.65;margin-top:6px}
 .yk-take{display:flex;gap:9px;margin-top:8px}
 .yk-take button{min-width:110px;padding:10px 14px;border-radius:9px;border:1px solid var(--border-line);background:transparent;color:var(--text-dim);font:inherit;cursor:pointer}
+.yk-ebs-list{list-style:none;display:grid;gap:7px;padding:0}
+.yk-ebs-list li{padding:8px 10px;border:1px solid var(--border-line);border-radius:8px;line-height:1.6}
+.yk-ebs-src{color:var(--cream)}
+.yk-ebs-q{color:var(--text-muted);font-size:.8rem;white-space:nowrap}
 .yk-take button.on{border-color:var(--gold);color:var(--cream);background:rgba(201,168,76,.1)}
 
 /* ─── Time survey ─── */
@@ -334,7 +338,7 @@ body{
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20260918';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20260918e';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -1669,7 +1673,7 @@ function computeYak(){
     if(subs.length){
       byType[t]=(byType[t]||0)+subs.length; byCourse[c]=(byCourse[c]||0)+subs.length;
       items.push({no:q.no, type:q.type||'', course:q.course||'', concept:q.concept||'', prompt:q.prompt||'',
-                  intent:q.intent||'', ebs:q.ebs||'', explain: yakExplainShort_(q.explain),
+                  intent:q.intent||'', ebs:q.ebs||'', ebsStudy:q.ebsStudy||null, explain: yakExplainShort_(q.explain),
                   lost:subs.reduce((n,s)=>n+s.points,0), subs:subs});
     } else fullItems++;
   });
@@ -1687,6 +1691,20 @@ function computeYak(){
     grade:'', gradeCut:{}, timeDiag:null };
 }
 // 놓친 칸이 있는 능력을 오답률 높은 순으로
+// EBS 수록 위치 한 줄: 교재 쪽 · 강 · 작품이나 제재
+function yakEbsLine_(q){
+  const e = q.ebsStudy;
+  if(!e) return q.ebs || '';
+  return [[e.book, e.pages].filter(Boolean).join(' '), e.unit, e.title].filter(Boolean).join(' · ');
+}
+// 틀린 문항을 같은 지문(교재와 첫 쪽)끼리 묶는다
+function yakEbsGroups_(items){
+  const g = [], by = {};
+  items.forEach(q=>{ const e=q.ebsStudy; const key = e ? (e.book+'|'+(String(e.pages).match(/\d+/)||[''])[0]) : (q.ebs||('q'+q.no));
+    if(!by[key]){ by[key] = {line: yakEbsLine_(q), nos: [], lost: 0}; g.push(by[key]); }
+    by[key].nos.push(q.no); by[key].lost += q.lost||0; });
+  return g.filter(x=>x.line);
+}
 function yakWeak_(ab){
   return Object.keys(ab).filter(k=>ab[k].wrong>0).sort((a,b)=>(ab[b].wrong/ab[b].total)-(ab[a].wrong/ab[a].total) || ab[b].wrong-ab[a].wrong);
 }
@@ -1788,15 +1806,23 @@ function renderYakResult(){
       ));
     });
     if(q.explain) b.appendChild(el('p',{class:'yk-rx', style:'margin-top:10px'}, '해설 — '+q.explain));
-    if(q.ebs) b.appendChild(el('p',{class:'yk-concept', style:'margin-top:6px'}, '연계: '+q.ebs));
+    if(q.ebs || q.ebsStudy) b.appendChild(el('p',{class:'yk-concept', style:'margin-top:6px'}, 'EBS 수록: '+yakEbsLine_(q)));
     wd.appendChild(b);
   });
   root.appendChild(wd);
   // 5. 다음 과제
   const weak = yakWeak_(r.ability).slice(0,2);
-  if(weak.length){
+  const eg = yakEbsGroups_(r.items);
+  if(weak.length || eg.length){
     const nx = el('div',{class:'section'}, el('h2',{class:'section-title'},'다음 과제'));
     weak.forEach(k=>nx.appendChild(el('div',{class:'yk-note'}, el('b',{style:'color:var(--cream)'}, k+' ('+r.ability[k].wrong+'/'+r.ability[k].total+'칸)'), el('br'), YAK_ABILITY_NEXT[k]||'')));
+    if(eg.length){
+      const box = el('div',{class:'yk-note yk-ebs'}, el('b',{style:'color:var(--cream)'},'EBS 집중 학습'),
+        el('p',{class:'yk-ev', style:'margin:4px 0 8px'},'틀린 문항의 원래 지문을 교재에서 다시 읽고, 틀린 칸의 근거 문장에 표시한 뒤 그 강의 문제를 다시 풉니다.'));
+      const ul = el('ul',{class:'yk-ebs-list'});
+      eg.forEach(x=>ul.appendChild(el('li',{}, el('span',{class:'yk-ebs-src'}, x.line), el('span',{class:'yk-ebs-q'}, ' 문제 '+x.nos.join(', ')+'번 · −'+x.lost+'점'))));
+      box.appendChild(ul); nx.appendChild(box);
+    }
     root.appendChild(nx);
   }
   // 6. 과거 입시 정보와 해석 안내

@@ -1301,6 +1301,8 @@ function yakCfFix(btn){ var d=btn.dataset, cur=(yakCfGet_(d.stu)[d.k]||{}).memo|
   yakCfSet_(d.stu, d.k, memo.trim()?{st:'fix',memo:memo.trim()}:null); }
 function yakCfUndo(btn){ var d=btn.dataset; yakCfSet_(d.stu, d.k, null); }
 function yakCfGrade(btn){ var d=btn.dataset, m=yakCfGet_(d.stu); yakCfSet_(d.stu, d.k, m[d.k]?null:{st:'ok'}); }
+function yakEbsLineD_(q){ var e=q.ebsStudy; if(!e) return q.ebs||'';
+  return [[e.book,e.pages].filter(Boolean).join(' '), e.unit, e.title].filter(Boolean).join(' · '); }
 function yakRounds_(st){
   return REP.sel.filter(function(r){ return st.rounds[r]; }).sort(function(a,b){
     var x=(YAKMETA[a]||{}).inputDate||'', y=(YAKMETA[b]||{}).inputDate||''; return x<y?-1:x>y?1:(a<b?-1:1); });
@@ -1356,7 +1358,8 @@ function yakCard_(st){
       + ' <span style="opacity:.6;font-weight:400">'+escape(q.type||'')+' · '+escape(s.ability||'')+'</span>'
       + ' <span class="yk-dbadge '+cls+'">'+escape(basis)+'</span>'+tools+'</div>'
       + '<div style="font-size:.86rem;margin-top:4px">학생 답 “'+escape(s.my||'(적지 않음)')+'” · 정답 “'+escape(s.answer||'미제공')+'”'+(s.cause?' <span class="yk-dtag">'+escape(d.kind && !/^(blank|cond|pending)$/.test(d.kind) ? d.kind : s.cause)+'</span>':'')+'</div>'
-      + '<div style="font-size:.85rem;opacity:.85;margin-top:3px">→ '+escape(c&&c.st==='fix'?c.memo:(d.text||''))+'</div></div>';
+      + '<div style="font-size:.85rem;opacity:.85;margin-top:3px">→ '+escape(c&&c.st==='fix'?c.memo:(d.text||''))+'</div>'
+      + (yakEbsLineD_(q)?'<div style="font-size:.78rem;opacity:.6;margin-top:3px">EBS 수록: '+escape(yakEbsLineD_(q))+'</div>':'')+'</div>';
   }); }); });
   H.push('<div class="rblk"><div class="rblk-t">실제 오답 근거</div>'+(t4 || '<div style="opacity:.7;font-size:.88rem">틀린 칸이 없습니다.</div>')
     + '<div style="font-size:.78rem;opacity:.6;margin-top:6px">추정은 학생 답이 미리 뽑아 둔 오답 후보와 정확히 일치하지 않은 경우입니다. 맞음이나 고치기로 확정합니다.</div></div>');
@@ -1374,6 +1377,15 @@ function yakCard_(st){
     H.push('<div class="rblk"><div class="rblk-t">교정 여부와 다음 과제</div>'
       + (rows.length ? '<table class="yk-dtbl"><tr><th>평가 항목</th><th>틀린 칸 추이</th><th>상태</th><th>다음 과제</th></tr>'+rows.join('')+'</table>' : '<div style="opacity:.7;font-size:.88rem">틀린 칸이 없습니다.</div>')+'</div>');
   }
+  // 5-2. EBS 집중 학습: 틀린 문항의 교재 위치(같은 지문끼리 묶음, 최근 회차부터)
+  var eg=[], eby={};
+  rids.slice().reverse().forEach(function(r){ (st.rounds[r].items||[]).forEach(function(q){
+    var line=yakEbsLineD_(q); if(!line) return;
+    var e=q.ebsStudy, key=e?(e.book+'|'+((String(e.pages).match(/\d+/)||[''])[0])):line;
+    if(!eby[key]){ eby[key]={line:line, where:[], lost:0}; eg.push(eby[key]); }
+    eby[key].where.push(yakLabel_(r)+' '+q.no+'번'); eby[key].lost+=q.lost||0; }); });
+  if(eg.length) H.push('<div class="rblk"><div class="rblk-t">EBS 집중 학습</div><div style="font-size:.8rem;opacity:.7;margin-bottom:6px">틀린 문항의 원래 지문을 교재에서 다시 읽고 근거 문장에 표시한 뒤 그 강의 문제를 다시 풀게 합니다.</div><table class="yk-dtbl"><tr><th>교재 위치</th><th>틀린 문항</th><th>감점</th></tr>'
+    + eg.map(function(x){ return '<tr><td>'+escape(x.line)+'</td><td style="white-space:nowrap">'+escape(x.where.join(', '))+'</td><td>−'+x.lost+'</td></tr>'; }).join('')+'</table></div>');
   // 6. 과거 입시 정보와 해석 안내
   if(ap && !ap.undecided){
     var p=ap.prev, pc=ap.prevComp, c=ap.comp||{}, s6='';
