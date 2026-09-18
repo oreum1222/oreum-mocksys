@@ -1273,83 +1273,129 @@ function buildYakReports(){
   renderYakReports();
 }
 function yakLabel_(rid){ return (YAKMETA[rid] && (YAKMETA[rid].labelShort || YAKMETA[rid].label)) || rid; }
-const YAK_CAUSE_RX_D = {
-  '무응답': '시간 안에 끝까지 쓰지 못함. 문항당 4분 안팎으로 끊고 끝까지 쓰는 연습.',
-  '표기 차이': '내용은 맞고 띄어쓰기나 문장부호만 다름. 지문 표기를 글자 그대로 옮기게 지도.',
-  '첫 어절 오류': '문장 시작을 잘못 잡음. 앞 문장의 마침표로 문장 경계를 먼저 끊게 지도.',
-  '끝 어절 오류': '문장 끝을 잘못 잡음. 다음 마침표까지 한 문장, 끝 어절과 문장부호까지 확인.',
-  '범위 과다': '필요보다 길게 씀. 빈칸 앞뒤 조사와 글자 수 조건에 맞추게 지도.',
-  '범위 부족': '핵심어 일부만 씀. 수식어까지 한 덩어리로 옮기게 지도.',
-  '표현 바꿈': '지문 표현을 자기 말로 바꿈. 제시문 표현을 그대로 옮기는 원칙을 반복 확인.',
-  '위치 착오': '지문의 다른 대목을 답으로 고름. 〈보기〉 조건어 표시 후 대응 문장부터 찾게 지도.'
+/* ── 약술 리포트(2차 설계): 지원 모집단위와 시험 조건 → 회차별 국어 성취 → 누적 능력별 성취 → 실제 오답 근거(교사 확인) → 교정 여부와 다음 과제 → 과거 입시 정보 ── */
+var YAK_AB_D = ['근거 찾기','개념과 관점 구분','관계 이해','추론과 사례 적용','답안 조건 준수'];
+var YAK_AB_NEXT_D = {
+  '근거 찾기':'발문의 조건어(대상, 기능, 위치)에 표시하고 그 말이 다시 나오는 문단부터 좁혀 찾게 지도.',
+  '개념과 관점 구분':'개념과 인물별 견해를 두 칸 표로 나눠 적고, <보기>의 설명을 하나씩 대응시키게 지도.',
+  '관계 이해':'문장마다 앞 문장과의 관계(원인, 결과, 대조, 사례)를 한 단어로 적게 하고, 발문이 요구한 관계의 문장만 고르게 지도.',
+  '추론과 사례 적용':'지문의 원리를 조건 목록으로 바꿔 적고 <보기>의 상황에 하나씩 대입하게 지도.',
+  '답안 조건 준수':'발문의 형식 조건(첫 어절과 마지막 어절, 글자 수, 활용형, 개수)에 밑줄을 긋고 쓴 뒤 조건별로 재확인하게 지도.'
 };
+// 교사 확인: 서술형 소견과 같은 저장소(narrEdits)에 학생별 키로 JSON을 둔다
+function yakCfKey_(name){ return 'yakcf::'+name; }
+function yakCfGet_(name){
+  var k=yakCfKey_(name), p=narrPick(k); if(!p) return {};
+  try{ return JSON.parse(p.v.html||'{}')||{}; }catch(e){ return {}; }
+}
+function yakCfSet_(name, key, val){
+  var m=yakCfGet_(name); if(val==null) delete m[key]; else m[key]=val;
+  var k=yakCfKey_(name), html=JSON.stringify(m), ts=Date.now();
+  _narrLocalSet(k, html, ts);
+  if(NARR_SERVER_READY){ NARR_SERVER[k]={html:html,ts:ts}; dashPost({action:'narrEditSave',key:k,html:html,ts:ts,editor:''}).catch(function(){}); }
+  renderYakReports();
+}
+function yakCfOk(btn){ var d=btn.dataset; yakCfSet_(d.stu, d.k, {st:'ok'}); }
+function yakCfFix(btn){ var d=btn.dataset, cur=(yakCfGet_(d.stu)[d.k]||{}).memo||'';
+  var memo=prompt('교사 확인 진단을 적어 주세요(학생 리포트의 추정 문장을 대신합니다).', cur); if(memo==null) return;
+  yakCfSet_(d.stu, d.k, memo.trim()?{st:'fix',memo:memo.trim()}:null); }
+function yakCfUndo(btn){ var d=btn.dataset; yakCfSet_(d.stu, d.k, null); }
+function yakCfGrade(btn){ var d=btn.dataset, m=yakCfGet_(d.stu); yakCfSet_(d.stu, d.k, m[d.k]?null:{st:'ok'}); }
+function yakRounds_(st){
+  return REP.sel.filter(function(r){ return st.rounds[r]; }).sort(function(a,b){
+    var x=(YAKMETA[a]||{}).inputDate||'', y=(YAKMETA[b]||{}).inputDate||''; return x<y?-1:x>y?1:(a<b?-1:1); });
+}
+function yakApplyLineD_(ap){ if(!ap) return '지원 정보 없음(옛 제출)'; if(ap.undecided) return ap.univName+' 모집단위 미정';
+  return ap.univName+' '+ap.unit+' ('+(ap.track==='의약'?'의약학':ap.track+'계열')+')'; }
 function yakCard_(st){
-  var rids = REP.sel.filter(function(r){ return st.rounds[r]; });
-  var tType={}, tCause={}, tCourse={}, items=[], math=[], sc=0, tot=0, ws=0, ts=0;
-  rids.forEach(function(r){
-    var y = st.rounds[r]; sc += +y.score||0; tot += +y.total||0; ws += +y.wrongSubs||0; ts += +y.totalSubs||0;
-    Object.keys(y.typeRate||{}).forEach(function(k){ var v=y.typeRate[k]; if(!tType[k]) tType[k]={total:0,wrong:0}; tType[k].total+=v.total; tType[k].wrong+=v.wrong; });
-    Object.keys(y.byCause||{}).forEach(function(k){ tCause[k]=(tCause[k]||0)+y.byCause[k]; });
-    Object.keys(y.courseRate||{}).forEach(function(k){ var v=y.courseRate[k]; if(!tCourse[k]) tCourse[k]={total:0,got:0}; tCourse[k].total+=v.total; tCourse[k].got+=v.got; });
-    (y.items||[]).forEach(function(q){ items.push({rid:r, q:q}); });
-    if(y.math) math.push(yakLabel_(r)+' '+y.math.correct+'/'+y.math.total+(y.math.wrong.length?(' (틀림 '+y.math.wrong.join(', ')+'번)'):''));
-    else if(y.mathSkip) math.push(yakLabel_(r)+' 미응시');
-  });
-  var rate = tot ? Math.round(sc/tot*100) : 0;
-  var head = rids.map(function(r){ var y=st.rounds[r];
-    return '<span class="cut-pill" style="margin:0 8px 6px 0;display:inline-block">'+escape(yakLabel_(r))+' <b style="color:var(--gold)">'+y.score+'</b>/'+y.total+'점</span>'; }).join('');
-  // 요약(사실만)
-  var tr = Object.keys(tType).map(function(k){ var v=tType[k]; return [k, v, v.total?Math.round(v.wrong/v.total*100):0]; })
-            .sort(function(a,b){ return b[2]-a[2] || b[1].wrong-a[1].wrong; });
-  var cs = Object.keys(tCause).sort(function(a,b){ return tCause[b]-tCause[a]; });
-  var lead = rids.length+'회차 합계 '+tot+'점 중 '+sc+'점('+rate+'%), 소문항 '+ts+'칸 중 '+ws+'칸 오답.';
-  var worst = tr.filter(function(x){ return x[1].wrong>0; })[0];
-  if(worst) lead += ' 오답률 최고 유형은 '+worst[0]+'('+worst[1].wrong+'/'+worst[1].total+'칸, '+worst[2]+'%).';
-  if(cs.length) lead += ' 원인은 '+cs.map(function(c){ return c+' '+tCause[c]+'칸'; }).join(', ')+' 순.';
-  var tyTbl = '<table class="yk-dtbl"><tr><th>유형</th><th>출제</th><th>오답</th><th>오답률</th></tr>' + tr.map(function(x){
-      return '<tr><td>'+escape(x[0])+'</td><td>'+x[1].total+'</td><td>'+x[1].wrong+'</td><td'+(x[1].wrong?' style="color:#e8b4b4;font-weight:600"':'')+'>'+x[2]+'%</td></tr>'; }).join('') + '</table>';
-  var csTbl = cs.length ? ('<table class="yk-dtbl"><tr><th>원인</th><th>칸</th><th>지도 방향</th></tr>' + cs.map(function(c){
-      return '<tr><td style="white-space:nowrap">'+escape(c)+'</td><td>'+tCause[c]+'</td><td style="font-size:.84rem">'+escape(YAK_CAUSE_RX_D[c]||'')+'</td></tr>'; }).join('') + '</table>') : '<div style="opacity:.7;font-size:.88rem">틀린 칸이 없습니다.</div>';
-  var coTbl = '<table class="yk-dtbl"><tr><th>과목</th><th>득점</th><th>득점률</th></tr>' + Object.keys(tCourse).map(function(k){
-      var v=tCourse[k], p=v.total?Math.round(v.got/v.total*100):0; return [k,v,p]; }).sort(function(a,b){ return a[2]-b[2]; }).map(function(x){
-      return '<tr><td>'+escape(x[0])+'</td><td>'+(Math.round(x[1].got*10)/10)+' / '+x[1].total+'</td><td'+(x[2]<100?' style="color:#e8b4b4"':'')+'>'+x[2]+'%</td></tr>'; }).join('') + '</table>';
-  var itemHtml = items.map(function(x){
-    var q = x.q;
-    var subs = (q.subs||[]).map(function(s){
-      return '<div style="margin-top:7px;padding:8px 10px;border:1px solid var(--border-line);border-radius:8px;font-size:.88rem">'
-           + '<div>'+escape(s.mark)+' 학생 답 — '+escape(s.my||'(적지 않음)')+(s.cause?' <span class="yk-dtag">'+escape(s.cause)+'</span>':'')+'</div>'
-           + '<div style="color:var(--gold-soft)">'+escape(s.mark)+' 정답 — '+escape(s.answer||'(해설지 미제공)')+'</div></div>';
-    }).join('');
-    return '<div style="border-top:1px solid var(--border-line);padding:12px 0">'
-         + '<div style="font-weight:700;font-size:.93rem">'+escape(yakLabel_(x.rid))+' 문제 '+q.no
-         + (q.course?(' · '+escape(q.course)):'') + (q.type?(' · '+escape(q.type)):'') + ' <span style="color:var(--gold)">−'+q.lost+'점</span></div>'
-         + (q.concept?('<div style="font-size:.82rem;opacity:.7">'+escape(q.concept)+'</div>'):'')
-         + (q.intent?('<div style="font-size:.85rem;margin-top:5px">출제 의도 — '+escape(q.intent)+'</div>'):'')
-         + subs
-         + (q.explain?('<div style="font-size:.84rem;opacity:.85;margin-top:8px;line-height:1.65">해설 — '+escape(q.explain)+'</div>'):'')
-         + (q.ebs?('<div style="font-size:.8rem;opacity:.6;margin-top:5px">연계: '+escape(q.ebs)+'</div>'):'')
-         + '</div>';
-  }).join('');
-  return '<div class="repcard">'
-    + '<div class="rc-head"><div class="rc-name">'+escape(st.name)+'</div>'
-    + '<div class="rc-sub">'+escape(st.school||'')+' · 약술형 논술 '+rids.length+'회차</div></div>'
-    + '<div style="margin:10px 0">'+head+'</div>'
-    + '<div class="rblk"><div class="rblk-t">진단 요약</div><div style="font-size:.93rem;line-height:1.8">'+escape(lead)+'</div></div>'
-    + '<div class="yk-dgrid">'
-    +   '<div class="rblk"><div class="rblk-t">유형별 오답률</div>'+tyTbl+'</div>'
-    +   '<div class="rblk"><div class="rblk-t">과목별 득점률</div>'+coTbl+'</div>'
-    + '</div>'
-    + '<div class="rblk"><div class="rblk-t">오답 원인과 지도 방향</div>'+csTbl+'</div>'
-    + (math.length ? '<div class="rblk"><div class="rblk-t">수학</div><div style="font-size:.9rem">'+escape(math.join(' · '))+'</div></div>' : '')
-    + '<div class="rblk"><div class="rblk-t">틀린 문항 상세</div>'+(itemHtml||'<div style="font-size:.9rem;opacity:.7">틀린 칸이 없습니다.</div>')+'</div>'
-    + '</div>';
+  var rids = yakRounds_(st), cf = yakCfGet_(st.name);
+  var last = st.rounds[rids[rids.length-1]] || {}, ap = last.apply || null;
+  var H = [];
+  // 1. 지원 모집단위와 시험 조건
+  var applies = rids.map(function(r){ return yakApplyLineD_(st.rounds[r].apply); });
+  var changed = applies.some(function(a){ return a!==applies[applies.length-1]; });
+  var s1 = '<div style="font-size:.93rem">'+escape(yakApplyLineD_(ap))+'</div>';
+  if(ap && !ap.undecided && ap.comp){
+    s1 += '<div style="font-size:.86rem;opacity:.85;margin-top:4px">'+ap.year+' 실제 시험 국어 '+ap.comp.korean+'문항, 수학 '+ap.comp.math+'문항 · 학원 시험 국어 '+(last.itemCount||8)+'문항'+(ap.tieBreak?(' · '+escape(ap.tieBreak)):'')+'</div>';
+    if(ap.track==='의약') s1 += '<div class="yk-dnote">이 모집단위는 수학 8문항으로만 치러 국어가 없습니다. 국어 성적은 학습 진단용입니다.</div>';
+    else if(ap.comp.korean && ap.comp.korean!==(last.itemCount||8)) s1 += '<div class="yk-dnote">이번 국어 '+(last.itemCount||8)+'문항 성적은 학습 진단용이며, 실제 '+escape(ap.track)+'계열 국어 '+ap.comp.korean+'문항의 예상 성적을 뜻하지 않습니다.</div>';
+  }
+  if(changed) s1 += '<div style="font-size:.82rem;opacity:.7;margin-top:6px">회차별 당시 지원: '+rids.map(function(r,i){ return escape(yakLabel_(r))+' '+escape(applies[i]); }).join(' / ')+'</div>';
+  H.push('<div class="rblk"><div class="rblk-t">지원 모집단위와 시험 조건</div>'+s1+'</div>');
+  // 2. 회차별 국어 성취
+  var t2 = '<table class="yk-dtbl"><tr><th>회차</th><th>국어 득점</th><th>완전정답</th><th>틀린 칸</th><th>수학</th><th>자기채점</th></tr>';
+  rids.forEach(function(r){ var y=st.rounds[r], gk='grade::'+r, ok=!!cf[gk];
+    t2 += '<tr><td>'+escape(yakLabel_(r))+'</td><td><b style="color:var(--gold)">'+y.score+'</b> / '+y.total+'</td><td>'+(y.fullItems!=null?(y.fullItems+' / '+y.itemCount+'문항'):'-')+'</td><td>'+y.wrongSubs+' / '+y.totalSubs+'칸</td>'
+      +'<td>'+(y.mathTaken===true?'응시':(y.mathTaken===false?'미응시':(y.math?'응시':'-')))+'</td>'
+      +'<td><button class="yk-dbtn'+(ok?' on':'')+'" data-stu="'+escape(st.name)+'" data-k="'+escape(gk)+'" onclick="yakCfGrade(this)">'+(ok?'교사 확인 완료':'확인 전')+'</button></td></tr>'; });
+  t2 += '</table><div style="font-size:.78rem;opacity:.6;margin-top:5px">득점은 학생 자기채점 기준입니다. 부분점수가 있어 득점을 10으로 나눈 값은 맞힌 문항 수가 아닙니다.</div>';
+  H.push('<div class="rblk"><div class="rblk-t">회차별 국어 성취</div>'+t2+'</div>');
+  // 3. 누적 능력별 성취(회차별 정답률 추이)
+  var v2 = rids.filter(function(r){ return st.rounds[r].ability; });
+  if(v2.length){
+    var t3 = '<table class="yk-dtbl"><tr><th>평가 항목</th><th>누적</th>'+v2.map(function(r){ return '<th>'+escape(yakLabel_(r))+'</th>'; }).join('')+'</tr>';
+    var cum = {};
+    YAK_AB_D.forEach(function(k){ var T=0,W=0, cells=v2.map(function(r){ var a=st.rounds[r].ability[k]; if(!a||!a.total) return '<td style="opacity:.4">-</td>';
+        T+=a.total; W+=a.wrong; return '<td'+(a.wrong?' style="color:#e8b4b4"':'')+'>'+(a.total-a.wrong)+'/'+a.total+'</td>'; });
+      if(!T) return; cum[k]={total:T, wrong:W};
+      t3 += '<tr><td style="white-space:nowrap">'+escape(k)+'</td><td><b>'+Math.round((T-W)/T*100)+'%</b></td>'+cells.join('')+'</tr>'; });
+    t3 += '</table>';
+    H.push('<div class="rblk"><div class="rblk-t">누적 능력별 성취</div>'+t3+'</div>');
+  }
+  // 4. 실제 오답 근거(교사 확인)
+  var t4 = '';
+  rids.forEach(function(r){ (st.rounds[r].items||[]).forEach(function(q){ (q.subs||[]).forEach(function(s){
+    var d = s.diag || {}, key = r+'|'+q.no+'|'+s.mark, c = cf[key];
+    var basis = c ? (c.st==='ok'?'교사 확인':'교사 수정') : (d.basis||'');
+    var cls = c ? 'ok' : (d.basis==='추정'?'guess':(d.basis==='지문 대조'?'ok':''));
+    var tools = (d.basis==='추정' || c) ? ('<span style="margin-left:6px">'
+      + (c ? '<button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfUndo(this)">되돌리기</button>'
+           : '<button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfOk(this)">맞음</button><button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfFix(this)">고치기</button>')
+      + '</span>') : '';
+    t4 += '<div class="yk-ditem"><div style="font-weight:600;font-size:.9rem">'+escape(yakLabel_(r))+' 문제 '+q.no+' '+escape(s.mark)
+      + ' <span style="opacity:.6;font-weight:400">'+escape(q.type||'')+' · '+escape(s.ability||'')+'</span>'
+      + ' <span class="yk-dbadge '+cls+'">'+escape(basis)+'</span>'+tools+'</div>'
+      + '<div style="font-size:.86rem;margin-top:4px">학생 답 “'+escape(s.my||'(적지 않음)')+'” · 정답 “'+escape(s.answer||'미제공')+'”'+(s.cause?' <span class="yk-dtag">'+escape(d.kind && !/^(blank|cond|pending)$/.test(d.kind) ? d.kind : s.cause)+'</span>':'')+'</div>'
+      + '<div style="font-size:.85rem;opacity:.85;margin-top:3px">→ '+escape(c&&c.st==='fix'?c.memo:(d.text||''))+'</div></div>';
+  }); }); });
+  H.push('<div class="rblk"><div class="rblk-t">실제 오답 근거</div>'+(t4 || '<div style="opacity:.7;font-size:.88rem">틀린 칸이 없습니다.</div>')
+    + '<div style="font-size:.78rem;opacity:.6;margin-top:6px">추정은 학생 답이 미리 뽑아 둔 오답 후보와 정확히 일치하지 않은 경우입니다. 맞음이나 고치기로 확정합니다.</div></div>');
+  // 5. 교정 여부와 다음 과제
+  if(v2.length){
+    var lr = v2[v2.length-1], rows = [];
+    YAK_AB_D.forEach(function(k){
+      var hist = v2.map(function(r){ var a=st.rounds[r].ability[k]; return a&&a.total ? a.wrong : null; });
+      var had = hist.slice(0,-1).some(function(w){ return w>0; }), now = hist[hist.length-1];
+      if(now==null) return;
+      var state = now>0 ? (had?'반복':'이번 회차 발생') : (had?'교정(최근 회차 0칸)':'');
+      if(!state) return;
+      rows.push('<tr><td style="white-space:nowrap">'+escape(k)+'</td><td>'+hist.map(function(w){ return w==null?'-':w; }).join(' → ')+'</td><td'+(now>0?' style="color:#e8b4b4"':' style="color:#a8c28c"')+'>'+state+'</td><td style="font-size:.84rem">'+(now>0?escape(YAK_AB_NEXT_D[k]||''):'')+'</td></tr>');
+    });
+    H.push('<div class="rblk"><div class="rblk-t">교정 여부와 다음 과제</div>'
+      + (rows.length ? '<table class="yk-dtbl"><tr><th>평가 항목</th><th>틀린 칸 추이</th><th>상태</th><th>다음 과제</th></tr>'+rows.join('')+'</table>' : '<div style="opacity:.7;font-size:.88rem">틀린 칸이 없습니다.</div>')+'</div>');
+  }
+  // 6. 과거 입시 정보와 해석 안내
+  if(ap && !ap.undecided){
+    var p=ap.prev, pc=ap.prevComp, c=ap.comp||{}, s6='';
+    if(p) s6 += '<table class="yk-dtbl"><tr><th>'+p.year+'학년도 최종등록자</th><th>논술점수</th></tr><tr><td>상위 70% 지점</td><td><b style="color:var(--gold)">'+p.p70+'</b> / '+p.max+'</td></tr><tr><td>상위 90% 지점</td><td>'+p.p90+' / '+p.max+'</td></tr><tr><td>모집인원, 경쟁률</td><td>'+p.quota+'명, '+p.rate+' 대 1</td></tr></table>'
+      + '<div style="font-size:.8rem;opacity:.7;margin-top:5px">평균이나 최저 합격선이 아닙니다.'+(pc?(' 당시 구성 국어 '+pc.korean+', 수학 '+pc.math+'문항('+pc.max+'점), 올해 국어 '+c.korean+', 수학 '+c.math+'문항('+c.total+'점)이라 직접 비교할 수 없습니다.'):'')+'</div>';
+    else s6 += '<div style="font-size:.88rem;opacity:.8">'+escape(ap.unit)+'는 '+(ap.year-1)+'학년도 논술전형 결과가 없습니다(신설 또는 명칭 변경).</div>';
+    s6 += '<div class="yk-dnote"><b>입시 정보 해석 안내</b><br>본 리포트는 국어 학습 결과를 분석하며, 수학은 응시 여부만 기록합니다. 수학 성적이 반영되지 않아 종합 합격 가능성을 판단할 수 없습니다. '+ap.year+'학년도 '+escape(ap.univName)+' 일반 인문계열은 국어 8문항과 수학 5문항, 자연계열은 국어 5문항과 수학 8문항으로, 지원 계열에 따라 국어 성적의 의미가 달라집니다. 과거 입시 결과는 당시 문항 구성과 배점에 따른 자료이며, 올해 합격선이나 필요한 정답 수로 직접 환산할 수 없습니다.</div>';
+    H.push('<div class="rblk"><div class="rblk-t">과거 입시 정보</div>'+s6+'</div>');
+  }
+  return '<div class="repcard"><div class="rc-head"><div class="rc-name">'+escape(st.name)+'</div>'
+    + '<div class="rc-sub">'+escape(st.school||'')+' · 약술형 논술 '+rids.length+'회차</div></div>'+H.join('')+'</div>';
 }
 function renderYakReports(){
   var root = document.getElementById('reportRoot'), note = document.getElementById('repNote');
   var list = REP.yak || [];
   if(!document.getElementById('ykDashCss')){
     var st=document.createElement('style'); st.id='ykDashCss';
-    st.textContent='.yk-dtbl{width:100%;border-collapse:collapse;font-size:.86rem}.yk-dtbl th{white-space:nowrap;text-align:left;opacity:.7;font-weight:600;border-bottom:1px solid var(--border-line);padding:6px 7px}.yk-dtbl td{border-bottom:1px solid var(--border-line);padding:7px;vertical-align:top}.yk-dtag{display:inline-block;font-size:.72rem;padding:1px 7px;border-radius:999px;margin-left:6px;border:1px solid #d08a8a;color:#e8b4b4}.yk-dgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:720px){.yk-dgrid{grid-template-columns:1fr}}';
+    st.textContent='.yk-dtbl{width:100%;border-collapse:collapse;font-size:.86rem}.yk-dtbl th{white-space:nowrap;text-align:left;opacity:.7;font-weight:600;border-bottom:1px solid var(--border-line);padding:6px 7px}.yk-dtbl td{border-bottom:1px solid var(--border-line);padding:7px;vertical-align:top}'
+      +'.yk-dtag{display:inline-block;font-size:.72rem;padding:1px 7px;border-radius:999px;margin-left:6px;border:1px solid #d08a8a;color:#e8b4b4}'
+      +'.yk-dbadge{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:999px;margin-left:6px;border:1px solid var(--border-line);opacity:.9}.yk-dbadge.guess{border:1px dashed #b9a36a;color:#d9c48a}.yk-dbadge.ok{border-color:#7d9863;color:#a8c28c}'
+      +'.yk-dbtn{font:inherit;font-size:.74rem;padding:2px 9px;margin-left:4px;border-radius:7px;border:1px solid var(--border-line);background:transparent;color:inherit;cursor:pointer}.yk-dbtn.on{border-color:#7d9863;color:#a8c28c}'
+      +'.yk-ditem{border-top:1px solid var(--border-line);padding:9px 0}.yk-dnote{margin-top:8px;padding:9px 11px;border:1px solid var(--border-line);border-radius:8px;font-size:.84rem;line-height:1.7;opacity:.9}';
     document.head.appendChild(st);
   }
   if(note) note.innerHTML = '약술형 논술 리포트 · 표시 중 <b style="color:var(--gold)">'+list.length+'명</b>';

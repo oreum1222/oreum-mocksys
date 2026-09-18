@@ -1,0 +1,706 @@
+{
+ "gachon": {
+  "name": "가천대",
+  "year": 2027,
+  "tracks": {
+   "인문": {
+    "korean": 8,
+    "math": 5,
+    "total": 130
+   },
+   "자연": {
+    "korean": 5,
+    "math": 8,
+    "total": 130
+   },
+   "의약": {
+    "korean": 0,
+    "math": 8,
+    "total": 130
+   }
+  },
+  "tieBreak": {
+   "인문": "동점이면 국어 성적 우수자를 먼저 뽑습니다.",
+   "자연": "동점이면 수학 성적 우수자를 먼저 뽑습니다."
+  },
+  "prevTracks": {
+   "year": 2026,
+   "인문": {
+    "korean": 9,
+    "math": 6
+   },
+   "자연": {
+    "korean": 6,
+    "math": 9
+   },
+   "의약": {
+    "korean": 0,
+    "math": 8
+   },
+   "max": 150
+  },
+  "units": [
+   {
+    "name": "경영학과",
+    "track": "인문",
+    "quota": 40,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 45,
+     "rate": 58.73,
+     "p70": 113,
+     "p90": 111
+    }
+   },
+   {
+    "name": "회계세무학과",
+    "track": "인문",
+    "quota": 16,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 16,
+     "rate": 42.06,
+     "p70": 108,
+     "p90": 107
+    }
+   },
+   {
+    "name": "관광경영학과",
+    "track": "인문",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 13,
+     "rate": 43.38,
+     "p70": 108,
+     "p90": 104
+    }
+   },
+   {
+    "name": "의료산업경영학과",
+    "track": "인문",
+    "quota": 13,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 13,
+     "rate": 41.08,
+     "p70": 113,
+     "p90": 110.5
+    }
+   },
+   {
+    "name": "금융·빅데이터학부",
+    "track": "자연",
+    "quota": 26,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 26,
+     "rate": 29.08,
+     "p70": 110,
+     "p90": 108
+    }
+   },
+   {
+    "name": "미디어커뮤니케이션학과",
+    "track": "인문",
+    "quota": 8,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 8,
+     "rate": 83.75,
+     "p70": 117,
+     "p90": 116
+    }
+   },
+   {
+    "name": "경제학과",
+    "track": "인문",
+    "quota": 15,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 15,
+     "rate": 43.8,
+     "p70": 110,
+     "p90": 108
+    }
+   },
+   {
+    "name": "응용통계학과",
+    "track": "인문",
+    "quota": 13,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 13,
+     "rate": 41.38,
+     "p70": 116,
+     "p90": 114.5
+    }
+   },
+   {
+    "name": "사회복지학과",
+    "track": "인문",
+    "quota": 12,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 12,
+     "rate": 40.33,
+     "p70": 105.5,
+     "p90": 104
+    }
+   },
+   {
+    "name": "유아교육학과",
+    "track": "인문",
+    "quota": 15,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 15,
+     "rate": 40,
+     "p70": 115,
+     "p90": 110
+    }
+   },
+   {
+    "name": "심리학과",
+    "track": "인문",
+    "quota": 10,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 10,
+     "rate": 54.9,
+     "p70": 112,
+     "p90": 111
+    }
+   },
+   {
+    "name": "패션산업학과",
+    "track": "인문",
+    "quota": 12,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 12,
+     "rate": 44.42,
+     "p70": 120,
+     "p90": 117
+    }
+   },
+   {
+    "name": "AI인문대학",
+    "track": "인문",
+    "quota": 73,
+    "members": [
+     "한국어문학과",
+     "영미어문학과",
+     "중국어문학과",
+     "일본어문학과",
+     "유럽어문학과"
+    ],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 71,
+     "rate": 45.2,
+     "p70": 117,
+     "p90": 115
+    }
+   },
+   {
+    "name": "법과대학",
+    "track": "인문",
+    "quota": 46,
+    "members": [
+     "법학과",
+     "경찰행정학과",
+     "행정학과"
+    ],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 45,
+     "rate": 42.16,
+     "p70": 117,
+     "p90": 116
+    }
+   },
+   {
+    "name": "도시계획·조경학부",
+    "track": "자연",
+    "quota": 21,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 21,
+     "rate": 28.43,
+     "p70": 104.5,
+     "p90": 103
+    }
+   },
+   {
+    "name": "건축학부",
+    "track": "자연",
+    "quota": 20,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 15,
+     "rate": 52.4,
+     "p70": 114,
+     "p90": 111
+    }
+   },
+   {
+    "name": "건축공학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 15,
+     "rate": 28.07,
+     "p70": 109,
+     "p90": 105
+    }
+   },
+   {
+    "name": "화공생명배터리공학부",
+    "track": "자연",
+    "quota": 59,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 57,
+     "rate": 29.65,
+     "p70": 113,
+     "p90": 111.5
+    }
+   },
+   {
+    "name": "기계공학부",
+    "track": "자연",
+    "quota": 56,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 56,
+     "rate": 32.45,
+     "p70": 112,
+     "p90": 109.5
+    }
+   },
+   {
+    "name": "스마트팩토리학과",
+    "track": "자연",
+    "quota": 18,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 16,
+     "rate": 28.63,
+     "p70": 108,
+     "p90": 105
+    }
+   },
+   {
+    "name": "건설환경공학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 14,
+     "rate": 26.43,
+     "p70": 108,
+     "p90": 107
+    }
+   },
+   {
+    "name": "신소재공학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 14,
+     "rate": 35.57,
+     "p70": 111,
+     "p90": 106
+    }
+   },
+   {
+    "name": "바이오나노학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 14,
+     "rate": 29.5,
+     "p70": 113,
+     "p90": 111
+    }
+   },
+   {
+    "name": "식품생명공학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 14,
+     "rate": 33.79,
+     "p70": 107,
+     "p90": 106
+    }
+   },
+   {
+    "name": "식품영양학과",
+    "track": "자연",
+    "quota": 12,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 12,
+     "rate": 33.33,
+     "p70": 106,
+     "p90": 104
+    }
+   },
+   {
+    "name": "생명과학과",
+    "track": "자연",
+    "quota": 15,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 15,
+     "rate": 39,
+     "p70": 107,
+     "p90": 106
+    }
+   },
+   {
+    "name": "반도체물리학과",
+    "track": "자연",
+    "quota": 13,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 13,
+     "rate": 25.77,
+     "p70": 104,
+     "p90": 102
+    }
+   },
+   {
+    "name": "화학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 14,
+     "rate": 27.64,
+     "p70": 108,
+     "p90": 107
+    }
+   },
+   {
+    "name": "반도체대학",
+    "track": "자연",
+    "quota": 73,
+    "members": [
+     "전자공학과",
+     "반도체공학과"
+    ],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 73,
+     "rate": 33.37,
+     "p70": 109,
+     "p90": 107
+    }
+   },
+   {
+    "name": "시스템반도체학과",
+    "track": "자연",
+    "quota": 16,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 16,
+     "rate": 28.5,
+     "p70": 107,
+     "p90": 105.75
+    }
+   },
+   {
+    "name": "컴퓨터공학과",
+    "track": "자연",
+    "quota": 31,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 41,
+     "rate": 33.68,
+     "p70": 109,
+     "p90": 107
+    }
+   },
+   {
+    "name": "인공지능학과",
+    "track": "자연",
+    "quota": 46,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 45,
+     "rate": 33.6,
+     "p70": 107,
+     "p90": 106
+    }
+   },
+   {
+    "name": "인공지능시스템학과",
+    "track": "자연",
+    "quota": 18,
+    "members": [],
+    "prev": null
+   },
+   {
+    "name": "정보보호학과",
+    "track": "자연",
+    "quota": 18,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 18,
+     "rate": 28.17,
+     "p70": 105,
+     "p90": 102
+    }
+   },
+   {
+    "name": "전기공학과",
+    "track": "자연",
+    "quota": 20,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 20,
+     "rate": 30.75,
+     "p70": 110.5,
+     "p90": 107
+    }
+   },
+   {
+    "name": "스마트시티학과",
+    "track": "자연",
+    "quota": 18,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 16,
+     "rate": 29.56,
+     "p70": 104,
+     "p90": 101
+    }
+   },
+   {
+    "name": "의공학과",
+    "track": "자연",
+    "quota": 14,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 14,
+     "rate": 26.14,
+     "p70": 102,
+     "p90": 98
+    }
+   },
+   {
+    "name": "간호학과",
+    "track": "자연",
+    "quota": 77,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 77,
+     "rate": 47.68,
+     "p70": 118.5,
+     "p90": 117
+    }
+   },
+   {
+    "name": "치위생학과",
+    "track": "자연",
+    "quota": 9,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 9,
+     "rate": 32,
+     "p70": 104,
+     "p90": 101
+    }
+   },
+   {
+    "name": "응급구조학과",
+    "track": "자연",
+    "quota": 6,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 6,
+     "rate": 39.83,
+     "p70": 103,
+     "p90": 102
+    }
+   },
+   {
+    "name": "물리치료학과",
+    "track": "자연",
+    "quota": 9,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 8,
+     "rate": 76.25,
+     "p70": 115,
+     "p90": 114
+    }
+   },
+   {
+    "name": "방사선학과",
+    "track": "자연",
+    "quota": 9,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 8,
+     "rate": 64.25,
+     "p70": 123,
+     "p90": 117
+    }
+   },
+   {
+    "name": "운동재활학과",
+    "track": "자연",
+    "quota": 13,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 13,
+     "rate": 30.54,
+     "p70": 107,
+     "p90": 105
+    }
+   },
+   {
+    "name": "의예과",
+    "track": "의약",
+    "quota": 6,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 6,
+     "rate": 577,
+     "p70": 123,
+     "p90": 118
+    }
+   },
+   {
+    "name": "한의예과",
+    "track": "의약",
+    "quota": 7,
+    "members": [],
+    "prev": null
+   },
+   {
+    "name": "약학과",
+    "track": "의약",
+    "quota": 6,
+    "members": [],
+    "prev": null
+   },
+   {
+    "name": "바이오로직스학과",
+    "track": "자연",
+    "quota": 29,
+    "members": [],
+    "prev": {
+     "year": 2026,
+     "max": 150,
+     "quota": 28,
+     "rate": 33.36,
+     "p70": 110,
+     "p90": 108
+    }
+   }
+  ],
+  "sources": {
+   "guide": "2027학년도 가천대학교 논술가이드북(입학처)",
+   "result": "2026학년도 가천대학교 입시 결과(입학처, 최종등록자 기준)",
+   "resultUrl": "https://admission.gachon.ac.kr/admission/html/rolling/resultView.asp?BOARD_IDX=30155"
+  }
+ },
+ "kookmin": {
+  "name": "국민대",
+  "year": 2027,
+  "units": [],
+  "pending": true
+ }
+}
