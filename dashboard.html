@@ -1347,12 +1347,15 @@ function yakCard_(st){
   if(changed) s1 += '<div style="font-size:.82rem;opacity:.7;margin-top:6px">회차별 당시 지원: '+rids.map(function(r,i){ return escape(yakLabel_(r))+' '+escape(applies[i]); }).join(' / ')+'</div>';
   H.push('<div class="rblk"><div class="rblk-t">지원 모집단위와 시험 조건</div>'+s1+'</div>');
   // 2. 회차별 국어 성취
-  var t2 = '<table class="yk-dtbl"><tr><th>회차</th><th>국어 득점</th><th>완전정답</th><th>틀린 칸</th><th>수학</th><th>자기채점</th></tr>';
+  var t2 = '<table class="yk-dtbl"><tr><th>회차</th><th>국어 득점</th><th>수학 득점</th><th>합계</th><th>완전정답</th><th>틀린 칸</th><th>자기채점</th></tr>';
   rids.forEach(function(r){ var y=st.rounds[r], gk='grade::'+r, ok=!!cf[gk];
-    t2 += '<tr><td>'+escape(yakLabel_(r))+'</td><td><b style="color:var(--gold)">'+y.score+'</b> / '+y.total+'</td><td>'+(y.fullItems!=null?(y.fullItems+' / '+y.itemCount+'문항'):'-')+'</td><td>'+y.wrongSubs+' / '+y.totalSubs+'칸</td>'
-      +'<td>'+(y.mathTaken===true?'응시':(y.mathTaken===false?'미응시':(y.math?'응시':'-')))+'</td>'
+    var mc = (y.mathScore!=null && y.mathTotal) ? (y.mathScore+' / '+y.mathTotal)
+      : (y.mathTaken===true ? '응시, 미기입' : (y.mathTaken===false ? '미응시' : '-'));
+    var gc = y.grandTotal ? ('<b style="color:var(--gold)">'+y.grandRaw+'</b> / '+y.grandTotal) : '-';
+    t2 += '<tr><td>'+escape(yakLabel_(r))+'</td><td>'+y.score+' / '+y.total+'</td><td>'+mc+'</td><td>'+gc+'</td>'
+      +'<td>'+(y.fullItems!=null?(y.fullItems+' / '+y.itemCount+'문항'):'-')+'</td><td>'+y.wrongSubs+' / '+y.totalSubs+'칸</td>'
       +'<td><button class="yk-dbtn'+(ok?' on':'')+'" data-stu="'+escape(st.name)+'" data-k="'+escape(gk)+'" onclick="yakCfGrade(this)">'+(ok?'교사 확인 완료':'확인 전')+'</button></td></tr>'; });
-  t2 += '</table><div style="font-size:.78rem;opacity:.6;margin-top:5px">득점은 학생 자기채점 기준입니다. 부분점수가 있어 득점을 10으로 나눈 값은 맞힌 문항 수가 아닙니다.</div>';
+  t2 += '</table><div style="font-size:.78rem;opacity:.6;margin-top:5px">득점은 학생 자기채점 기준이며 수학은 득점만 받고 문항은 분석하지 않습니다. 부분점수가 있어 득점을 10으로 나눈 값은 맞힌 문항 수가 아닙니다.</div>';
   H.push('<div class="rblk"><div class="rblk-t">회차별 국어 성취</div>'+t2+'</div>');
   // 3. 누적 능력별 성취(회차별 정답률 추이)
   var v2 = rids.filter(function(r){ return st.rounds[r].ability; });
