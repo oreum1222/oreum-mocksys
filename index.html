@@ -1737,8 +1737,13 @@ function yakWeak_(ab){
 function yakLead_(r){   // 사실만 적는 요약 문장
   const parts=[];
   parts.push('국어 '+r.total+'점 중 '+r.raw+'점(자기채점 기준)입니다. '+r.itemCount+'문항 중 모든 칸을 맞힌 문항은 '+r.fullItems+'문항, 소문항 '+r.totalSubs+'칸 중 틀린 칸은 '+r.wrongSubs+'칸입니다.');
-  const w = yakWeak_(r.ability).filter(k=>k!==YAK_COND);
-  if(w.length) parts.push('사고 능력에서 가장 많이 놓친 것은 '+w[0]+'('+r.ability[w[0]].wrong+'/'+r.ability[w[0]].total+'칸)입니다.');
+  // 놓친 칸을 그대로 적는다. 한 칸씩 흩어졌을 때 '가장 많이'로 순위를 매기지 않는다
+  const w = yakWeak_(r.ability).filter(k=>k!==YAK_COND)
+    .sort((a,b)=>r.ability[b].wrong-r.ability[a].wrong || a.localeCompare(b));
+  if(w.length){
+    const list = w.slice(0,3).map(k=>k+' '+r.ability[k].wrong+'칸('+r.ability[k].total+'칸 중)');
+    parts.push('사고 능력에서 놓친 칸은 '+list.join(', ')+(w.length>3?(' 외 '+(w.length-3)+'개 항목'):'')+'입니다.');
+  }
   if(r.condWrong) parts.push('답은 찾았으나 형식 조건을 어긴 칸이 '+r.condWrong+'칸입니다.');
   if(r.grandTotal) parts.push('수학 '+r.mathScore+'점을 더하면 '+r.grandTotal+'점 중 '+r.grandRaw+'점입니다.');
   else if(r.mathTaken===true) parts.push('수학은 응시했으나 득점을 적지 않아 국어만 집계했습니다.');
