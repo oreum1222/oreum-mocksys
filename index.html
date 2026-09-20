@@ -1793,13 +1793,13 @@ function yakPrevHtml_(ap, r){   // 과거 입시 정보 + 해석 안내
     const convHead = cv ? (cv.isExam ? ('이번 시험 기준 '+cv.total+'점') : (ap.year+' 환산 '+cv.total+'점')) : '';
     out.push('<table class="yk-tbl"><tr><th>구분</th><th>'+p.year+'학년도 최종등록자</th>'
       +(cv?('<th>'+convHead+'</th>'):'')+'</tr>'
-      +'<tr><td>논술점수 상위 70% 지점</td><td>'+p.p70+' / '+p.max+'점</td>'
+      +'<tr><td>논술점수 70% 컷(상위 70%째)</td><td>'+p.p70+' / '+p.max+'점</td>'
       +(cv?('<td><b style="color:var(--gold)">'+cv.p70+'</b> / '+cv.total+'점</td>'):'')+'</tr>'
-      +'<tr><td>논술점수 상위 90% 지점</td><td>'+p.p90+' / '+p.max+'점</td>'
+      +'<tr><td>논술점수 90% 컷(상위 90%째)</td><td>'+p.p90+' / '+p.max+'점</td>'
       +(cv?('<td>'+cv.p90+' / '+cv.total+'점</td>'):'')+'</tr>'
       +'<tr><td>모집인원과 경쟁률</td><td>'+p.quota+'명, '+p.rate+' 대 1</td>'
       +(cv?('<td>'+((ap.quota!=null)?(ap.quota+'명 모집'):'-')+'</td>'):'')+'</tr></table>');
-    out.push('<p class="yk-ev">최종등록자를 논술점수 순으로 세웠을 때 70%, 90%째 학생의 점수입니다. 평균 점수나 최저 합격선이 아닙니다.'
+    out.push('<p class="yk-ev">최종등록자를 논술점수가 높은 순으로 세웠을 때 70%째, 90%째 학생의 점수입니다. 뒤쪽 자리일수록 점수가 낮으므로 90% 컷이 70% 컷보다 낮습니다. 평균 점수나 최저 합격선이 아닙니다.'
       +(pc?(' 당시 '+escape(ap.track)+(ap.track==='의약'?'':'계열')+' 구성은 국어 '+pc.korean+'문항, 수학 '+pc.math+'문항('+pc.max+'점 만점)이었고, 올해는 국어 '+c.korean+'문항, 수학 '+c.math+'문항('+c.total+'점)입니다.'):'')
       +(cv?(' 이번 학원 시험은 국어 '+r.itemCount+'문항과 수학 '+(r.mathCount || Math.round(r.mathTotal/10))+'문항으로 '+cv.total+'점 만점이라, 학생 점수와 같은 잣대로 보도록 '+p.max+'점을 '+cv.total+'점으로 같은 비율로 옮겼습니다.'):'')
       +((cv&&cv.real)?(' 실제 '+ap.year+'학년도 '+escape(ap.track)+(ap.track==='의약'?'':'계열')+' '+cv.real.total+'점 기준으로는 각각 '+cv.real.p70+'점, '+cv.real.p90+'점에 해당합니다.'):'')
