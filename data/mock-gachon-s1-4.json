@@ -18,7 +18,8 @@
  },
  "scoring": {
   "koreanTotal": 80,
-  "mathCount": 8
+  "mathCount": 8,
+  "mathTotal": 80
  },
  "korean": [
   {

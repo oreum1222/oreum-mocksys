@@ -181,6 +181,9 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
   --border-soft:#c8d0d7;--border-line:#dce1e5;--danger:#b23a2e;
   background:#ffffff!important;color:#182430}
 .repcard.pdf-print .rnarr{background:#f6f8f9!important}
+.repbadge{display:inline-block;margin-left:7px;min-width:18px;padding:1px 6px;border-radius:999px;background:var(--gold);color:#1b1b1b;font-size:.72rem;font-weight:700;vertical-align:1px}
+.repbadge.zero{background:var(--border-soft);color:var(--text-muted)}
+.classtab.dim{opacity:.5}
 .rc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:4px;padding-top:13px;border-top:1px solid var(--border-line);font-size:0.72rem}
 .rc-foot .m{color:var(--gold)}.rc-foot .n{color:var(--text-muted)}
 
@@ -607,7 +610,7 @@ function populateExamSelect(){
       const opt = document.createElement('option');
       opt.value = id;
       // 라벨: "회차이름 (회차ID)" 형식. 회차이름이 길면 ID도 같이 보여서 강사가 구분 쉽게
-      opt.textContent = name === id ? id : `${name}`;
+      opt.textContent = (YAKSUL[normExamId(id)] ? '[약술] ' : '') + (name === id ? id : name);
       select.appendChild(opt);
     });
 
@@ -901,8 +904,27 @@ function renderRoundGroups(){
   });
   return '<div class="rp-groups">'+html+'</div>';
 }
+// 모드별 제출 인원(더미 제외). 약술 제출이 있는데도 못 보고 지나치지 않게 버튼에 적는다
+function repModeCount(mode){
+  var who={};
+  DATA().forEach(function(r){
+    var name=val(r,'name','이름').trim(); if(!name||EXCLUDE[name])return;
+    var id=normExamId(val(r,'exam','회차ID')); if(!id)return;
+    if(!!YAKSUL[id] !== (mode==='yaksul')) return;
+    var nm=val(r,'examLabel','회차이름');
+    if(/테스트|실험|더미|test/i.test(id) || /테스트|실험|더미/.test(nm)) return;
+    who[ALIAS[name]||name]=1;
+  });
+  return Object.keys(who).length;
+}
 function renderRoundPicker(){
   var _m=repMode(), _a=document.getElementById('repModeSun'), _b=document.getElementById('repModeYak');
+  [[_a,'수능 리포트','suneung'],[_b,'약술 리포트','yaksul']].forEach(function(x){
+    var b=x[0]; if(!b) return;
+    var n=repModeCount(x[2]);
+    b.innerHTML = x[1]+'<span class="repbadge'+(n?'':' zero')+'">'+n+'</span>';
+    b.classList.toggle('dim', !n);
+  });
   if(_a) _a.classList.toggle('on', _m==='suneung'); if(_b) _b.classList.toggle('on', _m==='yaksul');
   var box=document.getElementById('roundPicker'); if(!box) return;
   if(!REP.avail.length){ box.innerHTML=''; return; }
