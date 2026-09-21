@@ -456,7 +456,7 @@ function normExamId(raw){
   }
   return raw;
 }
-const YAKSUL = {}, YAKMETA = {};   // 약술형 논술 회차 여부와 메타
+const YAKSUL = {}, YAKMETA = {}, YAKDATA = {};   // YAKDATA: 약술 회차의 국어 문항(이전 제출 복원용)   // 약술형 논술 회차 여부와 메타
 function loadGradeCuts(ids){
   return Promise.all((ids||[]).map(id=>
     fetch('data/mock-'+id+'.json?v='+Date.now())
@@ -471,6 +471,7 @@ function loadGradeCuts(ids){
         UNIFIED[id]=!!(d.examMeta && d.examMeta.unified);
         YAKSUL[id]=!!(d.examMeta && d.examMeta.mode==='yaksul');
         YAKMETA[id]=d.examMeta||{};
+        if(YAKSUL[id]) YAKDATA[id]={ korean:d.korean||[], scoring:d.scoring||{} };
         BRAND[id]= classesFromMeta(id, d.examMeta||{});
       })
       .catch(()=>{ GRADECUTS[id] = null; QMAP[id] = {}; UNIFIED[id]=false; YAKSUL[id]=false; BRAND[id]= classesFromMeta(id,{}); })
@@ -1273,8 +1274,41 @@ function migrateNarrToServer(){
  * 학생 제출의 yaksulJson(점수, 소문항별 내 답과 정답, 유형과 과목 집계, 수학)을 펼쳐 학생별로 보여 준다. */
 function yakParse_(r){
   var raw = val(r,'yaksulJson','약술상세');
-  if(!raw) return null;
-  try{ return JSON.parse(raw); }catch(e){ return null; }
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return yakRebuild_(r);   // 약술상세가 없는 이전 제출은 틀린문항으로 다시 세운다
+}
+// 시트의 틀린문항('3-㉠,6-㉡')과 회차 문항 데이터로 점수, 틀린 칸, 능력별 성취, EBS 수록을 복원한다.
+// 학생이 쓴 답, 오답 원인, 수학, 지원 정보는 저장되지 않았으므로 비워 둔다
+function yakRebuild_(r){
+  var rid = normExamId(val(r,'exam','회차ID')), D = YAKDATA[rid];
+  if(!D || !D.korean || !D.korean.length) return null;
+  var wset = {};
+  String(val(r,'wrong','틀린문항')||'').split(',').forEach(function(k){ k=k.trim(); if(k) wset[k]=1; });
+  var AB = YAK_AB_D.slice(0,4), COND = '답안 조건 준수', ability = {};
+  YAK_AB_D.forEach(function(k){ ability[k] = {total:0, wrong:0}; });
+  var items = [], lost = 0, wrongSubs = 0, totalSubs = 0, fullItems = 0;
+  D.korean.forEach(function(q){
+    var subs = [];
+    (q.subs||[]).forEach(function(s){
+      totalSubs++;
+      var ab = AB.indexOf(s.ability)>=0 ? s.ability : '근거 찾기';
+      ability[ab].total++; ability[COND].total++;
+      if(wset[q.no+'-'+s.mark]){
+        wrongSubs++; lost += (s.points||0); ability[ab].wrong++;
+        subs.push({ mark:s.mark, points:s.points||0, answer:s.answer||'', my:'', cause:'', ability:ab, legacy:true,
+          diag:{ basis:'기록 없음', text:'이전 방식으로 제출되어 학생이 쓴 답과 오답 원인이 저장되지 않았습니다.' } });
+      }
+    });
+    if(subs.length) items.push({ no:q.no, type:q.type||'', course:q.course||'', concept:q.concept||'',
+      ebs:q.ebs||'', ebsStudy:q.ebsStudy||null, lost:subs.reduce(function(n,s){ return n+s.points; },0), subs:subs });
+    else fullItems++;
+  });
+  Object.keys(ability).forEach(function(k){ var v=ability[k]; v.rate = v.total ? Math.round((v.total-v.wrong)/v.total*100) : null; });
+  var tot = (D.scoring && D.scoring.koreanTotal) || 80;
+  var sheetRaw = parseFloat(val(r,'raw','원점수'));
+  return { v:2, legacy:true, score: isNaN(sheetRaw) ? Math.max(0, Math.round((tot-lost)*10)/10) : sheetRaw, total:tot,
+    wrongSubs:wrongSubs, totalSubs:totalSubs, fullItems:fullItems, itemCount:D.korean.length, condWrong:0,
+    items:items, ability:ability, mathTaken:null, apply:null };
 }
 function buildYakReports(){
   var byStu = {};
@@ -1382,7 +1416,7 @@ function yakCard_(st){
     t4 += '<div class="yk-ditem"><div style="font-weight:600;font-size:.9rem">'+escape(yakLabel_(r))+' 문제 '+q.no+' '+escape(s.mark)
       + ' <span style="opacity:.6;font-weight:400">'+escape(q.type||'')+' · '+escape(s.ability||'')+'</span>'
       + ' <span class="yk-dbadge '+cls+'">'+escape(basis)+'</span>'+tools+'</div>'
-      + '<div style="font-size:.86rem;margin-top:4px">학생 답 “'+escape(s.my||'(적지 않음)')+'” · 정답 “'+escape(s.answer||'미제공')+'”'+(s.cause?' <span class="yk-dtag">'+escape(d.kind && !/^(blank|cond|pending)$/.test(d.kind) ? d.kind : s.cause)+'</span>':'')+'</div>'
+      + '<div style="font-size:.86rem;margin-top:4px">'+(s.legacy ? '학생 답 기록 없음(이전 제출)' : ('학생 답 “'+escape(s.my||'(적지 않음)')+'”'))+' · 정답 “'+escape(s.answer||'미제공')+'”'+(s.cause?' <span class="yk-dtag">'+escape(d.kind && !/^(blank|cond|pending)$/.test(d.kind) ? d.kind : s.cause)+'</span>':'')+'</div>'
       + '<div style="font-size:.85rem;opacity:.85;margin-top:3px">→ '+escape(c&&c.st==='fix'?c.memo:(d.text||''))+'</div>'
       + (yakEbsLineD_(q)?'<div style="font-size:.78rem;opacity:.6;margin-top:3px">EBS 수록: '+escape(yakEbsLineD_(q))+'</div>':'')+'</div>';
   }); }); });
