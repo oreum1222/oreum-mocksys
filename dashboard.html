@@ -1365,7 +1365,7 @@ function yakRounds_(st){
 }
 function yakApplyLineD_(ap){ if(!ap) return '지원 정보 없음(옛 제출)'; if(ap.undecided) return ap.univName+' 모집단위 미정';
   return ap.univName+' '+ap.unit+' ('+(ap.track==='의약'?'의약학':ap.track+'계열')+')'; }
-function yakCard_(st){
+function yakCard_(st, idx){
   var rids = yakRounds_(st), cf = yakCfGet_(st.name);
   var last = st.rounds[rids[rids.length-1]] || {}, ap = last.apply || null;
   var H = [];
@@ -1409,7 +1409,7 @@ function yakCard_(st){
     var d = s.diag || {}, key = r+'|'+q.no+'|'+s.mark, c = cf[key];
     var basis = c ? (c.st==='ok'?'교사 확인':'교사 수정') : (d.basis||'');
     var cls = c ? 'ok' : (d.basis==='추정'?'guess':(d.basis==='지문 대조'?'ok':''));
-    var tools = (d.basis==='추정' || c) ? ('<span style="margin-left:6px">'
+    var tools = (d.basis==='추정' || c) ? ('<span class="no-print" style="margin-left:6px">'
       + (c ? '<button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfUndo(this)">되돌리기</button>'
            : '<button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfOk(this)">맞음</button><button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfFix(this)">고치기</button>')
       + '</span>') : '';
@@ -1448,14 +1448,30 @@ function yakCard_(st){
   // 6. 과거 입시 정보와 해석 안내
   if(ap && !ap.undecided){
     var p=ap.prev, pc=ap.prevComp, c=ap.comp||{}, s6='';
-    if(p) s6 += '<table class="yk-dtbl"><tr><th>'+p.year+'학년도 최종등록자</th><th>논술점수</th></tr><tr><td>상위 70% 지점</td><td><b style="color:var(--gold)">'+p.p70+'</b> / '+p.max+'</td></tr><tr><td>상위 90% 지점</td><td>'+p.p90+' / '+p.max+'</td></tr><tr><td>모집인원, 경쟁률</td><td>'+p.quota+'명, '+p.rate+' 대 1</td></tr></table>'
-      + '<div style="font-size:.8rem;opacity:.7;margin-top:5px">평균이나 최저 합격선이 아닙니다.'+(pc?(' 당시 구성 국어 '+pc.korean+', 수학 '+pc.math+'문항('+pc.max+'점), 올해 국어 '+c.korean+', 수학 '+c.math+'문항('+c.total+'점)이라 직접 비교할 수 없습니다.'):'')+'</div>';
+    if(p){
+      // 환산은 학생 점수와 같은 잣대(이번 시험 국어 + 수학 만점)를 먼저 쓴다. 수학이 없는 회차면 올해 실제 만점
+      var exMax = (last.total && last.mathTotal) ? (last.total + last.mathTotal) : 0, base = exMax || c.total;
+      var cv = (base && p.max && base!==p.max) ? {t:base, p70:Math.round(p.p70*base/p.max), p90:Math.round(p.p90*base/p.max)} : null;
+      var real = (c.total && p.max && c.total!==p.max && c.total!==base) ? {t:c.total, p70:Math.round(p.p70*c.total/p.max), p90:Math.round(p.p90*c.total/p.max)} : null;
+      var mc = last.mathCount || (last.mathTotal ? Math.round(last.mathTotal/10) : 0);
+      s6 += '<table class="yk-dtbl"><tr><th>구분</th><th>'+p.year+'학년도 최종등록자</th>'+(cv?('<th>'+(exMax?'이번 시험 기준 ':(ap.year+' 환산 '))+cv.t+'점</th>'):'')+'</tr>'
+        + '<tr><td>논술점수 70% 컷(상위 70%째)</td><td>'+p.p70+' / '+p.max+'점</td>'+(cv?('<td><b style="color:var(--gold)">'+cv.p70+'</b> / '+cv.t+'점</td>'):'')+'</tr>'
+        + '<tr><td>논술점수 90% 컷(상위 90%째)</td><td>'+p.p90+' / '+p.max+'점</td>'+(cv?('<td>'+cv.p90+' / '+cv.t+'점</td>'):'')+'</tr>'
+        + '<tr><td>모집인원과 경쟁률</td><td>'+p.quota+'명, '+p.rate+' 대 1</td>'+(cv?('<td>'+(ap.quota!=null?(ap.quota+'명 모집'):'-')+'</td>'):'')+'</tr></table>'
+        + '<div style="font-size:.8rem;opacity:.7;margin-top:5px;line-height:1.7">최종등록자를 논술점수가 높은 순으로 세웠을 때 70%째, 90%째 학생의 점수입니다. 뒤쪽 자리일수록 점수가 낮으므로 90% 컷이 70% 컷보다 낮습니다. 평균 점수나 최저 합격선이 아닙니다.'
+        + (pc?(' 당시 '+escape(ap.track)+(ap.track==='의약'?'':'계열')+' 구성은 국어 '+pc.korean+'문항, 수학 '+pc.math+'문항('+pc.max+'점 만점)이었고, 올해는 국어 '+c.korean+'문항, 수학 '+c.math+'문항('+c.total+'점)입니다.'):'')
+        + ((cv&&exMax)?(' 이번 학원 시험은 국어 '+(last.itemCount||8)+'문항과 수학 '+mc+'문항으로 '+cv.t+'점 만점이라, 학생 점수와 같은 잣대로 보도록 '+p.max+'점을 '+cv.t+'점으로 같은 비율로 옮겼습니다.'):'')
+        + (real?(' 실제 '+ap.year+'학년도 '+escape(ap.track)+(ap.track==='의약'?'':'계열')+' '+real.t+'점 기준으로는 각각 '+real.p70+'점, '+real.p90+'점에 해당합니다.'):'')
+        + (cv?' 문항 수와 난도가 달라 이 값이 합격선을 뜻하지는 않습니다.':'')+'</div>';
+    }
     else s6 += '<div style="font-size:.88rem;opacity:.8">'+escape(ap.unit)+'는 '+(ap.year-1)+'학년도 논술전형 결과가 없습니다(신설 또는 명칭 변경).</div>';
-    s6 += '<div class="yk-dnote"><b>입시 정보 해석 안내</b><br>본 리포트는 국어 학습 결과를 분석하며, 수학은 응시 여부만 기록합니다. 수학 성적이 반영되지 않아 종합 합격 가능성을 판단할 수 없습니다. '+ap.year+'학년도 '+escape(ap.univName)+' 일반 인문계열은 국어 8문항과 수학 5문항, 자연계열은 국어 5문항과 수학 8문항으로, 지원 계열에 따라 국어 성적의 의미가 달라집니다. 과거 입시 결과는 당시 문항 구성과 배점에 따른 자료이며, 올해 합격선이나 필요한 정답 수로 직접 환산할 수 없습니다.</div>';
+    s6 += '<div class="yk-dnote"><b>입시 정보 해석 안내</b><br>본 리포트는 국어 학습 결과를 분석하며, 수학은 득점만 받고 문항은 분석하지 않습니다. 그래서 이 리포트만으로 종합 합격 가능성을 판단할 수는 없습니다. '+ap.year+'학년도 '+escape(ap.univName)+' 일반 인문계열은 국어 8문항과 수학 5문항, 자연계열은 국어 5문항과 수학 8문항으로, 지원 계열에 따라 국어 성적의 의미가 달라집니다. 과거 입시 결과는 당시 문항 구성과 배점에 따른 자료입니다. 환산 점수는 만점 비율만 맞춘 참고값이며, 올해 합격선이나 맞혀야 할 문항 수를 뜻하지 않습니다.</div>';
     H.push('<div class="rblk"><div class="rblk-t">과거 입시 정보</div>'+s6+'</div>');
   }
-  return '<div class="repcard"><div class="rc-head"><div class="rc-name">'+escape(st.name)+'</div>'
-    + '<div class="rc-sub">'+escape(st.school||'')+' · 약술형 논술 '+rids.length+'회차</div></div>'+H.join('')+'</div>';
+   var sid = 'yk-rep-'+(idx||0);
+   return '<div class="repcard" id="'+sid+'" data-name="'+escape(st.name)+'" data-kind="yak"><div class="rc-head"><div class="rc-name">'+escape(st.name)+'</div>'
+     + '<div style="display:flex;align-items:center;gap:12px"><div class="rc-sub">'+escape(st.school||'')+' · 약술형 논술 '+rids.length+'회차</div>'
+     + '<button class="rpdf-btn no-print" onclick="printOneReport(\''+sid+'\')">이 학생 PDF</button></div></div>'+H.join('')+'</div>';
 }
 function renderYakReports(){
   var root = document.getElementById('reportRoot'), note = document.getElementById('repNote');
@@ -1546,7 +1562,7 @@ async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn
   var CH=t.scrollHeight, cr=t.getBoundingClientRect(), blocks=[];
   [].slice.call(t.children).forEach(function(e){if(e.classList&&e.classList.contains('no-print'))return;
     var er=e.getBoundingClientRect(), blk={top:(er.top-cr.top)/CH, bot:(er.bottom-cr.top)/CH, rows:[]};
-    var trs=e.querySelectorAll?e.querySelectorAll('.rtbl2 tbody tr'):[];
+    var trs=e.querySelectorAll?e.querySelectorAll('.yk-dtbl tr, .yk-ditem, .rtbl2 tbody tr'):[];
     [].slice.call(trs).forEach(function(tr){var rr=tr.getBoundingClientRect();blk.rows.push((rr.bottom-cr.top)/CH);});
     blocks.push(blk);});
   var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:CW,windowWidth:CW+40,ignoreElements:function(el){return el.classList&&el.classList.contains('no-print');}});
@@ -1601,7 +1617,7 @@ async function printOneReport(id){var t=document.getElementById(id);if(!t)return
   try{var c=await repCapture(t);var jsPDF=getJsPDF();
     var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     addCardPaged(pdf,c,c._blocks||repBlocks(t),{added:false});
-    pdf.save('오름_'+name+'_진단리포트.pdf');
+    pdf.save('오름_'+name+(t.dataset.kind==='yak'?'_약술리포트':'_진단리포트')+'.pdf');
   }catch(err){alert('PDF 생성 오류: '+(err.message||err));}finally{repHideOverlay();}}
 async function printAllReports(){
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
