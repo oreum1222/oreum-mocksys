@@ -1389,6 +1389,222 @@ function yakRounds_(st){
 function yakApplyLineD_(ap){ if(!ap) return '지원 정보 없음(옛 제출)'; if(ap.undecided) return ap.univName+' 모집단위 미정';
   return ap.univName+' '+ap.unit+' ('+(ap.track==='의약'?'의약학':ap.track+'계열')+')'; }
 // ── 합격 가능성 살펴보기: 지난해 70%/90% 컷을 이번 시험 만점에 옮긴 값으로 구간 문장과 내 위치 문장을 만든다(세 곳 공통, ES5) ──
+/* ════════ 약술 개별 리포트 인쇄 틀(2026-09-21 확정: [오름] 딥그린 + 코랄, 기본은 인쇄용 흰 바탕) ════════
+   '이 학생 PDF' / '전체 PDF 저장'(약술 모드)은 새 탭에 이 틀을 열고, 위 막대에서 인쇄용과 컬러를 바꿔 본 뒤 브라우저 인쇄로 PDF 저장한다.
+   원본 시안: 클코\약술_리포트_시안\build_yak_print.py */
+var YP_T = { p:'#1E4D3A', p2:'#2F6B52', tint:'#E4EFE8', tint2:'#F2F7F4', acc:'#E4775B', accT:'#FBE1D9', line:'#D1DFD6', ink:'#1B2620', mute:'#66756C' };
+var YP_ABIL = ['근거 찾기','개념과 관점 구분','관계 이해','추론과 사례 적용','답안 조건 준수'];
+var YP_NEXT = {
+  '근거 찾기':'발문의 조건어(대상, 기능, 위치)에 표시하고 그 말이 다시 나오는 문단부터 좁혀 찾습니다.',
+  '개념과 관점 구분':'지문의 개념과 인물별 견해를 두 칸 표로 나눠 적고, <보기>의 설명을 하나씩 대응시킵니다.',
+  '관계 이해':'문장마다 앞 문장과의 관계(원인, 결과, 대조, 사례)를 한 단어로 적고, 발문이 요구한 관계의 문장만 고릅니다.',
+  '추론과 사례 적용':'지문의 원리를 조건 목록으로 바꿔 적고 <보기>의 상황에 하나씩 대입한 뒤 답을 씁니다.',
+  '답안 조건 준수':'답을 쓰기 전에 형식 조건(첫 어절과 마지막 어절, 글자 수, 활용형, 개수)에 밑줄을 긋고 다시 확인합니다.'
+};
+function ypE_(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function ypF_(n){ n = Math.round(Number(n)*10)/10; return String(n).replace(/\.0$/,''); }
+function ypRound_(rid){ var m = String(rid).match(/s(\d+)-(\d+)$/); return m ? (m[1]+'-'+m[2]+'회') : yakLabel_(rid); }
+
+function ypDonut_(val, tot, color, label, sub){
+  var r = 40, c = 2*Math.PI*r, f = (val==null || !tot) ? 0 : Math.max(0, Math.min(1, val/tot));
+  return '<div class="dn"><svg viewBox="0 0 100 100" width="94" height="94">'
+    + '<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="#E9EDF3" stroke-width="11"/>'
+    + (f>0 ? '<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+(c*f).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 50 50)"/>' : '')
+    + '<text x="50" y="50" text-anchor="middle" font-size="22" font-weight="800" fill="'+color+'">'+(val==null?'-':ypF_(val))+'</text>'
+    + '<text x="50" y="66" text-anchor="middle" font-size="10" fill="#8a93a3">/ '+tot+'점</text></svg>'
+    + '<div class="dn-l">'+label+'</div><div class="dn-s">'+sub+'</div></div>';
+}
+function ypGauge_(A, B, max, my){
+  var W=680, L=30, R=650, lo = Math.max(0, Math.min(B, my!=null?my:B) - 30), hi = max;
+  var X = function(v){ return L + (R-L)*(v-lo)/(hi-lo); };
+  var s = ['<svg viewBox="0 0 '+W+' 96" width="100%" class="gauge">'];
+  s.push('<rect x="'+L+'" y="40" width="'+(X(B)-L).toFixed(1)+'" height="16" rx="3" fill="#F1F3F6"/>');
+  if(A-1 >= B) s.push('<rect x="'+X(B).toFixed(1)+'" y="40" width="'+(X(A)-X(B)).toFixed(1)+'" height="16" fill="'+YP_T.accT+'"/>');
+  s.push('<rect x="'+X(A).toFixed(1)+'" y="40" width="'+(R-X(A)).toFixed(1)+'" height="16" rx="3" fill="'+YP_T.p2+'"/>');
+  var ticks = [[lo,lo],[A,A],[hi,hi]]; if(X(A)-X(B) >= 24) ticks.splice(1,0,[B,B]);
+  ticks.forEach(function(t){ s.push('<line x1="'+X(t[0]).toFixed(1)+'" y1="58" x2="'+X(t[0]).toFixed(1)+'" y2="64" stroke="#9aa3b2"/><text x="'+X(t[0]).toFixed(1)+'" y="76" text-anchor="middle" font-size="11" fill="#6b7689">'+t[1]+'</text>'); });
+  s.push('<text x="'+((X(A)+R)/2).toFixed(1)+'" y="52" text-anchor="middle" font-size="10.5" font-weight="700" fill="#fff">높은 편</text>');
+  if(A-1 >= B && X(A)-X(B) > 34) s.push('<text x="'+((X(B)+X(A))/2).toFixed(1)+'" y="52" text-anchor="middle" font-size="10.5" font-weight="700" fill="'+YP_T.acc+'">경계</text>');
+  s.push('<text x="'+((L+X(B))/2).toFixed(1)+'" y="52" text-anchor="middle" font-size="10.5" fill="#6b7689">아래</text>');
+  if(my!=null){ var x = X(Math.max(lo, Math.min(hi, my)));
+    s.push('<path d="M'+(x-7).toFixed(1)+',24 L'+(x+7).toFixed(1)+',24 L'+x.toFixed(1)+',36 Z" fill="'+YP_T.acc+'"/><text x="'+x.toFixed(1)+'" y="18" text-anchor="middle" font-size="12.5" font-weight="800" fill="'+YP_T.acc+'">내 점수 '+ypF_(my)+'</text><line x1="'+x.toFixed(1)+'" y1="36" x2="'+x.toFixed(1)+'" y2="58" stroke="'+YP_T.acc+'" stroke-width="2.5"/>'); }
+  s.push('<text x="'+L+'" y="92" font-size="10" fill="#9aa3b2">이번 시험 '+max+'점 만점 기준</text></svg>');
+  return s.join('');
+}
+function ypTrend_(pts){   // pts: [{lab, ko:[v,t], gr:[v,t]}]
+  var W=330, Hh=150, L=36, R=316, TOP=18, BOT=112, n=pts.length;
+  var vals=[]; pts.forEach(function(p){ [p.ko,p.gr].forEach(function(a){ if(a[0]!=null && a[1]) vals.push(100*a[0]/a[1]); }); });
+  var mn = vals.length ? Math.min.apply(null, vals) : 0, y0 = (!vals.length || mn < 45) ? 0 : (mn >= 55 ? 50 : 25);
+  var X = function(i){ return n===1 ? (L+R)/2 : L + (R-L)*i/(n-1); }, Y = function(p){ return BOT - (BOT-TOP)*(p-y0)/(100-y0); };
+  var s = ['<svg viewBox="0 0 '+W+' '+Hh+'" width="100%" class="trend">'];
+  [y0, Math.floor((y0+100)/2), 100].forEach(function(g){ s.push('<line x1="'+L+'" y1="'+Y(g).toFixed(1)+'" x2="'+R+'" y2="'+Y(g).toFixed(1)+'" stroke="#E3E7EE"'+(g===y0?'':' stroke-dasharray="3"')+'/><text x="'+(L-6)+'" y="'+(Y(g)+4).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#9aa3b2">'+g+'%</text>'); });
+  [['ko',YP_T.p,0],['gr',YP_T.acc,1]].forEach(function(se){
+    var xy=[]; pts.forEach(function(p,i){ var a=p[se[0]]; if(a[0]!=null && a[1]) xy.push([X(i), Y(100*a[0]/a[1]), a[0]]); });
+    if(xy.length>1) s.push('<polyline points="'+xy.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' ')+'" fill="none" stroke="'+se[1]+'" stroke-width="2.5"/>');
+    xy.forEach(function(q){ s.push('<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="4.5" fill="#fff" stroke="'+se[1]+'" stroke-width="2.5"/><text x="'+q[0].toFixed(1)+'" y="'+(se[2]===0?q[1]-9:q[1]+17).toFixed(1)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="'+se[1]+'">'+ypF_(q[2])+'</text>'); });
+  });
+  pts.forEach(function(p,i){ s.push('<text x="'+X(i).toFixed(1)+'" y="'+(BOT+18)+'" text-anchor="middle" font-size="11" fill="#4a5466">'+ypE_(p.lab)+'</text>'); });
+  s.push('<g font-size="10" fill="#4a5466"><rect x="'+L+'" y="'+(Hh-14)+'" width="10" height="3" fill="'+YP_T.p+'"/><text x="'+(L+14)+'" y="'+(Hh-10)+'">국어 득점률</text><rect x="'+(L+86)+'" y="'+(Hh-14)+'" width="10" height="3" fill="'+YP_T.acc+'"/><text x="'+(L+100)+'" y="'+(Hh-10)+'">국어와 수학 합계 득점률</text></g></svg>');
+  return s.join('');
+}
+function ypSec_(title, body, sub){ return '<section class="sec"><h2 class="sh"><span>'+title+'</span>'+(sub?'<em>'+sub+'</em>':'')+'</h2>'+body+'</section>'; }
+
+// 학생 한 명의 리포트 본문(학생마다 새 쪽)
+function ypStudent_(st){
+  var rids = yakRounds_(st), lastRid = rids[rids.length-1], ly = st.rounds[lastRid] || {};
+  var ap = null; for(var i=rids.length-1;i>=0;i--){ if(st.rounds[rids[i]].apply){ ap = st.rounds[rids[i]].apply; break; } }
+  var cum = {}; YP_ABIL.forEach(function(k){ cum[k]={total:0,wrong:0}; });
+  rids.forEach(function(r){ var ab = st.rounds[r].ability || {}; Object.keys(ab).forEach(function(k){ if(cum[k]){ cum[k].total += ab[k].total||0; cum[k].wrong += ab[k].wrong||0; } }); });
+  var today = new Date(), ymd = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var head = '<header class="hd"><div class="hd-l"><div class="brand">[오름] 국어</div><h1>약술형 논술 진단 리포트</h1><div class="hd-s">가천대 실전 모의고사</div></div>'
+    + '<div class="hd-r"><div class="lab">김가경 국어 연구소</div><div class="dt">'+ymd+' 발행</div></div></header>';
+  var apLine = !ap ? '<span class="m">정보 없음(이전 제출)</span>' : (ap.undecided ? ypE_(ap.univName)+' <span class="m">모집단위 미정</span>'
+    : ypE_(ap.univName+' '+ap.unit)+' <span class="m">('+ypE_(ap.track)+(ap.track==='의약'?'':'계열')+((ap.members&&ap.members.length)?', '+ypE_(ap.members.join(', ')):'')+')</span>');
+  var info = '<table class="info"><tr><th>이름</th><td class="big">'+ypE_(st.name)+'</td><th>학교</th><td>'+ypE_(st.school||'-')+'</td></tr>'
+    + '<tr><th>지원 모집단위</th><td>'+apLine+'</td><th>응시 회차</th><td>'+rids.map(ypRound_).join(', ')+'</td></tr></table>';
+  var mt = ly.mathTotal || 80, gt = ly.grandTotal || ((ly.total||80) + mt);
+  var summ = '<div class="sumrow">'
+    + ypDonut_(ly.score, ly.total||80, YP_T.p, '국어 득점', ypRound_(lastRid)+' 자기채점')
+    + ypDonut_(ly.mathScore, mt, YP_T.p2, '수학 득점', ly.mathScore!=null ? '문항 분석 제외' : (ly.mathTaken===false ? '미응시' : '미입력'))
+    + ypDonut_(ly.grandRaw, gt, YP_T.acc, '국어와 수학 합계', gt+'점 만점')
+    + '<div class="cards"><div class="cd"><b>'+(ly.fullItems!=null?ly.fullItems:'-')+'</b><span>/ '+(ly.itemCount||8)+'문항</span><i>모든 칸을 맞힌 문항</i></div>'
+    + '<div class="cd"><b>'+ly.wrongSubs+'</b><span>/ '+ly.totalSubs+'칸</span><i>틀린 칸</i></div>'
+    + '<div class="cd"><b>'+(ly.condWrong||0)+'</b><span>칸</span><i>형식 조건을 어긴 칸</i></div></div></div>';
+
+  // 합격 가능성
+  var hg = '';
+  if(ap && !ap.undecided && ap.prev && ap.prev.max){
+    var pv = ap.prev, exMax = (ly.total && ly.mathTotal) ? (ly.total + ly.mathTotal) : ((ap.comp && ap.comp.total) || pv.max);
+    var A = Math.round(pv.p70*exMax/pv.max), B = Math.round(pv.p90*exMax/pv.max);
+    var my = (ly.grandTotal === exMax) ? ly.grandRaw : null, mi = hgMine_(A, B, my), bands = hgBands_(A, B);
+    var RT = ap.comp && ap.comp.total, RA = RT ? Math.round(pv.p70*RT/pv.max) : null, RB = RT ? Math.round(pv.p90*RT/pv.max) : null;
+    hg = '<p class="lead"><b>'+ypE_(ap.univName+' '+ap.unit)+'</b> 지난해 합격자 점수를 이번 시험('+exMax+'점 만점)에 맞춰 옮기면 이렇습니다.</p>'
+      + ypGauge_(A, B, exMax, my)
+      + '<table class="bands">'+bands.map(function(bd){ return '<tr class="'+(mi&&mi.key===bd.key?'on':'')+'"><th>'+bd.range+'</th><td>'+bd.text+'</td></tr>'; }).join('')+'</table>'
+      + (mi ? '<div class="me">▶ '+mi.text+'</div>' : '<div class="me dim">수학 득점이 없어 합계로 견주지 않았습니다. 다음 시험에서 수학 득점도 적으면 위치를 바로 볼 수 있습니다.</div>')
+      + '<p class="foot">지난해 '+ypE_(ap.univName+' '+ap.unit)+'에 합격해 등록한 '+pv.quota+'명(경쟁률 '+pv.rate+' 대 1)의 논술점수('+pv.max+'점 만점)는 위쪽 70%째 '+pv.p70+'점, 90%째 '+pv.p90+'점이었고, 이를 '+exMax+'점 만점에 같은 비율로 옮겼습니다.'
+      + ((RT && RT!==exMax) ? ' 올해 실제 시험('+RT+'점) 기준으로는 '+RA+'점, '+RB+'점입니다.' : '')
+      + ' 해마다 문제와 지원자가 다르고 학원 시험은 실제 시험과 문항 구성이 달라 참고용입니다.</p>';
+  } else if(ap && !ap.undecided){
+    hg = '<p class="lead">'+ypE_(ap.unit)+'는 지난 학년도 논술전형 입시 결과가 공개되지 않아 견줄 자료가 없습니다.</p>';
+  } else {
+    hg = '<p class="lead">지원 모집단위를 적지 않은 제출이라 합격 가능성은 살펴보지 않았습니다. 다음 시험에서 모집단위를 고르면 함께 나옵니다.</p>';
+  }
+
+  var pts = rids.map(function(r){ var y = st.rounds[r]; return { lab: ypRound_(r), ko:[y.score, y.total], gr:[y.grandRaw, y.grandTotal] }; });
+  var p0 = pts[0], one = function(a, nm){ return (a[0]!=null && a[1]) ? nm+' '+ypF_(a[0])+'점('+Math.round(100*a[0]/a[1])+'%)' : ''; };
+  var tr = rids.length > 1 ? ypTrend_(pts)
+    : '<div class="one"><b>'+ypE_(p0.lab)+'</b> '+[one(p0.ko,'국어'), one(p0.gr,'국어와 수학 합계')].filter(function(x){return x;}).join(', ')+'</div><p class="foot">회차가 쌓이면 회차별 득점률이 선으로 이어집니다.</p>';
+  var abRows = '';
+  YP_ABIL.forEach(function(k){ var v=cum[k]; if(!v.total) return; var pct = Math.round(100*(v.total-v.wrong)/v.total);
+    abRows += '<div class="ab"><span class="ab-k">'+k+'</span><span class="ab-b"><i style="width:'+pct+'%;background:'+(v.wrong?YP_T.acc:YP_T.p2)+'"></i></span><span class="ab-v">'+pct+'%</span><span class="ab-n">'+(v.total-v.wrong)+'/'+v.total+'칸</span></div>'; });
+  var ab = '<div class="abs">'+abRows+'</div><p class="foot">'+rids.length+'개 회차 누적. 답을 찾았으나 형식 조건을 어긴 칸은 답안 조건 준수에만 셉니다.</p>';
+
+  var wr = '';
+  rids.forEach(function(r){ (st.rounds[r].items||[]).forEach(function(q){ var e = q.ebsStudy || null;
+    (q.subs||[]).forEach(function(sb){ var d = sb.diag || {}, dt = (typeof d==='string') ? d : (d.text||'');
+      var ebsTxt = e ? [((e.book||'')+' '+(e.pages||'')).trim(), e.unit||''].filter(function(x){return x;}).join(', ') : '';
+      wr += '<div class="wq"><div class="wq-h"><b>'+ypRound_(r)+' '+q.no+'번 '+ypE_(sb.mark)+'</b>'
+        + (sb.ability?'<span class="tg">'+ypE_(sb.ability)+'</span>':'') + (sb.cause?'<span class="tg w">'+ypE_(sb.cause)+'</span>':'')
+        + '<span class="pt">-'+ypF_(sb.points||0)+'점</span></div>'
+        + (q.concept?'<div class="wq-c">'+ypE_(q.concept)+'</div>':'')
+        + '<div class="wq-a"><span>쓴 답</span>'+(sb.legacy ? '<i class="m">기록 없음(이전 제출)</i>' : ypE_(sb.my||''))+'<span class="ok">정답</span>'+ypE_(sb.answer||'')+'</div>'
+        + (dt?'<div class="wq-d">'+ypE_(dt)+'</div>':'') + (ebsTxt?'<div class="wq-e">EBS '+ypE_(ebsTxt)+'</div>':'') + '</div>';
+    }); }); });
+  if(!wr) wr = '<p class="lead">틀린 칸이 없습니다.</p>';
+
+  var nx = '', ni = 0;
+  YP_ABIL.forEach(function(k){ var v=cum[k]; if(!v.wrong) return; ni++;
+    nx += '<div class="nx"><span class="nx-i">'+ni+'</span><div><b>'+k+'</b> <em>'+v.wrong+'/'+v.total+'칸</em><p>'+ypE_(YP_NEXT[k])+'</p></div></div>'; });
+  if(!nx) nx = '<p class="lead">놓친 칸이 없습니다. 같은 속도로 다음 회차를 풉니다.</p>';
+  var ebs = '', seen = {};
+  rids.forEach(function(r){ (st.rounds[r].items||[]).forEach(function(q){ var e=q.ebsStudy; if(!e) return; var key=e.book+'|'+e.pages; if(seen[key]) return; seen[key]=1;
+    ebs += '<tr><td class="ck">□</td><td>'+ypE_((e.book||'')+' '+(e.pages||''))+'</td><td>'+ypE_(e.unit||'')+'</td><td>'+ypE_(e.title||'')+'</td></tr>'; }); });
+  ebs = ebs ? '<table class="ebs"><tr><th></th><th>교재와 쪽</th><th>강</th><th>작품이나 제재</th></tr>'+ebs+'</table>' : '<p class="lead">다시 읽을 EBS 지문이 없습니다.</p>';
+
+  return '<article class="stu">' + head + '<main>'
+    + ypSec_('학생 정보', info)
+    + ypSec_('이번 성적 한눈에 보기', summ, ypRound_(lastRid)+' 기준')
+    + ypSec_('합격 가능성 살펴보기', hg)
+    + '<div class="two">' + ypSec_('회차별 추이', tr) + ypSec_('능력별 성취', ab) + '</div>'
+    + '<div class="pb"></div>'
+    + ypSec_('실제 오답 근거', '<div class="wqs">'+wr+'</div>', '쓴 답과 정답을 나란히')
+    + ypSec_('다음 과제', nx)
+    + ypSec_('EBS 집중 학습', ebs, '다시 읽을 지문에 표시하며 확인')
+    + '</main><footer class="ft"><span>[오름] 국어 · 김가경 국어 연구소</span><span>학생 자기채점 기준이며 교사 확인 전입니다</span></footer></article>';
+}
+
+function ypCss_(){
+  var T = YP_T;
+  return "@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');"
+  + "@page{size:A4;margin:11mm 11mm 12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+  + "body{margin:0;font-family:Pretendard,'Malgun Gothic',sans-serif;color:"+T.ink+";font-size:10.5pt;line-height:1.55;background:#fff}"
+  + ".stu{max-width:188mm;margin:0 auto}.stu+.stu{break-before:page}"
+  + ".hd{display:flex;justify-content:space-between;align-items:flex-end;padding:4px 2px 12px;border-bottom:3px solid "+T.p+"}"
+  + ".brand{font-size:9pt;letter-spacing:1.5px;color:"+T.p+";font-weight:700}.hd h1{margin:2px 0 0;font-size:20pt;font-weight:800;letter-spacing:-.5px;color:"+T.p+"}"
+  + ".hd-s{font-size:9.5pt;opacity:.85;margin-top:2px}.hd-r{text-align:right}.hd-r .lab{font-weight:700;font-size:10pt}.hd-r .dt{font-size:8.5pt;opacity:.8}"
+  + "main{margin-top:12px}.sec{margin-bottom:10px;break-inside:avoid}"
+  + ".sh{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;font-size:11.5pt;font-weight:800;color:"+T.p+";padding:2px 0 4px 10px;border-left:5px solid "+T.p+";border-bottom:1px solid "+T.line+"}"
+  + ".sh em{font-style:normal;font-weight:500;font-size:8.5pt;color:"+T.mute+"}"
+  + ".info{width:100%;border-collapse:collapse;font-size:9.5pt}.info th{width:92px;text-align:left;font-weight:600;color:"+T.mute+";padding:6px 8px;border-bottom:1px solid "+T.line+"}"
+  + ".info td{padding:6px 8px;border-bottom:1px solid "+T.line+"}.info td.big{font-size:13pt;font-weight:800}.m{color:"+T.mute+";font-size:8.5pt;font-style:normal}"
+  + ".sumrow{display:flex;align-items:center;gap:10px}.dn{text-align:center;width:104px}.dn-l{font-weight:700;font-size:9.5pt;margin-top:2px}.dn-s{font-size:8pt;color:"+T.mute+"}"
+  + ".cards{flex:1;display:grid;gap:6px}.cd{display:flex;align-items:baseline;gap:6px;padding:5px 12px;border-radius:8px;border:1px solid "+T.line+"}"
+  + ".cd b{font-size:15pt;color:"+T.p+"}.cd span{color:"+T.mute+";font-size:9pt}.cd i{font-style:normal;margin-left:auto;font-size:9pt}"
+  + ".lead{margin:0 0 4px;font-size:10pt}.gauge{display:block;margin:2px 0 4px}"
+  + ".bands{width:100%;border-collapse:collapse;font-size:9.5pt}.bands th{width:110px;text-align:left;padding:5px 10px;color:"+T.p+";white-space:nowrap;border-bottom:1px solid "+T.line+"}"
+  + ".bands td{padding:5px 10px;border-bottom:1px solid "+T.line+"}.bands tr.on th,.bands tr.on td{font-weight:700;color:"+T.acc+"}"
+  + ".me{margin-top:8px;padding:8px 12px;border-left:4px solid "+T.acc+";font-weight:700;font-size:10pt}.me.dim{font-weight:400;color:"+T.mute+";border-left-color:"+T.line+"}"
+  + ".foot{margin:6px 0 0;font-size:8pt;color:"+T.mute+";line-height:1.6}.one{padding:18px 12px;border:1px dashed "+T.line+";border-radius:8px;font-size:10pt;text-align:center}.one b{color:"+T.p+";margin-right:6px}"
+  + ".two{display:grid;grid-template-columns:1fr 1fr;gap:14px;break-inside:avoid}.two .sec{margin-bottom:0}"
+  + ".ab{display:grid;grid-template-columns:96px 1fr 36px 46px;align-items:center;gap:6px;margin:6px 0;font-size:9pt}"
+  + ".ab-b{height:9px;background:#EEF1F5;border-radius:5px;overflow:hidden}.ab-b i{display:block;height:100%;border-radius:5px}.ab-v{font-weight:700;text-align:right}.ab-n{color:"+T.mute+";font-size:8pt}"
+  + ".pb{break-after:page}.wqs{display:grid;grid-template-columns:1fr 1fr;gap:8px}"
+  + ".wq{padding:9px 11px;border-radius:8px;break-inside:avoid;border:1px solid "+T.line+"}.wq-h{display:flex;align-items:center;gap:5px;font-size:9.5pt}.wq-h b{color:"+T.p+"}"
+  + ".tg{font-size:7.5pt;padding:1px 6px;border-radius:99px;border:1px solid "+T.line+";color:"+T.mute+"}.tg.w{border-color:"+T.acc+";color:"+T.acc+"}"
+  + ".pt{margin-left:auto;font-weight:700;color:"+T.acc+";font-size:9pt}.wq-c{font-size:8.5pt;color:"+T.mute+";margin:3px 0}"
+  + ".wq-a{font-size:9.5pt}.wq-a span{font-size:7.5pt;color:"+T.mute+";margin-right:4px}.wq-a span.ok{margin-left:10px;color:"+T.p2+";font-weight:700}"
+  + ".wq-d{font-size:8.5pt;margin-top:3px}.wq-e{font-size:7.8pt;color:"+T.mute+";margin-top:3px}"
+  + ".nx{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed "+T.line+"}.nx-i{flex:none;width:22px;height:22px;border-radius:50%;background:"+T.acc+";color:#fff;font-weight:800;font-size:9pt;display:flex;align-items:center;justify-content:center}"
+  + ".nx b{color:"+T.p+"}.nx em{font-style:normal;color:"+T.mute+";font-size:8.5pt}.nx p{margin:2px 0 0;font-size:9.5pt}"
+  + ".ebs{width:100%;border-collapse:collapse;font-size:9pt}.ebs th{text-align:left;padding:5px 8px;color:"+T.p+";border-bottom:1.5px solid "+T.p+"}"
+  + ".ebs td{padding:6px 8px;border-bottom:1px solid "+T.line+"}.ebs td.ck{width:20px;font-size:12pt;color:"+T.p+"}"
+  + ".ft{margin-top:10px;padding-top:6px;border-top:1px solid "+T.line+";display:flex;justify-content:space-between;font-size:7.8pt;color:"+T.mute+"}"
+  // 컬러 버전: 머리 띠와 섹션 띠, 카드 바탕을 칠한다(PDF로 보낼 때)
+  + "body.color .hd{background:"+T.p+";color:#fff;border-radius:10px;padding:16px 20px;border-bottom:0}body.color .brand,body.color .hd h1{color:#fff}"
+  + "body.color .sh{background:"+T.tint+";border-bottom:0;border-radius:0 6px 6px 0;padding:6px 10px}"
+  + "body.color .info th{background:"+T.tint2+"}body.color .cd,body.color .wq{background:"+T.tint2+"}"
+  + "body.color .bands tr.on th,body.color .bands tr.on td{background:"+T.accT+"}body.color .me{background:"+T.accT+";border-radius:0 6px 6px 0}body.color .me.dim{background:transparent}"
+  + "body.color .ebs th{background:"+T.tint2+"}"
+  // 화면에서만 보이는 위 막대
+  + ".bar{position:sticky;top:0;z-index:5;display:flex;gap:8px;align-items:center;padding:10px 14px;margin:0 0 16px;background:#1B2620;color:#fff;font-size:10pt}"
+  + ".bar b{margin-right:auto}.bar button{font:inherit;padding:6px 12px;border-radius:7px;border:1px solid #6d8a7a;background:transparent;color:#fff;cursor:pointer}"
+  + ".bar button.on{background:#fff;color:#1B2620}.bar button.go{background:"+T.acc+";border-color:"+T.acc+"}"
+  + "@media print{.bar{display:none}}@media screen{body{background:#e9ece9}.stu{background:#fff;padding:12mm 11mm;margin:0 auto 18px;box-shadow:0 2px 14px rgba(0,0,0,.12)}}";
+}
+
+// 새 탭에 열기. list: 학생 배열, title: 저장 파일 이름
+function ypOpen_(list, title){
+  if(!list || !list.length){ alert('보낼 약술 리포트가 없습니다.'); return; }
+  var w = window.open('', '_blank');
+  if(!w){ alert('새 탭이 막혔습니다. 브라우저 주소창 오른쪽의 팝업 차단을 풀어 주세요.'); return; }
+  var body = list.map(ypStudent_).join('');
+  var bar = '<div class="bar"><b>'+ypE_(title)+' · '+list.length+'명</b>'
+    + '<button id="mPrint" class="on" onclick="document.body.classList.remove(\'color\');this.classList.add(\'on\');document.getElementById(\'mColor\').classList.remove(\'on\')">인쇄용(흰 바탕)</button>'
+    + '<button id="mColor" onclick="document.body.classList.add(\'color\');this.classList.add(\'on\');document.getElementById(\'mPrint\').classList.remove(\'on\')">컬러(PDF 전송용)</button>'
+    + '<button class="go" onclick="window.print()">PDF로 저장</button></div>';
+  w.document.open();
+  w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+ypE_(title)+'</title><style>'+ypCss_()+'</style></head><body>'+bar+body+'</body></html>');
+  w.document.close();
+}
+function yakPrintOne_(idx){ var st = (REP.yak||[])[idx]; if(st) ypOpen_([st], '오름_'+st.name+'_약술리포트'); }
+function yakPrintAll_(){
+  var shown = [].slice.call(document.querySelectorAll('#reportRoot .repcard[data-kind="yak"]')).filter(function(c){ return getComputedStyle(c).display!=='none'; })
+    .map(function(c){ return +String(c.id).replace('yk-rep-',''); });
+  var list = shown.map(function(i){ return (REP.yak||[])[i]; }).filter(Boolean);
+  ypOpen_(list, '오름_약술리포트_'+list.length+'명');
+}
+
 function hgFmt_(n){ n = Math.round(n*10)/10; return String(n).replace(/\.0$/,''); }
 function hgBands_(a, b){   // a=70% 컷, b=90% 컷(환산 뒤)
   var mid = (a-1 >= b), out = [];
@@ -1400,7 +1616,8 @@ function hgBands_(a, b){   // a=70% 컷, b=90% 컷(환산 뒤)
 function hgMine_(a, b, score){
   if(score == null || isNaN(score)) return null;
   var mid = (a-1 >= b);
-  if(score >= a) return {key:'hi', text:'이번 시험 합계 '+hgFmt_(score)+'점은 '+a+'점보다 '+hgFmt_(score-a)+'점 높아, 지난해 기준으로는 합격 가능성이 높은 편입니다.'};
+  if(score === a) return {key:'hi', text:'이번 시험 합계 '+hgFmt_(score)+'점은 합격 가능성이 높은 구간('+a+'점 이상)에 들어갑니다. 지난해 기준으로는 합격 가능성이 높은 편입니다.'};
+  if(score > a) return {key:'hi', text:'이번 시험 합계 '+hgFmt_(score)+'점은 '+a+'점보다 '+hgFmt_(score-a)+'점 높아, 지난해 기준으로는 합격 가능성이 높은 편입니다.'};
   if(mid && score >= b) return {key:'mid', text:'이번 시험 합계 '+hgFmt_(score)+'점은 합격권 경계에 있습니다. '+hgFmt_(a-score)+'점을 더 올리면 합격 가능성이 높은 구간('+a+'점 이상)에 들어갑니다.'};
   var edge = mid ? b : a;
   return {key:'lo', text:'이번 시험 합계 '+hgFmt_(score)+'점은 '+edge+'점보다 '+hgFmt_(edge-score)+'점 낮습니다. '+hgFmt_(edge-score)+'점을 더 올리면 '+(mid ? '합격권 경계' : '합격 가능성이 높은 구간')+'에 들어갑니다.'};
@@ -1511,7 +1728,7 @@ function yakCard_(st, idx){
    var sid = 'yk-rep-'+(idx||0);
    return '<div class="repcard" id="'+sid+'" data-name="'+escape(st.name)+'" data-kind="yak"><div class="rc-head"><div class="rc-name">'+escape(st.name)+'</div>'
      + '<div style="display:flex;align-items:center;gap:12px"><div class="rc-sub">'+escape(st.school||'')+' · 약술형 논술 '+rids.length+'회차</div>'
-     + '<button class="rpdf-btn no-print" onclick="printOneReport(\''+sid+'\')">이 학생 PDF</button></div></div>'+H.join('')+'</div>';
+     + '<button class="rpdf-btn no-print" onclick="yakPrintOne_('+(idx||0)+')">이 학생 PDF</button></div></div>'+H.join('')+'</div>';
 }
 function renderYakReports(){
   var root = document.getElementById('reportRoot'), note = document.getElementById('repNote');
@@ -1660,6 +1877,7 @@ async function printOneReport(id){var t=document.getElementById(id);if(!t)return
     pdf.save('오름_'+name+(t.dataset.kind==='yak'?'_약술리포트':'_진단리포트')+'.pdf');
   }catch(err){alert('PDF 생성 오류: '+(err.message||err));}finally{repHideOverlay();}}
 async function printAllReports(){
+  if(repMode()==='yaksul'){ yakPrintAll_(); return; }   // 약술은 인쇄 틀로 한 파일에 묶는다
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
   var cards=[].slice.call(document.querySelectorAll('.repcard')).filter(function(p){return getComputedStyle(p).display!=='none';});
   if(!cards.length){alert('표시된 학생이 없습니다.');return;}

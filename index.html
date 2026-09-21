@@ -1801,7 +1801,8 @@ function hgBands_(a, b){   // a=70% 컷, b=90% 컷(환산 뒤)
 function hgMine_(a, b, score){
   if(score == null || isNaN(score)) return null;
   var mid = (a-1 >= b);
-  if(score >= a) return {key:'hi', text:'이번 시험 합계 '+hgFmt_(score)+'점은 '+a+'점보다 '+hgFmt_(score-a)+'점 높아, 지난해 기준으로는 합격 가능성이 높은 편입니다.'};
+  if(score === a) return {key:'hi', text:'이번 시험 합계 '+hgFmt_(score)+'점은 합격 가능성이 높은 구간('+a+'점 이상)에 들어갑니다. 지난해 기준으로는 합격 가능성이 높은 편입니다.'};
+  if(score > a) return {key:'hi', text:'이번 시험 합계 '+hgFmt_(score)+'점은 '+a+'점보다 '+hgFmt_(score-a)+'점 높아, 지난해 기준으로는 합격 가능성이 높은 편입니다.'};
   if(mid && score >= b) return {key:'mid', text:'이번 시험 합계 '+hgFmt_(score)+'점은 합격권 경계에 있습니다. '+hgFmt_(a-score)+'점을 더 올리면 합격 가능성이 높은 구간('+a+'점 이상)에 들어갑니다.'};
   var edge = mid ? b : a;
   return {key:'lo', text:'이번 시험 합계 '+hgFmt_(score)+'점은 '+edge+'점보다 '+hgFmt_(edge-score)+'점 낮습니다. '+hgFmt_(edge-score)+'점을 더 올리면 '+(mid ? '합격권 경계' : '합격 가능성이 높은 구간')+'에 들어갑니다.'};
