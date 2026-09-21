@@ -1597,12 +1597,76 @@ function ypOpen_(list, title){
   w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+ypE_(title)+'</title><style>'+ypCss_()+'</style></head><body>'+bar+body+'</body></html>');
   w.document.close();
 }
-function yakPrintOne_(idx){ var st = (REP.yak||[])[idx]; if(st) ypOpen_([st], '오름_'+st.name+'_약술리포트'); }
+// ── 누르면 바로 PDF 파일로 저장(인쇄 창 없이). 화면 밖 틀에 그린 뒤 섹션과 카드 경계에서 쪽을 나눠 jsPDF로 묶는다 ──
+function ypColor_(){ try{ return localStorage.getItem('oreum_yak_pdf_color')==='1'; }catch(e){ return false; } }
+function ypSetColor_(on){ try{ localStorage.setItem('oreum_yak_pdf_color', on?'1':'0'); }catch(e){} }
+// A4 본문(188 x 274mm)에 맞춰 쪽 경계를 고른다. 강제 경계(.pb)가 먼저, 없으면 쪽 끝에 가장 가까운 섹션이나 카드 경계
+function ypPaginate_(art){
+  var H = art.scrollHeight, PH = Math.floor(art.offsetWidth*274/188), base = art.getBoundingClientRect().top;
+  var cand = [], forced = [];
+  [].slice.call(art.querySelectorAll('.sec, .wq, .nx, .ab, tr, .two, .me, .foot, .one, .cd, .ft')).forEach(function(e){
+    var r = e.getBoundingClientRect(); cand.push(r.top-base); cand.push(r.bottom-base); });
+  [].slice.call(art.querySelectorAll('.pb')).forEach(function(e){ forced.push(e.getBoundingClientRect().top-base); });
+  cand.sort(function(a,b){ return a-b; });
+  var pages = [], s = 0, guard = 0;
+  while(s < H-2 && guard++ < 40){
+    var lim = s + PH, cut = null;
+    var f = forced.filter(function(v){ return v > s+20 && v <= lim; })[0];
+    if(f != null) cut = f;
+    else if(lim >= H) cut = H;
+    else { var ok = cand.filter(function(v){ return v > s+PH*0.35 && v <= lim; }); cut = ok.length ? ok[ok.length-1] : lim; }
+    pages.push([s, cut]); s = cut;
+    var nx = cand.filter(function(v){ return v >= s; })[0];            // 다음 쪽은 다음 요소 위에서 시작(빈 줄 없이)
+    if(nx != null && nx - s < 30) s = nx;
+  }
+  return pages;
+}
+function ypDrawSlice_(pdf, canvas, sy, sh){
+  var c = document.createElement('canvas'); c.width = canvas.width; c.height = Math.max(1, Math.round(sh));
+  var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0,0,c.width,c.height);
+  g.drawImage(canvas, 0, Math.round(sy), canvas.width, c.height, 0, 0, canvas.width, c.height);
+  pdf.addImage(c.toDataURL('image/jpeg', 0.93), 'JPEG', 11, 11, 188, 188*c.height/c.width);
+}
+async function ypPdf_(list, filename){
+  if(!list || !list.length){ alert('저장할 약술 리포트가 없습니다.'); return; }
+  if(!repLibsReady()){ alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.'); return; }
+  var color = ypColor_();
+  repOverlay('PDF 만드는 중… (0/'+list.length+')');
+  var ifr = document.createElement('iframe');
+  ifr.setAttribute('aria-hidden','true');
+  ifr.style.cssText = 'position:fixed;left:-12000px;top:0;width:760px;height:1400px;border:0';
+  document.body.appendChild(ifr);
+  try{
+    var d = ifr.contentDocument;
+    d.open();
+    d.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>'+ypCss_()
+      + ' html,body{background:#fff!important;margin:0}body,body *{font-family:"Malgun Gothic","맑은 고딕",sans-serif!important;letter-spacing:0!important}'
+      + ' .bar{display:none}.info th{white-space:nowrap;width:104px}.stu{box-shadow:none!important;margin:0!important;padding:0!important;width:710px!important;max-width:none!important}'
+      + '</style></head><body class="'+(color?'color':'')+'"></body></html>');
+    d.close();
+    await new Promise(function(r){ setTimeout(r, 250); });
+    try{ if(d.fonts && d.fonts.ready) await d.fonts.ready; }catch(e){}
+    var jsPDF = getJsPDF(), pdf = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'}), first = true;
+    for(var i=0;i<list.length;i++){
+      repOverlay('PDF 만드는 중… ('+(i+1)+'/'+list.length+') · '+list[i].name);
+      d.body.innerHTML = ypStudent_(list[i]);
+      await new Promise(function(r){ setTimeout(r, 120); });
+      try{ if(d.fonts && d.fonts.ready) await d.fonts.ready; }catch(e){}
+      var art = d.body.querySelector('.stu'), pages = ypPaginate_(art);
+      var canvas = await html2canvas(art, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false, windowWidth:760});
+      var k = canvas.width / art.offsetWidth;
+      pages.forEach(function(pg){ if(!first) pdf.addPage(); first = false; ypDrawSlice_(pdf, canvas, pg[0]*k, (pg[1]-pg[0])*k); });
+    }
+    pdf.save(filename + '.pdf');
+  }catch(err){ alert('PDF 생성 오류: '+(err.message||err)); }
+  finally{ try{ ifr.remove(); }catch(e){} repHideOverlay(); }
+}
+function yakPrintOne_(idx){ var st = (REP.yak||[])[idx]; if(st) ypPdf_([st], '오름_'+st.name+'_약술리포트'); }
 function yakPrintAll_(){
   var shown = [].slice.call(document.querySelectorAll('#reportRoot .repcard[data-kind="yak"]')).filter(function(c){ return getComputedStyle(c).display!=='none'; })
     .map(function(c){ return +String(c.id).replace('yk-rep-',''); });
   var list = shown.map(function(i){ return (REP.yak||[])[i]; }).filter(Boolean);
-  ypOpen_(list, '오름_약술리포트_'+list.length+'명');
+  ypPdf_(list, '오름_약술리포트_'+list.length+'명');
 }
 
 function hgFmt_(n){ n = Math.round(n*10)/10; return String(n).replace(/\.0$/,''); }
@@ -1742,7 +1806,7 @@ function renderYakReports(){
       +'.yk-hg th{white-space:nowrap;width:120px;font-weight:700;opacity:1;color:var(--gold);vertical-align:top}.yk-hg tr.on th,.yk-hg tr.on td{background:rgba(201,168,76,.13)}.yk-hg-n{font-size:.76rem;opacity:.65;margin-top:2px}'+'.yk-hg-me{margin-top:10px;padding:9px 12px;border-left:3px solid var(--gold);background:rgba(201,168,76,.08);font-weight:600;line-height:1.6;border-radius:0 8px 8px 0}.yk-hg-me.dim{font-weight:400;opacity:.75;border-left-color:var(--border-line);background:transparent}'+'.yk-ditem{border-top:1px solid var(--border-line);padding:9px 0}.yk-dnote{margin-top:8px;padding:9px 11px;border:1px solid var(--border-line);border-radius:8px;font-size:.84rem;line-height:1.7;opacity:.9}';
     document.head.appendChild(st);
   }
-  if(note) note.innerHTML = '약술형 논술 리포트 · 표시 중 <b style="color:var(--gold)">'+list.length+'명</b>';
+  if(note) note.innerHTML = '약술형 논술 리포트 · 표시 중 <b style="color:var(--gold)">'+list.length+'명</b>'+ '<label style="margin-left:14px;font-size:.82rem;cursor:pointer;opacity:.85"><input type="checkbox" '+(ypColor_()?'checked':'')+' onchange="ypSetColor_(this.checked)" style="vertical-align:-2px;margin-right:4px">PDF를 컬러로(바탕색 있음, 끄면 인쇄용 흰 바탕)</label>';
   if(!list.length){
     root.innerHTML = '<div class="empty">선택한 약술 회차에 제출이 없습니다. 회차를 바꾸거나 학생 제출을 기다려 주세요.</div>';
     return;
