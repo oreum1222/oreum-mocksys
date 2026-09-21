@@ -319,6 +319,7 @@ function loadConfig(){
 }
 
 let ALL_DATA = [];
+var DATA_STATE = 'loading', DATA_ERR = '', LOAD_SEQ = 0;   // LOAD_SEQ: 겹친 불러오기 중 마지막 것만 반영   // 성적 목록 상태: loading | ready | error
 
 // ─── 상단 반(수업) 선택: 'g3'([오름] 수능) | 'mexx'(MEXX 수능)  ※ [오름] 고2 반은 없어 탭을 뺐다(2026-09-18) ───
 // 회차의 반은 data/mock-<id>.json 의 examMeta.brand 와 examMeta.course 로 판별한다.
@@ -569,23 +570,25 @@ function loadData(preloaded){
   }
 
   tableBox.innerHTML = '<div class="empty">불러오는 중...</div>';
+  DATA_STATE = 'loading'; DATA_ERR = ''; repShowState_();
+  const seq = ++LOAD_SEQ;
   (preloaded ? Promise.resolve({ok:true, rows:preloaded}) : dashPost({action:'list'}))
     .then(d=>{
+      if(seq !== LOAD_SEQ) return;   // 더 늦게 시작한 불러오기가 있으면 이 결과는 버린다
       if(!d || d.ok !== true){ logout(); document.getElementById('gateMsg').innerHTML = '<div class="error">다시 로그인해 주세요.</div>'; return; }
       ALL_DATA = dedupeData(d.rows || []);
       renderDedupNotice();
       const ids = [...new Set(ALL_DATA.map(r=>normExamId(r.exam||r['회차ID']||r['시험']||'')).filter(Boolean))];
       Promise.all([loadGradeCuts(ids), loadNarrEdits()]).then(()=>{
+        if(seq !== LOAD_SEQ) return;
+        DATA_STATE = 'ready';
         populateExamSelect();
         renderStatsAndTable();
         renderGradeDist();
         buildReports();
-      });
+      }).catch(err=>{ if(seq === LOAD_SEQ) dataFail_(err, msg, tableBox); });
     })
-    .catch(err=>{
-      msg.innerHTML = '<div class="error">데이터를 불러오지 못했습니다: '+err.message+'</div>';
-      tableBox.innerHTML = '<div class="empty">로드 실패</div>';
-    });
+    .catch(err=>{ if(seq === LOAD_SEQ) dataFail_(err, msg, tableBox); });
 }
 
 // 시트 데이터에서 회차 목록을 추출해서 셀렉트 박스 자동 생성
@@ -979,7 +982,27 @@ function rNormType(typ){var t=(typ||'').replace(/\s/g,'').replace(/[〈〉]/g,''
 function rAreaBuck(a){a=String(a||'');if(a.indexOf('독서')>=0)return'독서';if(a.indexOf('문학')>=0)return'문학';return'선택';}
 
 function yakOnly(){ var s=(REP.sel||[]); return s.length>0 && s.every(function(r){ return YAKSUL[r]; }); }
+// 불러오기 실패: 응답 목록과 리포트 탭 양쪽에 사유와 다시 불러오기 버튼을 둔다
+function dataFail_(err, msg, tableBox){
+  DATA_STATE = 'error'; DATA_ERR = (err && (err.message || String(err))) || '알 수 없는 오류';
+  try{ console.error('[대시보드] 성적 불러오기 실패', err); }catch(e){}
+  if(msg) msg.innerHTML = '<div class="error">데이터를 불러오지 못했습니다: '+escape(DATA_ERR)+'</div>';
+  if(tableBox) tableBox.innerHTML = '<div class="empty">로드 실패 <button class="rfbtn" onclick="loadData()">다시 불러오기</button></div>';
+  repShowState_();
+}
+// 리포트 탭 상태 표시. 준비가 끝났으면 false를 돌려 평소대로 그리게 한다
+function repShowState_(){
+  if(DATA_STATE === 'ready') return false;
+  var root = document.getElementById('reportRoot'), note = document.getElementById('repNote');
+  var html = DATA_STATE === 'error'
+    ? '성적을 불러오지 못했습니다. ('+escape(DATA_ERR)+') <button class="rfbtn" onclick="loadData()">다시 불러오기</button>'
+    : '성적을 불러오는 중입니다. 잠시만 기다려 주세요.';
+  if(root) root.innerHTML = '<div class="empty">'+html+'</div>';
+  if(note) note.innerHTML = '';
+  return true;
+}
 function buildReports(){
+  if(repShowState_()) return;   // 불러오는 중이거나 실패했으면 '제출 없음'으로 보이지 않게 상태만 보여 준다
   repInitSel();
   if(repMode()==='yaksul'){ renderRoundPicker(); return buildYakReports(); }   // 약술 모드는 약술 전용 리포트만
   renderRoundPicker();
