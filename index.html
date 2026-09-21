@@ -234,6 +234,19 @@ body{
 .yk-hg-n{font-size:.78rem;color:var(--text-muted);margin-top:2px}
 .yk-hg-me{margin-top:12px;padding:11px 14px;border-left:3px solid var(--gold);background:rgba(201,168,76,.08);color:var(--cream);font-weight:600;line-height:1.6;border-radius:0 8px 8px 0}
 .yk-hg-me.dim{font-weight:400;color:var(--text-secondary);border-left-color:var(--border-line);background:transparent}
+.pk-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-line);flex-wrap:wrap}
+.pk-row.need{background:rgba(232,180,180,.08);box-shadow:inset 3px 0 0 #e8b4b4;padding-left:8px}
+.pk-no{min-width:92px;color:var(--cream);font-weight:600}
+.pk-opts{display:flex;gap:6px;flex-wrap:wrap}
+.pk-b{min-width:40px;padding:7px 10px;border-radius:8px;border:1px solid var(--border-line);background:transparent;color:var(--text-dim);font:inherit;font-size:1.02rem;cursor:pointer}
+.pk-b.unk{font-size:.86rem}.pk-b.on{border-color:var(--gold);color:var(--cream);background:rgba(201,168,76,.12)}
+.ts-ranges{margin-top:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.ts-row{display:flex;align-items:center;gap:8px;color:var(--text-secondary)}
+.ts-row input{width:78px;padding:8px 10px;border-radius:9px;border:1px solid var(--border-line);background:var(--bg-dark);color:var(--cream);font:inherit;text-align:right}
+.ts-row input:focus{outline:none;border-color:var(--gold)}
+.ts-x,.ts-add{font:inherit;font-size:.85rem;padding:5px 10px;border-radius:8px;border:1px dashed var(--border-line);background:transparent;color:var(--text-dim);cursor:pointer}
+#tsSec.need{box-shadow:inset 3px 0 0 #e8b4b4}
+.pk-msg{margin-top:10px;color:#e8b4b4;font-size:.92rem;text-align:right;min-height:1.2em}
 .yk-take{display:flex;gap:9px;margin-top:8px}
 .yk-mscore{display:none;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
 .yk-mscore .yk-mlab{color:var(--cream);font-size:.92rem}
@@ -1113,6 +1126,8 @@ function areaBlock(title, questions, scope){
 // ─── Step 3: 시간 진단 ───
 function renderStep3(){
   if(isYaksul()){ STATE.step=4; return renderDiag(); }   // 약술은 시간 진단 단계가 없다
+  root.appendChild(renderPickBox_());
+  root.appendChild(renderTimeShortBox_());
   const intro = el('div',{class:'section'},
     el('h2',{class:'section-title'},'시간 진단'),
     el('p',{class:'section-desc'},'본 시험에서의 ‘시간 사용 패턴’을 진단합니다. 각 문항에 솔직하게 답해 주세요.')
@@ -1148,10 +1163,88 @@ function renderStep3(){
 
   const btnRow = el('div',{class:'btn-row'},
     el('button',{class:'btn btn-ghost', onclick:()=>{STATE.step=2; renderDiag();}},'← 이전'),
-    el('button',{class:'btn btn-primary', onclick:goToResult},'진단 결과 보기 →')
+    el('button',{class:'btn btn-primary', onclick:()=>{ if(checkPickAndTime_()) goToResult(); }},'진단 결과 보기 →')
   );
   root.appendChild(btnRow);
+  root.appendChild(el('div',{id:'pickMsg', class:'pk-msg'}));
 }
+
+// ── 틀린 문항에서 고른 답(오답 선지): 틀린 근거를 분석하는 데 쓴다 ──
+const PK_MARKS = ['①','②','③','④','⑤'];
+function pkInit_(){ if(!STATE.pick) STATE.pick = {}; if(!STATE.timeShort) STATE.timeShort = {state:null, ranges:[{from:'',to:''}]}; }
+function pkLabel_(key){ const m = String(key).match(/^(common|lm|hs)-(\d+)$/); if(!m) return key; return m[2]+'번'+(m[1]==='lm'?' (언매)':(m[1]==='hs'?' (화작)':'')); }
+function pkSortKeys_(){ return Array.from(STATE.wrong).sort((a,b)=>(+String(a).split('-')[1])-(+String(b).split('-')[1])); }
+function renderPickBox_(){
+  pkInit_();
+  const box = el('div',{class:'section', id:'pickSec'},
+    el('h2',{class:'section-title'},'틀린 문항에서 고른 답'),
+    el('p',{class:'section-desc'},'틀린 문항마다 시험지에 표시한 답을 골라 주세요. 기억나지 않으면 ‘모름’을 누릅니다.'));
+  const keys = pkSortKeys_();
+  if(!keys.length){ box.appendChild(el('p',{class:'section-desc'},'틀린 문항이 없습니다.')); return box; }
+  keys.forEach(key=>{
+    const row = el('div',{class:'pk-row', 'data-k':key}, el('span',{class:'pk-no'}, pkLabel_(key)));
+    const opts = el('div',{class:'pk-opts'});
+    PK_MARKS.concat(['모름']).forEach(mk=>{
+      const b = el('button',{type:'button', class:'pk-b'+(STATE.pick[key]===mk?' on':'')+(mk==='모름'?' unk':'')}, mk);
+      b.onclick = ()=>{ STATE.pick[key] = mk; [...opts.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); row.classList.remove('need'); };
+      opts.appendChild(b);
+    });
+    row.appendChild(opts); box.appendChild(row);
+  });
+  return box;
+}
+// ── 시간이 부족했던 구간: 문항마다 묻지 않고 번호 범위로 받는다 ──
+function renderTimeShortBox_(){
+  pkInit_();
+  const ts = STATE.timeShort;
+  const box = el('div',{class:'section', id:'tsSec'},
+    el('h2',{class:'section-title'},'시간이 부족했던 구간'),
+    el('p',{class:'section-desc'},'시간이 모자라 제대로 풀지 못했거나 찍은 문항이 있었다면, 몇 번부터 몇 번까지였는지 적어 주세요.'));
+  const take = el('div',{class:'yk-take'});
+  const ranges = el('div',{class:'ts-ranges'});
+  const draw = ()=>{
+    clear(ranges);
+    if(ts.state!=='yes') return;
+    ts.ranges.forEach((r,i)=>{
+      const f = el('input',{type:'number', min:'1', max:'45', inputmode:'numeric', value:r.from, placeholder:'시작'});
+      const t = el('input',{type:'number', min:'1', max:'45', inputmode:'numeric', value:r.to, placeholder:'끝'});
+      f.oninput = ()=>{ r.from = f.value.trim(); }; t.oninput = ()=>{ r.to = t.value.trim(); };
+      const row = el('div',{class:'ts-row'}, f, el('span',{},'번부터'), t, el('span',{},'번까지'));
+      if(ts.ranges.length>1){ const x = el('button',{type:'button', class:'ts-x', title:'이 구간 지우기'}, '✕'); x.onclick = ()=>{ ts.ranges.splice(i,1); draw(); }; row.appendChild(x); }
+      ranges.appendChild(row);
+    });
+    if(ts.ranges.length < 3){ const add = el('button',{type:'button', class:'ts-add'}, '+ 구간 추가'); add.onclick = ()=>{ ts.ranges.push({from:'',to:''}); draw(); }; ranges.appendChild(add); }
+  };
+  const bt = (v, label)=>{ const b = el('button',{type:'button', class: ts.state===v ? 'on' : ''}, label);
+    b.onclick = ()=>{ ts.state = v; [...take.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); box.classList.remove('need'); draw(); };
+    return b; };
+  take.appendChild(bt('no','부족하지 않았다')); take.appendChild(bt('yes','부족했다'));
+  box.appendChild(take); box.appendChild(ranges); draw();
+  return box;
+}
+function pkRangesClean_(){
+  const ts = STATE.timeShort || {}; if(ts.state!=='yes') return [];
+  return (ts.ranges||[]).map(r=>({from:parseInt(r.from,10), to:parseInt(r.to,10)}))
+    .filter(r=>r.from>=1 && r.to>=1 && r.from<=45 && r.to<=45).map(r=>r.from<=r.to ? r : {from:r.to, to:r.from});
+}
+function checkPickAndTime_(){
+  pkInit_();
+  const msg = document.getElementById('pickMsg'); const say = t=>{ if(msg) msg.textContent = t; };
+  document.querySelectorAll('.pk-row.need').forEach(r=>r.classList.remove('need'));
+  const miss = pkSortKeys_().filter(k=>!STATE.pick[k]);
+  if(miss.length){
+    miss.forEach(k=>{ const r = document.querySelector('.pk-row[data-k="'+k+'"]'); if(r) r.classList.add('need'); });
+    const first = document.querySelector('.pk-row.need'); if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+    say('고른 답을 적지 않은 문항이 '+miss.length+'개 있습니다. 기억나지 않으면 ‘모름’을 눌러 주세요.'); return false;
+  }
+  const ts = STATE.timeShort, sec = document.getElementById('tsSec');
+  if(ts.state!=='no' && ts.state!=='yes'){ if(sec){ sec.classList.add('need'); sec.scrollIntoView({behavior:'smooth', block:'center'}); } say('시간이 부족했는지 골라 주세요.'); return false; }
+  if(ts.state==='yes' && !pkRangesClean_().length){ if(sec){ sec.classList.add('need'); sec.scrollIntoView({behavior:'smooth', block:'center'}); } say('시간이 부족했던 구간의 시작 번호와 끝 번호를 적어 주세요(1~45).'); return false; }
+  say(''); return true;
+}
+// 시트에 싣는 글: '3:②, 37:④' / '38-45, 30-34' / '없음'
+function pkPickText_(){ return pkSortKeys_().map(k=>String(k).split('-')[1]+':'+(STATE.pick[k]||'')).join(', '); }
+function pkTimeText_(){ const ts = STATE.timeShort||{}; if(ts.state==='no') return '없음'; const r = pkRangesClean_(); return r.length ? r.map(x=>x.from+'-'+x.to).join(', ') : ''; }
 function goToResult(){
   STATE.result = computeResult();
   STATE.step = 4;
@@ -1959,6 +2052,8 @@ function submitResult(isManual){
       : Array.from(STATE.wrong).join(','),
     핵심패턴: r.patterns.map(p=>p.code+':'+p.name).join('|'),
     시간진단: (!isYaksul() && r.timeDiag) ? r.timeDiag.label : '',
+    선택선지: isYaksul() ? '' : pkPickText_(),
+    시간부족: isYaksul() ? '' : pkTimeText_(),
     제출방식: isManual ? '재전송(수동)' : '자동',
     // 강사 메일용 풍부한 진단 데이터
     patternsJson: JSON.stringify(r.patterns.map(p=>({
@@ -1967,7 +2062,7 @@ function submitResult(isManual){
       hits: p.evidence||[], scope: p.scope||''
     }))),
     wrongDetailsJson: JSON.stringify((r.wrongDetails||[]).map(q=>({
-      no: q.no, scope: q.scope,
+      no: q.no, scope: q.scope, pick: (STATE.pick||{})[(q.scope==='common'?'common':q.scope)+'-'+q.no] || '',
       area: q.area||'', source: q.source||'',
       three: !!q.three, wr: q.wr||null,
       coreElement: q.coreElement||'',
