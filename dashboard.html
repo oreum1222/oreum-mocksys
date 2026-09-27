@@ -378,9 +378,14 @@ let SCRIPT_URL = null;
 // 입력값은 이 탭의 sessionStorage에만 두고, 요청 본문(auth)으로 보낸다(2026-09-18 보안 수정).
 const AUTH_KEY = 'oreum_dash_pw';
 function dashAuth(){ try{ return sessionStorage.getItem(AUTH_KEY) || ''; }catch(e){ return ''; } }
-function dashPost(body){
+// 구글 서버가 가끔 JSON 대신 기본 안내 문구('OREUM Mock System OK')를 돌려줄 때가 있어 두 번까지 다시 부른다
+function dashPost(body, tries){
+  tries = tries==null ? 2 : tries;
   return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(Object.assign({auth:dashAuth()},body))}).then(function(r){return r.json();});
+    body:JSON.stringify(Object.assign({auth:dashAuth()},body))}).then(function(r){return r.text();})
+    .then(function(t){ try{ return JSON.parse(t); }catch(e){
+      if(tries>0) return new Promise(function(res){ setTimeout(res, 1200); }).then(function(){ return dashPost(body, tries-1); });
+      throw new Error('서버 응답이 올바르지 않습니다: '+String(t).slice(0,40)); } });
 }
 function loadConfig(){
   return new Promise(resolve=>{
