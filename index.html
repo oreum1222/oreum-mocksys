@@ -310,6 +310,9 @@ body{
 .q-detail-core{color:var(--cream);font-size:0.92rem;font-weight:500;margin-bottom:8px;line-height:1.65}
 .q-detail-weak{color:var(--text-secondary);font-size:0.86rem;line-height:1.78;margin-bottom:8px}
 .q-detail-rem{color:var(--text-secondary);font-size:0.86rem;line-height:1.78;padding:10px 14px;background:rgba(244,237,224,0.03);border-radius:3px;border-left:2px solid var(--green-deep)}
+.q-detail-pick{font-size:0.7rem;color:var(--weak,#c98a6c);padding:2px 8px;border:1px solid currentColor;border-radius:8px}
+.q-detail-pickno{color:var(--text-secondary);font-size:0.86rem;line-height:1.78;padding:10px 14px;margin-bottom:8px;background:rgba(244,237,224,0.03);border-radius:3px;border-left:2px solid var(--gold-soft)}
+.q-detail-pickno::before{content:'고른 답 점검';display:block;font-family:'Noto Serif KR',serif;font-size:0.68rem;color:var(--gold-soft);letter-spacing:2px;margin-bottom:5px;font-weight:500}
 .q-detail-rem::before{content:'보완 방향';display:block;font-family:'Noto Serif KR',serif;font-size:0.68rem;color:var(--ok);letter-spacing:2px;margin-bottom:5px;font-weight:500}
 .parent-note{margin-top:14px;padding:14px 16px;background:rgba(201,168,76,0.06);border:1px solid var(--border-soft);border-radius:4px;color:var(--cream);font-size:0.86rem;line-height:1.78}
 .parent-note::before{content:'학부모 코멘트';display:block;font-family:'Noto Serif KR',serif;font-size:0.68rem;color:var(--gold);letter-spacing:2px;margin-bottom:6px;font-weight:500}
@@ -948,6 +951,16 @@ function loadExamReport(examId, info){
     // 시트의 '틀린문항' 콤마 구분 키를 그대로 Set으로 복원
     const wrongList = (info.wrong || '').split(',').map(s=>s.trim()).filter(Boolean);
     STATE.wrong = new Set(wrongList);
+    // 시트의 선택선지('28:②, 33:④')를 되살린다 — 없으면 빈 채로 둔다
+    STATE.pick = {};
+    if(info.pick){
+      String(info.pick).split(',').forEach(seg=>{
+        const m = seg.trim().match(/^(\d+)\s*:\s*(.+)$/);
+        if(!m) return;
+        const key = wrongList.find(k=>String(k).split('-')[1] === m[1]);
+        if(key) STATE.pick[key] = m[2].trim();
+      });
+    }
     STATE.timeAns = {};  // 시트엔 라벨만 저장됨 — 답변 자체는 복원 불가
     STATE.result = computeResult();
     // timeDiag는 시트 라벨로 직접 찾아 덮어쓰기
@@ -1454,17 +1467,23 @@ function renderStep4(){
     wBlock.appendChild(el('p',{class:'empty-msg'},'만점입니다. 다음 회차도 같은 흐름으로 가시면 됩니다.'));
   } else {
     r.wrongDetails.forEach(q=>{
+      const pkMk_ = (STATE.pick && STATE.pick[q.key]) || '';
+      const pkIdx_ = PK_MARKS.indexOf(pkMk_);
+      const pkNote_ = (pkIdx_ >= 0 && q.optionNotes) ? q.optionNotes[String(pkIdx_+1)] : null;
       const head = el('div',{class:'q-detail-head'},
         el('span',{class:'q-detail-num'}, (q.scope==='common'?'':q.scope+'-')+q.no+'번'),
         q.area ? el('span',{class:'q-detail-area'}, q.area) : null,
         q.source ? el('span',{class:'q-detail-source'}, q.source) : null,
         q.three ? el('span',{class:'q-detail-three'},'3점') : null,
+        pkMk_ ? el('span',{class:'q-detail-pick'}, '고른 답 '+pkMk_) : null,
         q.wr!=null ? el('span',{class:'q-detail-wr'}, '오답률 '+q.wr+'%') : null
       );
       const block = el('div',{class:'q-detail'}, head);
       if(q.coreElement) block.appendChild(el('div',{class:'q-detail-core'}, q.coreElement));
       if(q.weakness1) block.appendChild(el('div',{class:'q-detail-weak'}, q.weakness1));
-      if(q.weakness2) block.appendChild(el('div',{class:'q-detail-weak'}, q.weakness2));
+      // 고른 답에 맞는 점검 문장이 있으면 그것만, 없으면 기존 문장을 쓴다
+      if(pkNote_) block.appendChild(el('div',{class:'q-detail-pickno'}, pkNote_));
+      else if(q.weakness2) block.appendChild(el('div',{class:'q-detail-weak'}, q.weakness2));
       if(q.remediation) block.appendChild(el('div',{class:'q-detail-rem'}, q.remediation));
       // 학부모 코멘트(parentNote)는 학생 화면에 노출하지 않음 — 시트 제출 데이터에만 포함되어 강사 대시보드에서 확인
       wBlock.appendChild(block);
@@ -2140,7 +2159,8 @@ loadConfig().then(()=>{
       school: params.get('school'),
       grade:  params.get('grade'),
       wrong:  params.get('wrong'),
-      time:   params.get('time')
+      time:   params.get('time'),
+      pick:   params.get('pick')
     });
     return;
   }
