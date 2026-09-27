@@ -11,7 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{
+:root{--good:#3fa89c;--weak:#e0925a;
   --green-deep:#2f6b4e;--gold:#4aa97e;--gold-soft:#6fc99e;--cream:#eaf2ec;
   --bg-dark:#0b110d;--bg-card:#141c16;--bg-card-hover:#1b251d;
   --text-primary:#eaf2ec;--text-secondary:#aebcb0;--text-muted:#7c8a7f;
@@ -175,12 +175,91 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .narr-btn:hover{border-color:var(--gold);color:var(--gold)}
 .narr-body[contenteditable="true"]{background:var(--bg-card)}
 /* PDF 인쇄용 라이트 테마(흰 배경·네이비 포인트) — 화면 대시보드는 그대로, PDF 캡처 때만 적용 */
-.repcard.pdf-print{--green-deep:#1F3A5F;--gold:#1F3A5F;--gold-soft:#2C4A6E;
+.repcard.pdf-print{--good:#2a7f78;--weak:#c46a2c;--green-deep:#1F3A5F;--gold:#1F3A5F;--gold-soft:#2C4A6E;
   --cream:#182430;--text-primary:#182430;--text-secondary:#38424c;--text-muted:#6d767e;
   --bg-dark:#f3f5f6;--bg-card:#ffffff;--bg-card-hover:#eef1f2;
   --border-soft:#c8d0d7;--border-line:#dce1e5;--danger:#b23a2e;
   background:#ffffff!important;color:#182430}
 .repcard.pdf-print .rnarr{background:#f6f8f9!important}
+.rtiles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 18px}
+.rtile{background:var(--bg-dark);border:1px solid var(--border-line);border-radius:6px;padding:9px 6px;text-align:center}
+.rtile-l{font-size:.68rem;color:var(--text-muted);letter-spacing:.3px}.rtile-v{font-family:'Noto Serif KR',serif;font-size:1.35rem;font-weight:700;line-height:1.3}.rtile-s{font-size:.64rem;color:var(--text-muted)}
+.rhb{display:grid;grid-template-columns:minmax(120px,190px) 1fr 118px;gap:10px;align-items:center;margin:5px 0;font-size:.8rem}
+.rhb-l{color:var(--text-secondary)}.rhb-a{display:inline-block;min-width:3.6em;color:var(--text-muted);font-size:.7rem;margin-right:4px}
+.rhb-track{height:9px;background:var(--bg-dark);border-radius:5px;overflow:hidden;border:1px solid var(--border-line)}
+.rhb-fill{height:100%;border-radius:5px}.rhb-base{background:#7d8fa6}.rhb-good{background:var(--good)}.rhb-weak{background:var(--weak)}
+.rhb-v{font-size:.78rem;color:var(--cream);font-variant-numeric:tabular-nums}.rhb-x{display:block;font-size:.66rem;color:var(--text-muted)}
+.rgrid{width:100%;border-collapse:collapse;font-size:.8rem}.rgrid th{font-weight:500;color:var(--text-muted);font-size:.72rem;padding:6px;border-bottom:1px solid var(--border-soft);text-align:center}
+.rgrid td{padding:7px 6px;border-bottom:1px solid var(--border-line);text-align:center}.rgrid .rg-n{text-align:left;color:var(--text-secondary)}
+.rg-c span{font-size:.68rem;color:var(--text-muted);margin-left:1px}.rg-w{color:var(--weak);font-weight:700}.rg-o{color:var(--good);font-weight:600}.rg-na{color:var(--text-muted);font-size:.7rem}
+.rplan li{margin-bottom:4px}.rtagx{display:inline-block;font-size:.68rem;border:1px solid var(--border-soft);border-radius:3px;padding:0 5px;color:var(--gold);margin-right:2px}
+.rgood{color:var(--good)}.rweakc{color:var(--weak)}
+.rhb-sm .rhb{grid-template-columns:52px 1fr 64px;gap:8px}
+.rfnote{font-size:.8rem;color:var(--text-muted);margin:3px 0 2px}
+.rftbl{width:100%;border-collapse:collapse;font-size:.8rem;margin:2px 0 12px}.rftbl th{font-weight:500;color:var(--text-muted);font-size:.72rem;padding:5px 6px;border-bottom:1px solid var(--border-soft);text-align:center}.rftbl td{padding:6px;border-bottom:1px solid var(--border-line);text-align:center}.rftbl td:first-child{text-align:left}
+/* ── 수능 국어 학습 리포트 3차: 편집형 ── */
+.repcard.r3{padding:34px 38px 26px}
+.r3-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding-bottom:18px;border-bottom:1px solid var(--border-soft);position:relative}
+.r3-org{font-size:.7rem;letter-spacing:1.5px;color:var(--text-muted)}
+.r3-name{font-family:'Noto Serif KR',serif;font-size:2.3rem;font-weight:700;color:var(--cream);line-height:1.15;margin-top:6px}
+.r3-meta{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+.r3-score{text-align:right}
+.r3-big{font-family:'Noto Serif KR',serif;font-size:3.4rem;font-weight:700;line-height:1;color:var(--gold)}
+.r3-big small{font-size:1rem;margin-left:2px;color:var(--text-muted);font-weight:500}
+.r3-sc-sub{font-size:.76rem;color:var(--text-secondary);margin-top:6px}
+.r3-hist{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+.r3h-p{font-size:.66rem;color:var(--text-muted);display:flex;flex-direction:column;align-items:center}.r3h-p b{font-size:.86rem;color:var(--text-secondary);font-weight:600;font-variant-numeric:tabular-nums}
+.r3-head .rpdf-btn{position:absolute;top:-10px;right:0}
+.r3-hl{padding:22px 0 20px}
+.r3-hl-main{font-family:'Noto Serif KR',serif;font-size:1.45rem;font-weight:700;color:var(--cream);line-height:1.45;letter-spacing:-.3px}
+.r3-hl-sub{font-size:.92rem;color:var(--text-secondary);margin-top:8px;line-height:1.7;max-width:62ch}
+.r3-sec{padding:18px 0;border-top:1px solid var(--border-line)}
+.r3-t{font-size:.78rem;font-weight:700;letter-spacing:1.5px;color:var(--gold);margin-bottom:12px}
+.r3-t span{font-weight:400;letter-spacing:0;color:var(--text-muted);margin-left:6px}
+.r3-hero{display:grid;grid-template-columns:1fr 1fr;gap:28px;border-top:none;padding-top:4px}
+.r3-hero-s{padding:4px 0}
+.r3-hero-tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:1px;padding:2px 9px;border-radius:999px;margin-bottom:8px}
+.r3-good .r3-hero-tag{background:rgba(63,168,156,.15);color:var(--good)}
+.r3-weak .r3-hero-tag{background:rgba(224,146,90,.18);color:var(--weak)}
+.r3-hero-n{font-family:'Noto Serif KR',serif;font-size:3rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.r3-good .r3-hero-n{color:var(--good)}.r3-weak .r3-hero-n{color:var(--weak)}
+.r3-hero-n small{font-size:1.2rem;color:var(--text-muted);font-weight:500}
+.r3-hero-l{font-size:.95rem;font-weight:600;color:var(--cream);margin:8px 0 8px}
+.r3-hero-bar{height:12px;border-radius:6px;background:var(--bg-dark);overflow:hidden}
+.r3-hero-bar i{display:block;height:100%;border-radius:6px}
+.r3-good .r3-hero-bar i{background:var(--good)}.r3-weak .r3-hero-bar i{background:var(--weak)}
+.r3-hero-x{font-size:.76rem;color:var(--text-muted);margin-top:6px}
+.r3-ars{display:grid;grid-template-columns:1fr 1fr;gap:6px 34px}
+.r3-ar{padding:4px 0 8px}
+.r3-ar-h{display:flex;justify-content:space-between;align-items:baseline;font-size:.86rem;font-weight:700;color:var(--cream);padding-bottom:5px;margin-bottom:4px;border-bottom:1px solid var(--border-soft)}
+.r3-ar-h b{font-size:.8rem;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.r3-sk{display:grid;grid-template-columns:118px 1fr 44px 54px;gap:8px;align-items:center;font-size:.78rem;margin:5px 0}
+.r3-sk-l{color:var(--text-secondary)}.r3-sk-t{height:7px;border-radius:4px;background:var(--bg-dark);overflow:hidden}
+.r3-sk-t i{display:block;height:100%;border-radius:4px}
+i.r3-good{background:var(--good)}i.r3-weak{background:var(--weak)}i.r3-base{background:#8697ad}
+.r3-sk-v{font-variant-numeric:tabular-nums;color:var(--cream);text-align:right}.r3-sk-n{font-size:.68rem;color:var(--text-muted)}
+.r3-lead{font-size:.86rem;color:var(--text-secondary);margin-bottom:10px;line-height:1.65}.r3-lead b{color:var(--cream)}.r3-lead div{font-size:.8rem;color:var(--text-muted)}
+.r3-rep{width:100%;border-collapse:collapse;font-size:.8rem}
+.r3-rep th{font-weight:500;font-size:.72rem;color:var(--text-muted);padding:6px;border-bottom:1px solid var(--border-soft);text-align:center}
+.r3-rep td{padding:9px 6px;border-bottom:1px solid var(--border-line);text-align:center;vertical-align:middle}
+.r3-rep .l{text-align:left}.r3-na{color:var(--text-muted);font-size:.7rem}
+.r3-dots{display:flex;gap:3px;justify-content:center}.r3-dots i{width:9px;height:9px;border-radius:50%;display:block}
+.r3-dots i.w{background:var(--weak)}.r3-dots i.o{background:var(--border-soft)}
+.r3-dn{display:block;font-size:.66rem;color:var(--text-muted);margin-top:3px}
+.r3-cap{font-size:.72rem;color:var(--text-muted);margin-top:8px}
+.r3-rc-list{display:flex;flex-wrap:wrap;gap:8px}
+.r3-rc-list span{font-size:.82rem;color:var(--cream);padding:4px 10px;border-radius:999px;border:1px solid var(--border-soft)}
+.r3-rc-list small{color:var(--text-muted);margin-left:4px}
+.r3-pls{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.r3-pl-h{font-size:1rem;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:8px}
+.r3-pl-n{width:22px;height:22px;border-radius:50%;background:var(--weak);color:#fff;font-size:.78rem;display:inline-flex;align-items:center;justify-content:center}
+.r3-pl-it{font-size:.74rem;color:var(--text-muted);margin:6px 0 8px}
+.r3-pl-g{font-size:.84rem;color:var(--text-secondary);line-height:1.65;margin-bottom:6px}.r3-pl-g b{color:var(--cream)}.r3-pl-g small{color:var(--text-muted)}
+.r3-pl-ck{margin-top:8px;border-top:1px dashed var(--border-soft);padding-top:8px;display:grid;gap:5px;font-size:.8rem;color:var(--text-secondary)}
+.r3-pl-ck b{display:inline-block;min-width:88px;color:var(--gold);font-size:.74rem}
+.r3-small{font-size:.8rem;color:var(--text-secondary)}
+@media print{.r3-sec{break-inside:avoid}.r3-t,.r3-lead{break-after:avoid}.r3-rep tr,.rtbl2 tr,.r3-ar,.r3-pl{break-inside:avoid}}
+@media (max-width:720px){.r3-hero,.r3-ars,.r3-pls{grid-template-columns:1fr}.r3-head{flex-direction:column;align-items:flex-start}.r3-score{text-align:left}.r3-hist{justify-content:flex-start}}
 .repbadge{display:inline-block;margin-left:7px;min-width:18px;padding:1px 6px;border-radius:999px;background:var(--gold);color:#1b1b1b;font-size:.72rem;font-weight:700;vertical-align:1px}
 .repbadge.zero{background:var(--border-soft);color:var(--text-muted)}
 .classtab.dim{opacity:.5}
@@ -1102,7 +1181,7 @@ function buildReports(){
     var weakLabels=(st.rounds[seq[0]]?st.rounds[seq[0]].pats.slice():[]);
     var timeMode="";if(timeSeq.length){var c={},best=0;timeSeq.forEach(function(t){c[t]=(c[t]||0)+1;if(c[t]>best){best=c[t];timeMode=t;}});}
     var allSame=timeSeq.length>=2&&timeSeq.every(function(t){return t===timeSeq[0];});
-    master.push({name:nm,school:st.school,sub:st.sub,n:n,raws:raws,grades:grades,trend:repTrend(raws),
+    master.push({name:nm,school:st.school,sub:st.sub,n:n,raws:raws,grades:grades,trend:repTrend(raws),seq:seq,st_rounds:st.rounds,
       total_wrong:total,low_freq:lowfreq,big_pct:bigPct,small_pct:smallPct,per_round:perRound,recurring:recurring,
       weak_labels:weakLabels,time_seq:timeSeq,time_mode:timeMode,time_all_same:allSame,
       type_top:typeTop,think_top:thinkTop,think_total:thinkTotal,
@@ -1122,7 +1201,8 @@ var R_TIME_DESC={"전체 시간 부족형":"시험 전체에서 시간에 쫓김
 function rTimeComment(m){var seq=m.time_seq;if(!seq.length)return null;var mode=m.time_mode,desc=R_TIME_DESC[mode]||mode;
   if(m.time_all_same&&seq.length>=2)return seq.length+'개 회차 모두 <b>'+mode+'</b>으로 답했다 — '+desc+'. 자가 응답이라 단정은 어렵지만, 반복되는 만큼 고착된 패턴일 가능성이 커 먼저 살펴볼 만하다.';
   var u={};seq.forEach(function(t){u[t]=1;});
-  if(Object.keys(u).length>1)return '회차별로 <b>'+seq.join(' → ')+'</b>으로 답이 갈렸다. 가장 잦은 형태는 '+mode+'('+desc+')다.';
+  if(Object.keys(u).length>1){var cnt={};seq.forEach(function(t){cnt[t]=(cnt[t]||0)+1;});var mx=Math.max.apply(null,Object.keys(cnt).map(function(k){return cnt[k];}));var tops=Object.keys(cnt).filter(function(k){return cnt[k]===mx;});
+    return '회차별 자가 응답: <b>'+seq.join(' → ')+'</b>. '+(tops.length===1&&mx>=2?'가장 많은 응답은 '+tops[0]+'('+R_TIME_DESC[tops[0]]+')입니다.':Object.keys(cnt).map(function(k){return k+' '+cnt[k]+'회';}).join(', ')+'로 한 가지로 모이지 않았습니다.');}
   return '<b>'+mode+'</b> — '+desc+'. <span style="color:var(--text-muted)">(학생 자가 응답)</span>';}
 function rDonut(m){var sp=m.small_pct,bp=m.big_pct,segs=[];
   if(sp["독서"])segs.push(["독서",sp["독서"],"#d68a8a"]);
@@ -1191,7 +1271,7 @@ function rRoundRows(m){var rows="";
   REP.sel.forEach(function(r,i){var pr=m.per_round[i];
     if(pr){var gong=pr.wrongs.filter(function(w){return w.indexOf("common")===0;}).sort(function(a,b){return parseInt(/\d+/.exec(a))-parseInt(/\d+/.exec(b));});
       var sun=pr.wrongs.filter(function(w){return w.indexOf("common")!==0;}).sort(function(a,b){return parseInt(/\d+/.exec(a))-parseInt(/\d+/.exec(b));});
-      rows+='<tr><td class="r-rnd">'+REP.labelMap[r]+'<span class="r-rnd-exam">'+escape(REP.nameMap[r]||'')+'</span></td><td class="r-sc" style="color:'+rGcol(pr.grade)+'">'+pr.raw+'·'+pr.grade+'등급</td><td class="r-gong">'+(gong.length?gong.map(rItemnum).join(", "):"—")+'</td><td class="r-sun">'+(sun.length?sun.map(rItemnum).join(", "):"—")+'</td></tr>';
+      rows+='<tr><td class="r-rnd">'+REP.labelMap[r]+'<span class="r-rnd-exam">'+escape(REP.nameMap[r]||'')+'</span></td><td class="r-sc" style="color:var(--cream);font-weight:600">'+pr.raw+'점, '+pr.grade+'등급</td><td class="r-gong">'+(gong.length?gong.map(rItemnum).join(", "):"—")+'</td><td class="r-sun">'+(sun.length?sun.map(rItemnum).join(", "):"—")+'</td></tr>';
     } else rows+='<tr class="r-empty"><td class="r-rnd">'+REP.labelMap[r]+'<span class="r-rnd-exam">'+escape(REP.nameMap[r]||'')+'</span></td><td colspan="3">미응시</td></tr>';});
   return rows;}
 
@@ -1207,7 +1287,7 @@ function rMetrics(m){
     +cell('평균',avg,'var(--cream)')+cell('또래 저빈도 오답',lf,(lf>=3?'var(--danger)':'var(--cream)'))+'</div>';
 }
 function rCaveat(){
-  return '<div style="font-size:.72rem;color:var(--text-muted);border-top:1px dashed var(--border-soft);padding-top:9px;margin-top:6px;line-height:1.55">자가 표시 오답 기반 — 넘긴 문항이나 찍어 맞은 문항은 집계되지 않습니다. 절대 오답률이 아닌 <b style="color:var(--text-secondary)">반복 신호</b>로 해석하세요.</div>';
+  return '<div style="font-size:.7rem;color:var(--text-muted);border-top:1px dashed var(--border-soft);padding-top:9px;margin-top:6px;line-height:1.6">학생이 표시한 오답으로 집계했습니다. 실점은 분석한 회차를 모두 합한 값입니다. 전국 정답률은 시험별 공개 집계(평가원, 교육청 시험은 메가스터디 기준)입니다.</div>';
 }
 // 학생·학부모용 서술형 소견 — 프로필별 분기 + 계산값 삽입
 function rNarrative(m){
@@ -1815,6 +1895,199 @@ function renderYakReports(){
   root.innerHTML = list.map(yakCard_).join('');
 }
 
+/* ════════ 수능 국어 학습 리포트 3차 (2026-09-19) ════════
+ * 편집 원칙: 결론(한 문장) → 근거(큰 대비 그래프) → 반복 양상 → 이번 학습. 같은 진단을 두 번 쓰지 않는다.
+ * 숫자는 집계로만. 유형은 영역별 2~4개. 10문항 미만은 퍼센트 없이 개수만.
+ * 전국 오답률은 시험별 공개 통계(평가원, 교육청은 메가스터디 집계, 사설은 출판사 제공)라 출처를 밝힌다. */
+function rSkillOf(code, meta, uni){
+  var m=/(common|hs|lm)-(\d+)/.exec(code); if(!m||!meta) return null;
+  var sc=m[1], no=+m[2], a=String(meta.area||''), t=String(meta.type||'').replace(/\s/g,'');
+  if(!uni && sc==='lm') return no<=39 ? ['언어와 매체','문법'] : ['언어와 매체','매체'];
+  if(!uni && sc==='hs') return ['화법과 작문','화법과 작문'];
+  if(a.indexOf('독서')>=0){
+    if(/어휘|문맥/.test(t)) return ['독서','어휘'];
+    if(/사례|적용/.test(t)) return ['독서','사례와 조건 적용'];
+    if(/세부|일치|내용|전개|구조|방식/.test(t)) return ['독서','세부 정보와 구조 확인'];
+    return ['독서','추론과 관점 비교'];
+  }
+  if(a.indexOf('문학')>=0){
+    if(/외적준거|보기/.test(t)) return ['문학','<보기> 관점 적용'];
+    if(/맥락|수용|비교|감상/.test(t)) return ['문학','맥락과 감상'];
+    if(/내용|인물|사건|심리|태도|성격/.test(t)) return ['문학','내용과 인물 이해'];
+    return ['문학','표현과 구절 해석'];
+  }
+  if(a.indexOf('문법')>=0||a.indexOf('언어')>=0) return ['언어와 매체','문법'];
+  if(a.indexOf('매체')>=0) return ['언어와 매체','매체'];
+  if(a.indexOf('화법')>=0||a.indexOf('작문')>=0||a.indexOf('화작')>=0) return ['화법과 작문','화법과 작문'];
+  return null;
+}
+var R_SHORT={'세부 정보와 구조 확인':'정보 확인','사례와 조건 적용':'사례 적용','추론과 관점 비교':'관점 비교','어휘':'어휘',
+  '<보기> 관점 적용':'<보기> 적용','맥락과 감상':'맥락 감상','내용과 인물 이해':'내용 이해','표현과 구절 해석':'표현 해석',
+  '문법':'문법','매체':'매체','화법과 작문':'화법과 작문'};
+function rShort(s){ return R_SHORT[s.skill]||s.skill; }
+function rNatWr(meta, sub){ if(!meta) return null;
+  var v = sub==='lm' ? meta.wrLm : meta.wrHs; if(v==null||v==='') v=meta.wr;
+  return (v==null||v==='')?null:+v; }
+function rJo(w,a,b){var c=String(w).replace(/<[^>]*>/g,'').replace(/[^가-힣]/g,'').slice(-1); if(!c) return w+a; return w+(((c.charCodeAt(0)-0xAC00)%28)?a:b);}
+function rPts(meta){ return meta&&meta.three?3:2; }
+function rPctS(w,t){ return t ? Math.round(w/t*1000)/10 : 0; }
+function rSkillName(s){ return escape(s.area===s.skill?s.skill:s.area+' '+s.skill); }
+// 문법 세부 개념(문항 유형 이름 기준) → 처방
+var R_GRAM=[[/활용|용언|품사/, '활용과 품사', '기본형을 적고 어간과 어미, 바뀐 부분을 표시한 뒤 규칙과 불규칙을 판정합니다.'],
+  [/음운/, '음운 변동', '발음 전과 후의 음운을 나란히 적고, 변동을 일어난 순서대로 이름 붙입니다.'],
+  [/문장성분|짜임|부사어|관형어|서술어|안긴|이어진/, '문장 성분과 짜임', '서술어가 요구하는 성분을 먼저 찾고, 안긴절의 경계를 괄호로 묶은 뒤 성분을 정합니다.'],
+  [/조사|어미|결합|문법요소|높임|시제|피동|사동/, '문법 요소', '형태소를 나누어 각각의 품사와 기능을 먼저 확정한 뒤 결합을 판단합니다.'],
+  [/단어|형성|합성|파생/, '단어 형성', '어근과 접사를 나누고 결합 방식을 표시합니다.']];
+function rGramOf(meta){ var t=String(meta&&meta.type||'').replace(/\s/g,''); for(var i=0;i<R_GRAM.length;i++){ if(R_GRAM[i][0].test(t)) return R_GRAM[i]; } return [null,'문법 개념 적용','문항에 쓰인 개념의 정의를 먼저 적고 선지 사례를 정의에 대입합니다.']; }
+
+function rStats(m){
+  if(m._s) return m._s;
+  var sub=(m.sub==='lm')?'lm':'hs', seq=m.seq, SK={}, AR={}, recheck=[];
+  seq.forEach(function(r){
+    var d=m.st_rounds[r], qm=QMAP[r]||{}, uni=UNIFIED[r], wset={};
+    d.wrongs.forEach(function(w){ var wc=w; if(uni){var mm=/-(\d+)$/.exec(w); if(mm) wc='common-'+mm[1];} wset[wc]=1; });
+    Object.keys(qm).forEach(function(code){
+      var sc=code.split('-')[0]; if(uni?(sc!=='common'):(sc!=='common'&&sc!==sub)) return;
+      var meta=qm[code], sk=rSkillOf(code,meta,uni); if(!sk) return;
+      var key=sk[0]+'|'+sk[1], isW=!!wset[code], p=rPts(meta), ak=(sk[1]==='문법'||sk[1]==='매체')?sk[1]:sk[0];
+      var S=SK[key]||(SK[key]={area:sk[0],skill:sk[1],taken:0,wrong:0,lost:0,per:{},items:[]});
+      var A=AR[ak]||(AR[ak]={taken:0,wrong:0,lost:0});
+      S.taken++; A.taken++; var P=S.per[r]||(S.per[r]={t:0,w:0}); P.t++;
+      if(isW){ S.wrong++; S.lost+=p; A.wrong++; A.lost+=p; P.w++;
+        var nw=rNatWr(meta,sub), no=+code.split('-')[1];
+        S.items.push({r:r,no:no,nw:nw,p:p,meta:meta});
+        if(nw!=null && nw<20) recheck.push({r:r,no:no,rate:100-nw}); }
+    });
+  });
+  var skills=Object.keys(SK).map(function(k){var s=SK[k]; s.rate=rPctS(s.wrong,s.taken); s.nR=seq.filter(function(r){return s.per[r]&&s.per[r].w>0;}).length; return s;});
+  var tasks=skills.filter(function(s){return s.wrong>=3 && s.nR>=2;}).sort(function(a,b){return (b.rate-a.rate)||(b.lost-a.lost);});
+  if(tasks.length<2) tasks=tasks.concat(skills.filter(function(s){return s.wrong>=2 && tasks.indexOf(s)<0;}).sort(function(a,b){return b.lost-a.lost;}));
+  tasks=tasks.slice(0,3);
+  var strong=skills.filter(function(s){return s.taken>=10;}).sort(function(a,b){return (a.rate-b.rate)||(b.taken-a.taken);})[0]||null;
+  var contrast=null;
+  ['독서','문학','언어와 매체'].forEach(function(a){ var xs=skills.filter(function(s){return s.area===a && s.taken>=8;});
+    if(xs.length<2) return; xs.sort(function(p,q){return p.rate-q.rate;}); var lo=xs[0], hi=xs[xs.length-1], gap=hi.rate-lo.rate;
+    if(gap>=15 && (!contrast || gap>contrast.gap)) contrast={area:a, good:lo, weak:hi, gap:gap}; });
+  m._s={skills:skills, areas:AR, tasks:tasks, strong:strong, contrast:contrast, recheck:recheck};
+  return m._s;
+}
+/* 반복 양상 한 줄: 회차별 오답 수를 보고 사실대로 */
+function rPattern(s, seq, rounds){
+  var xs=seq.filter(function(r){return rounds[r] && s.per[r] && s.per[r].t;}).map(function(r){return s.per[r].w;});
+  if(!xs.length) return '';
+  var n=xs.length, last=xs[n-1], k=0; for(var i=n-1;i>=0&&xs[i]>0;i--) k++;
+  if(last===0){ var before=xs.slice(0,-1).reduce(function(a,b){return a+b;},0);
+    return before ? '<span class="rgood">최근 회차는 모두 정답</span> (앞선 회차 '+before+'개 오답)' : '틀린 회차 없음'; }
+  var tail=xs.slice(n-k), same=tail.every(function(x){return x===tail[0];});
+  if(k===n) return n+'회 모두 '+(same?tail[0]+'개씩':'')+' 오답';
+  if(k>=2) return '최근 '+k+'회 연속 '+(same?tail[0]+'개씩 ':'')+'오답';
+  return '최근 회차 '+last+'개 오답';
+}
+
+/* ── 머리: 이름 + 최근 점수 ── */
+function rHead3(m){
+  var lastR=m.raws[m.raws.length-1], lastG=m.grades[m.grades.length-1], sel=REP.sel.filter(function(r){return m.st_rounds[r];});
+  var lastRid=sel[sel.length-1], sub=snSubName_(m);
+  var hist=sel.map(function(r){var d=m.st_rounds[r];return '<span class="r3h-p"><b>'+d.raw+'</b>'+REP.labelMap[r]+'</span>';}).join('');
+  return '<div class="r3-head"><div class="r3-id"><div class="r3-org">김가경 국어 연구소 | 수능 국어 학습 리포트</div>'
+    +'<div class="r3-name">'+escape(m.name)+'</div><div class="r3-meta">'+escape(m.school||'')+', '+sub+', '+m.n+'회 분석</div></div>'
+    +'<div class="r3-score"><div class="r3-big">'+lastR+'<small>점</small></div><div class="r3-sc-sub">'+(lastG?lastG+'등급 | ':'')+escape(REP.nameMap[lastRid]||REP.labelMap[lastRid])+'</div>'
+    +'<div class="r3-hist">'+hist+'</div></div>'
+    +'<button class="rpdf-btn no-print" onclick="printOneReport(\''+m._sid+'\')">이 학생 PDF</button></div>';
+}
+/* ── 결론 한 문장 ── */
+function rHeadline(m){
+  var S=rStats(m), t=S.tasks, g=S.strong, c=S.contrast, h='', sub='';
+  var tn=t.slice(0,2).map(function(x){return escape(rShort(x));});
+  var tp=tn.length>1 ? rJo(tn[0],'과','와')+' '+tn[1] : (tn[0]||'');
+  if(g && g.wrong*10<=g.taken && t.length) h=rJo(escape(rShort(g)),'은','는')+' 강점입니다. '+rJo(tp,'을','를')+' 우선 보완합니다.';
+  else if(t.length) h=tp+'에서 점수가 반복해서 빠집니다.';
+  else h='선택한 회차에서 반복되는 오답이 없습니다.';
+  if(c) sub=rSkillName(c.good)+' '+c.good.taken+'문항은 '+(c.good.wrong?c.good.wrong+'문항만 틀렸지만':'모두 맞혔지만')+', '+rSkillName(c.weak)+'에서는 '+c.weak.taken+'문항 중 '+c.weak.wrong+'문항을 틀렸습니다.';
+  else if(t[0]) sub=rSkillName(t[0])+'에서 '+t[0].taken+'문항 중 '+t[0].wrong+'문항을 틀렸고, '+m.n+'회 누적 실점은 '+t[0].lost+'점입니다.';
+  return '<div class="r3-hl"><div class="r3-hl-main">'+h+'</div>'+(sub?'<div class="r3-hl-sub">'+sub+'</div>':'')+'</div>';
+}
+/* ── 큰 대비: 강점 vs 우선 과제 ── */
+function rHero(m){
+  var S=rStats(m), g=S.contrast?S.contrast.good:S.strong, w=S.contrast?S.contrast.weak:S.tasks[0];
+  if(!g||!w||g===w) return '';
+  function side(s,tone,tag){var ok=s.taken-s.wrong, pc=Math.round(ok/s.taken*100);
+    return '<div class="r3-hero-s r3-'+tone+'"><div class="r3-hero-tag">'+tag+'</div><div class="r3-hero-n">'+ok+'<small>/'+s.taken+'</small></div>'
+      +'<div class="r3-hero-l">'+rSkillName(s)+'</div><div class="r3-hero-bar"><i style="width:'+pc+'%"></i></div>'
+      +'<div class="r3-hero-x">'+(s.wrong?'오답 '+s.wrong+'문항, '+m.n+'회 누적 실점 '+s.lost+'점':'오답 없음')+'</div></div>';}
+  return '<div class="r3-sec r3-hero">'+side(g,'good','강점')+side(w,'weak','우선 보완')+'</div>';
+}
+/* ── 영역과 유형 ── */
+function rAreaSkill(m){
+  var S=rStats(m), taskKeys=S.tasks.map(function(t){return t.area+'|'+t.skill;}), groups=[['독서',['독서']],['문학',['문학']],['언어와 매체',['문법','매체']],['화법과 작문',['화법과 작문']]];
+  var html='';
+  groups.forEach(function(g){ var xs=S.skills.filter(function(s){return s.area===g[0];}); if(!xs.length) return;
+    var aw=0,at=0; g[1].forEach(function(k){var A=S.areas[k]; if(A){aw+=A.wrong;at+=A.taken;}});
+    xs.sort(function(a,b){return a.rate-b.rate;});
+    html+='<div class="r3-ar"><div class="r3-ar-h"><span>'+g[0]+'</span><b>'+(at-aw)+'/'+at+'</b></div>'
+      + xs.map(function(s){ var ok=s.taken-s.wrong, pc=Math.round(ok/s.taken*100), isT=taskKeys.indexOf(s.area+'|'+s.skill)>=0,
+          tone=isT?'weak':(s.wrong===0&&s.taken>=10?'good':'base');
+          return '<div class="r3-sk"><span class="r3-sk-l">'+escape(s.skill)+'</span><span class="r3-sk-t"><i class="r3-'+tone+'" style="width:'+pc+'%"></i></span>'
+            +'<span class="r3-sk-v">'+ok+'/'+s.taken+'</span><span class="r3-sk-n">'+(isT?'우선 보완':(tone==='good'?'강점':''))+'</span></div>'; }).join('')
+      +'</div>'; });
+  return '<div class="r3-sec"><div class="r3-t">영역과 유형별 정답 <span>'+m.n+'회 합계, 맞힌 문항/푼 문항</span></div><div class="r3-ars">'+html+'</div></div>';
+}
+/* ── 반복되는 오답과 개선 여부 (반복 확인 + 최근 회차 확인을 하나로) ── */
+function rRepeat3(m){
+  var S=rStats(m); if(!S.tasks.length) return '';
+  var sel=REP.sel;
+  var head='<tr><th class="l">유형</th>'+sel.map(function(r){return '<th>'+REP.labelMap[r]+'</th>';}).join('')+'<th class="l">양상</th></tr>';
+  var rows=S.tasks.map(function(s){ return '<tr><td class="l"><b>'+rSkillName(s)+'</b></td>'+sel.map(function(r){ var x=s.per[r];
+      if(!m.st_rounds[r]) return '<td class="r3-na">미응시</td>'; if(!x||!x.t) return '<td class="r3-na">출제 없음</td>';
+      var dots=''; for(var i=0;i<x.t;i++) dots+='<i class="'+(i<x.w?'w':'o')+'"></i>';
+      return '<td><span class="r3-dots">'+dots+'</span><span class="r3-dn">'+(x.w?x.w+'개 오답':'모두 정답')+'</span></td>'; }).join('')
+      +'<td class="l">'+rPattern(s, sel, m.st_rounds)+'</td></tr>'; }).join('');
+  return '<div class="r3-sec"><div class="r3-t">반복되는 오답과 개선 여부</div>'
+    +'<div class="r3-lead"><b>학생의 반복적인 오답의 개선 여부를 확인하는 구간입니다.</b><div>- 앞선 회차에서 두 번 이상 틀린 유형이 최근 회차에서 개선되었는지를 살펴볼 수 있습니다.</div></div>'
+    +'<table class="r3-rep">'+head+rows+'</table><div class="r3-cap">점 하나가 한 문항입니다. 주황은 틀린 문항, 회색은 맞힌 문항입니다.</div></div>';
+}
+/* ── 우선 재점검(전국 정답률 80% 이상에서 틀린 문항) ── */
+function rRecheck(m){
+  var S=rStats(m); if(!S.recheck.length) return '';
+  return '<div class="r3-sec r3-rc"><div class="r3-t">우선 재점검 <span>'+S.recheck.length+'문항, 전국 정답률 80% 이상</span></div>'
+    +'<div class="r3-rc-list">'+S.recheck.map(function(x){return '<span>'+REP.labelMap[x.r]+' '+x.no+'번 <small>정답률 '+x.rate+'%</small></span>';}).join('')+'</div>'
+    +'<div class="r3-cap">많은 학생이 맞힌 문항입니다. 다시 풀어 개념이 비어 있었는지, 판단을 잘못했는지, 시간이 부족했는지부터 확인합니다.</div></div>';
+}
+/* ── 이번 학습: 과제 2개(방법, 과제 완료, 다음 시험 목표) ── */
+var R_METHOD={
+  '독서|사례와 조건 적용':'지문의 원리를 ‘조건 → 결과’ 한 줄로 적고, <보기> 사례의 조건을 하나씩 대입해 결과가 원리와 같은지 확인합니다.',
+  '독서|추론과 관점 비교':'입장마다 핵심 주장을 한 줄씩 표로 정리한 뒤, 선지가 누구의 말을 누구에게 붙였는지 대조합니다.',
+  '독서|세부 정보와 구조 확인':'선지의 핵심어가 나온 문장을 지문에서 찾아 짝을 지은 뒤 판정합니다.',
+  '독서|어휘':'밑줄 친 말을 문맥에 맞는 다른 말로 바꿔 넣어 보고 선지 예문에도 같은 말을 넣어 확인합니다.',
+  '문학|<보기> 관점 적용':'<보기>의 관점을 한 문장으로 요약해 두고, 선지마다 ‘작품에 근거가 있는가’와 ‘<보기>와 방향이 같은가’를 따로 표시합니다.',
+  '문학|표현과 구절 해석':'시어나 구절을 앞뒤 맥락의 정서와 연결해 한 줄로 풀어 쓴 뒤 선지와 대조합니다.',
+  '문학|내용과 인물 이해':'사건 순서와 인물의 말, 행동을 짧게 정리해 두고 선지의 주체와 시점을 대조합니다.',
+  '문학|맥락과 감상':'작품이 놓인 맥락(시대, 창작 상황)을 한 줄로 적고 선지의 해석이 그 맥락에서 나오는지 확인합니다.',
+  '언어와 매체|매체':'자료의 표현 방식(자막, 이미지, 구성)과 효과를 짝지어 적은 뒤 선지와 대조합니다.',
+  '화법과 작문|화법과 작문':'발화나 초고의 해당 부분에 선지의 전략이 실제로 있는지 표시한 뒤 판정합니다.'
+};
+function rPlan3(m){
+  var S=rStats(m); if(!S.tasks.length) return '';
+  var cards=S.tasks.slice(0,2).map(function(s,i){
+    var items=s.items.map(function(x){return REP.labelMap[x.r]+' '+x.no+'번';}).join(', '), how='';
+    if(s.skill==='문법'){ var g={}; s.items.forEach(function(x){var k=rGramOf(x.meta); if(!g[k[1]]) g[k[1]]={how:k[2],its:[]}; g[k[1]].its.push(REP.labelMap[x.r]+' '+x.no+'번');});
+      how=Object.keys(g).map(function(k){return '<div class="r3-pl-g"><b>'+k+'</b> <small>'+g[k].its.join(', ')+'</small><br>'+escape(g[k].how)+'</div>';}).join(''); }
+    else how='<div class="r3-pl-g">'+escape(R_METHOD[s.area+'|'+s.skill]||'선지의 핵심어를 지문의 근거 문장과 짝지어 판정합니다.')+'</div>';
+    return '<div class="r3-pl"><div class="r3-pl-h"><span class="r3-pl-n">'+(i+1)+'</span>'+rSkillName(s)+'</div>'
+      +'<div class="r3-pl-it">대상 문항: '+items+'</div>'+how
+      +'<div class="r3-pl-ck"><div><b>과제 완료</b>대상 문항을 해설 없이 다시 풀고, 선지마다 판단 근거를 말로 설명합니다.</div>'
+      +'<div><b>다음 시험 목표</b>처음 보는 같은 유형 문항에서 이번에 익힌 방법을 적용했는지 확인합니다.</div></div></div>'; }).join('');
+  return '<div class="r3-sec"><div class="r3-t">이번 학습</div><div class="r3-pls">'+cards+'</div></div>';
+}
+/* ── 선생님 소견(두 문장, 수정 가능) ── */
+function rNarr3(m){
+  var S=rStats(m), t=S.tasks[0], g=S.strong, P=[];
+  if(g && g.wrong*10<=g.taken) P.push(m.name+' 학생은 '+rSkillName(g)+'에서 '+g.taken+'문항 중 '+(g.wrong?g.wrong+'문항만 틀려':'한 문항도 틀리지 않아')+' 지문의 정보를 정확히 확인하는 힘이 있습니다.');
+  if(t) P.push('이번에는 '+rSkillName(t)+'의 틀린 문항을 위 방법으로 다시 풀고, 다음 리포트에서 같은 유형의 결과로 변화를 확인하겠습니다.');
+  if(!P.length) P.push(m.name+' 학생은 선택한 회차에서 반복되는 오답이 없습니다.');
+  return P;
+}
+
 function renderReports(){
   var root=document.getElementById('reportRoot');
   var note=document.getElementById('repNote');
@@ -1824,41 +2097,29 @@ function renderReports(){
       : classLabel(CLASS_SEL)+' 반에 등록된 회차나 제출이 아직 없습니다. 맨 위에서 반을 바꿔 보세요.';
     root.innerHTML='<div class="empty">'+_msg+'</div>'; note.textContent=''; return;
   }
-  note.innerHTML='리포트 회차 <b style="color:var(--gold)">'+REP.sel.length+'개</b> · 응시 학생 <b style="color:var(--gold)">'+REP.master.length+'명</b> · 회차 구성은 위 칩에서 변경할 수 있습니다.';
+  note.innerHTML='리포트 회차 <b style="color:var(--gold)">'+REP.sel.length+'개</b> · 응시 학생 <b style="color:var(--gold)">'+REP.master.length+'명</b> · 회차 구성은 위 칩에서 변경할 수 있습니다.'+'<label style="margin-left:14px;font-size:.82rem;cursor:pointer;opacity:.85"><input type="checkbox" '+(snColor_()?'checked':'')+' onchange="snSetColor_(this.checked)" style="vertical-align:-2px;margin-right:4px">PDF를 컬러로(바탕색 있음, 끄면 인쇄용 흰 바탕)</label>';
   var html="";
   REP.master.forEach(function(m,i){
-    var school=m.school||"—",sub=m.sub==="lm"?"언매":"화작";
-    var tc=rTimeComment(m);
-    var timeBlock=tc?'<div class="tc">'+tc+'</div>':'<div class="tc" style="color:var(--text-muted)">시간 진단 데이터 없음</div>';
-    var diag=rDiagnose(m).map(function(d){return '<li>'+d+'</li>';}).join("");
-    var integ=rIntegrated(m).map(function(d){return '<li>'+d+'</li>';}).join("");
+    var tc=rTimeComment(m), sid="rep-"+i; m._sid=sid;
     var savedNarr=narrGet(m.name), narrLocv=narrLoc(m.name);
-    var narr=(savedNarr!=null)?savedNarr:rNarrative(m).map(function(p){return '<p style="margin:0 0 11px;line-height:1.8;font-size:0.9rem;color:var(--text-secondary)">'+p+'</p>';}).join("");
-    var sid="rep-"+i;
-    html+='<div class="repcard" id="'+sid+'" data-n="'+m.n+'" data-trend="'+m.trend+'" data-name="'+m.name+'">'
-      +'<div class="rc-head"><div><div class="rc-name">'+m.name+'</div><div class="rc-meta">'+school+' · '+sub+' · '+m.n+'/'+REP.sel.length+'회 응시</div></div>'
-      +'<div class="rc-right">'+(rTlabel(m.trend)?'<span class="rtrend rtrend-'+rTcls(m.trend)+'">'+rTlabel(m.trend)+'</span>':'')+'<span class="rc-tw">누적 오답 '+m.total_wrong+'개</span>'
-      +'<button class="rpdf-btn no-print" onclick="printOneReport(\''+sid+'\')">이 학생 PDF</button></div></div>'
-      +rMetrics(m)
-      +'<div class="rc-row1"><div>'+rSpark(m)+'</div>'
-      +'<div><div class="rblk-t">반복 약점 영역 비중</div>'+rDonut(m)+'</div></div>'
-      +'<div class="rc-blk"><div class="rblk-t">회차별 오답 <span class="rblk-sub">'+(REP.sel.every(function(x){return UNIFIED[x];})?'(통합 체제 — 1~45 전체가 공통)':'(공통 = 독서·문학 1~34 / 선택 = 화작·언매 35~45)')+'</span></div>'
-      +'<table class="rtbl2"><thead><tr><th>회차</th><th>점수</th><th>'+(REP.sel.every(function(x){return UNIFIED[x];})?'전체(1~45)':'공통(1~34)')+'</th><th>'+(REP.sel.every(function(x){return UNIFIED[x];})?'—':'선택(35~45)')+'</th></tr></thead><tbody>'+rRoundRows(m)+'</tbody></table></div>'
-      +'<div class="rc-blk rweak"><div class="rblk-t gold">진단 약점 <span class="rblk-sub">(1~'+REP.sel.length+'회 통합 분석)</span></div><ul class="rdlist">'+integ+'</ul></div>'
-      +'<div class="rc-blk rtime"><div class="rblk-t gold">시간 관리</div>'+timeBlock+'</div>'
-      +'<div class="rc-blk rdiag"><div class="rblk-t gold">진단 종합</div><ul class="rdlist">'+diag+'</ul></div>'
-      +'<div class="rc-blk rnarr" style="border:1px solid var(--border-line);border-radius:8px;padding:15px 17px;background:rgba(74,169,126,0.05)">'
-      +'<div class="rblk-t gold" style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
-      +'<span>서술형 소견 <span class="rblk-sub">(학생·학부모용)'+(savedNarr!=null?' · <span style="color:var(--gold)">직접 수정됨'+(narrLocv==='server'?' · 서버 저장':' · 이 브라우저')+'</span>':'')+'</span></span>'
+    var narr=(savedNarr!=null)?savedNarr:'<p style="margin:0;line-height:1.8;font-size:0.9rem;color:var(--text-secondary)">'+rNarr3(m).join(' ')+'</p>';
+    var uniAll=REP.sel.every(function(x){return UNIFIED[x];});
+    html+='<div class="repcard r3" id="'+sid+'" data-n="'+m.n+'" data-trend="'+m.trend+'" data-name="'+escape(m.name)+'">'
+      +rHead3(m)+rHeadline(m)+rHero(m)+rAreaSkill(m)+rRepeat3(m)+rRecheck(m)+rPlan3(m)
+      +'<div class="r3-sec"><div class="r3-t">회차별 오답 번호 <span>'+(uniAll?'통합 체제, 1~45 전체가 공통':'공통 1~34, 선택 35~45')+'</span></div>'
+      +'<table class="rtbl2"><thead><tr><th>회차</th><th>점수</th><th>'+(uniAll?'전체(1~45)':'공통(1~34)')+'</th><th>'+(uniAll?'—':'선택(35~45)')+'</th></tr></thead><tbody>'+rRoundRows(m)+'</tbody></table></div>'
+      +(tc?'<div class="r3-sec"><div class="r3-t">시간 관리 <span>학생 자가 응답</span></div><div class="r3-small">'+tc+'</div></div>':'')
+      +'<div class="r3-sec rnarr"><div class="r3-t" style="display:flex;justify-content:space-between;align-items:center;gap:8px">'
+      +'<span>선생님 소견'+(savedNarr!=null?' <span>직접 수정됨'+(narrLocv==='server'?', 서버 저장':', 이 브라우저')+'</span>':'')+'</span>'
       +'<span class="no-print narr-tools">'
       +'<button class="narr-btn" onclick="narrEdit(this)">✎ 수정</button>'
       +'<button class="narr-btn" onclick="narrSave(this)" style="display:none">저장</button>'
       +'<button class="narr-btn" onclick="narrCancel(this)" style="display:none">취소</button>'
       +'<button class="narr-btn" onclick="narrReset(this)" title="자동 생성으로 되돌리기">자동생성</button>'
       +'</span></div>'
-      +'<div class="narr-body" data-student="'+m.name+'">'+narr+'</div></div>'
+      +'<div class="narr-body" data-student="'+escape(m.name)+'">'+narr+'</div></div>'
       +rCaveat()
-      +'<div class="rc-foot"><span class="m">가경T · 오름 국어 연구소</span><span class="n">'+(i+1)+' / '+REP.master.length+'</span></div></div>';
+      +'<div class="rc-foot"><span class="m">김가경 국어 연구소</span><span class="n">'+(i+1)+' / '+REP.master.length+'</span></div></div>';
   });
   root.innerHTML=html;
   document.querySelectorAll('.rfbtn[data-rf]').forEach(function(b){b.classList.toggle('on',b.dataset.rf==='all');});
@@ -1884,7 +2145,7 @@ async function repCapture(t){var btn=t.querySelector('.rpdf-btn');var pv=btn?btn
   var CH=t.scrollHeight, cr=t.getBoundingClientRect(), blocks=[];
   [].slice.call(t.children).forEach(function(e){if(e.classList&&e.classList.contains('no-print'))return;
     var er=e.getBoundingClientRect(), blk={top:(er.top-cr.top)/CH, bot:(er.bottom-cr.top)/CH, rows:[]};
-    var trs=e.querySelectorAll?e.querySelectorAll('.yk-dtbl tr, .yk-ditem, .rtbl2 tbody tr'):[];
+    var trs=e.querySelectorAll?e.querySelectorAll('.yk-dtbl tr, .yk-ditem, .rtbl2 tbody tr, .r3-rep tr, .r3-ar, .r3-pl, .r3-rc-list, .r3-lead, .r3-cap'):[];
     [].slice.call(trs).forEach(function(tr){var rr=tr.getBoundingClientRect();blk.rows.push((rr.bottom-cr.top)/CH);});
     blocks.push(blk);});
   var c=await html2canvas(t,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,width:CW,windowWidth:CW+40,ignoreElements:function(el){return el.classList&&el.classList.contains('no-print');}});
@@ -1923,15 +2184,189 @@ function addCardPaged(pdf,canvas,blocks,state){var W=canvas.width,H=canvas.heigh
   newPage();
   blocks.forEach(function(b){var y0=b.top*H,y1=b.bot*H,h=y1-y0;
     if(h>0.5*availPx){  // 큰 블록(회차 표 등): 남은 공간부터 채워 이어붙임(페이지 꽉 채움) — 표 행 경계에서만 자름
-      var rows=(b.rows||[]).map(function(r){return r*H;}), s=y0;
+      var rows=(b.rows||[]).map(function(r){return r*H;}).sort(function(a,c){return a-c;}), s=y0;
+      var firstCut=rows.filter(function(ry){return ry>y0+5;})[0]||y1;           // 제목 + 첫 덩어리
+      if(pageY>0 && pageY+(firstCut-y0)>availPx) newPage();                     // 제목만 쪽 끝에 남지 않게
       while(s<y1-1){var remain=availPx-pageY;if(remain<20){newPage();remain=availPx;}
         var target=s+remain, cut=Math.min(target,y1);
-        if(cut<y1-1){var best=-1;rows.forEach(function(ry){if(ry>s+5&&ry<=target&&ry>best)best=ry;});if(best>0)cut=best;}
+        if(cut<y1-1){var best=-1;rows.forEach(function(ry){if(ry>s+5&&ry<=target&&ry>best)best=ry;});
+          if(best>0)cut=best; else if(pageY>0){newPage();continue;}}              // 경계가 없으면 가운데를 자르지 않고 다음 장
         draw(s,cut-s,pageY);pageY+=(cut-s);s=cut;if(s<y1-1)newPage();}
       pageY+=gapPx;return;}
     if(pageY+h>availPx+2)newPage();   // 작은 텍스트 블록: 통째로, 안 맞으면 다음 장
     draw(y0,h,pageY);pageY+=h+gapPx;});}
+/* ════════ 수능 개별 리포트 인쇄 틀 = 시안4(2026-09-27 적용) ════════
+   3차 카드 내용을 그대로 쓰고 겉모양만 [오름] 딥그린 + 코랄 틀로 바꾼다. 원본 시안: 클코\수능리포트_재설계\build_sn_print.py
+   MEXX 탭에서 뽑으면 머리 표기와 파일 이름이 MEXX로 바뀐다. */
+function snColor_(){ try{ return localStorage.getItem('oreum_sn_pdf_color')!=='0'; }catch(e){ return true; } }
+function snSetColor_(on){ try{ localStorage.setItem('oreum_sn_pdf_color', on?'1':'0'); }catch(e){} }
+function snBrand_(){ return CLASS_SEL==='mexx' ? 'MEXX' : '[오름] 국어'; }
+function snFilePre_(){ return CLASS_SEL==='mexx' ? 'MEXX' : '오름'; }
+function snToday_(){ var d=new Date(); function z(n){return (n<10?'0':'')+n;} return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+function snCss_(){
+  var T=YP_T;
+  return "@page{size:A4;margin:11mm 11mm 12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+  +":root{--good:"+T.p2+";--weak:"+T.acc+";--gold:"+T.p+";--gold-soft:"+T.p2+";--cream:"+T.ink+";--text-primary:"+T.ink+";--text-secondary:#3c4a42;--text-muted:"+T.mute+";--bg-dark:#EEF1F5;--bg-card:#fff;--border-soft:"+T.line+";--border-line:"+T.line+"}"
+  +"html,body{background:#fff!important;margin:0}body{color:"+T.ink+";font-size:10.5pt;line-height:1.55}"
+  +"body,body *{font-family:'Malgun Gothic','맑은 고딕',sans-serif!important;letter-spacing:0!important}"
+  +".stu{width:710px;padding:0}"
+  +".hd{display:flex;justify-content:space-between;align-items:flex-end;padding:4px 2px 12px;border-bottom:3px solid "+T.p+"}"
+  +".brand{font-size:9pt;color:"+T.p+";font-weight:700}.hd h1{margin:2px 0 0;font-size:20pt;font-weight:800;color:"+T.p+"}"
+  +".hd-s{font-size:9.5pt;opacity:.85;margin-top:2px}.hd-r{text-align:right}.hd-r .lab{font-weight:700;font-size:10pt}.hd-r .dt{font-size:8.5pt;opacity:.8}"
+  +"main{display:block;margin-top:12px}"
+  +".sec,.r3-sec{margin:0 0 10px;padding:0;border:0}"
+  +".sh,.r3-t{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;font-size:11.5pt;font-weight:800;color:"+T.p+";padding:2px 0 4px 10px;border-left:5px solid "+T.p+";border-bottom:1px solid "+T.line+"}"
+  +".r3-t span{font-weight:500;font-size:8.5pt;color:"+T.mute+";margin-left:0}"
+  +".info{width:100%;border-collapse:collapse;font-size:9.5pt}.info th{width:92px;white-space:nowrap;text-align:left;font-weight:600;color:"+T.mute+";padding:6px 8px;border-bottom:1px solid "+T.line+"}"
+  +".info td{padding:6px 8px;border-bottom:1px solid "+T.line+"}.info td.big{font-size:13pt;font-weight:800}"
+  +".sumrow{display:flex;align-items:center;gap:12px}.dn{text-align:center;width:104px}.dn-l{font-weight:700;font-size:9.5pt}.dn-s{font-size:8pt;color:"+T.mute+"}"
+  +".cards{display:grid;gap:6px;width:150px}.cd{display:flex;align-items:baseline;gap:5px;padding:6px 10px;border-radius:8px;border:1px solid "+T.line+"}"
+  +".cd b{font-size:15pt;color:"+T.p+"}.cd span{color:"+T.mute+";font-size:9pt}.cd i{font-style:normal;margin-left:auto;font-size:8.5pt}"
+  +".tr{flex:1}.tr-t{font-size:8.5pt;color:"+T.mute+";font-weight:600}"
+  +".r3-hl{padding:10px 14px;margin:0 0 12px;border-left:4px solid "+T.acc+"}"
+  +".r3-hl-main{font-size:12.5pt;font-weight:800;color:"+T.ink+";line-height:1.5}.r3-hl-sub{font-size:9.5pt;color:#3c4a42;margin-top:4px}"
+  +".r3-hero{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:12px}"
+  +".r3-hero-s{border:1px solid "+T.line+";border-radius:10px;padding:10px 14px}"
+  +".r3-hero-tag{display:inline-block;font-size:8.5pt;font-weight:800;padding:1px 9px;border-radius:99px;color:#fff;background:"+T.p2+"}.r3-weak .r3-hero-tag{background:"+T.acc+"}"
+  +".r3-hero-n{font-size:22pt;font-weight:800;line-height:1.1;margin-top:4px;color:"+T.p2+"}.r3-weak .r3-hero-n{color:"+T.acc+"}"
+  +".r3-hero-n small{font-size:11pt;color:"+T.mute+";font-weight:600}.r3-hero-l{font-weight:700;font-size:10.5pt;margin:2px 0 6px}"
+  +".r3-hero-bar{height:9px;border-radius:5px;background:#EEF1F5;overflow:hidden}.r3-hero-bar i{display:block;height:100%;border-radius:5px;background:"+T.p2+"}.r3-weak .r3-hero-bar i{background:"+T.acc+"}"
+  +".r3-hero-x{font-size:8.5pt;color:"+T.mute+";margin-top:4px}"
+  +".r3-ars{display:grid;grid-template-columns:1fr 1fr;gap:4px 26px}"
+  +".r3-ar-h{display:flex;justify-content:space-between;font-size:10pt;font-weight:800;color:"+T.p+";padding-bottom:4px;margin-bottom:3px;border-bottom:1px solid "+T.line+"}.r3-ar-h b{font-size:9pt;color:"+T.mute+"}"
+  +".r3-sk{display:grid;grid-template-columns:112px 1fr 40px 50px;gap:7px;align-items:center;font-size:9pt;margin:4px 0}"
+  +".r3-sk-l{color:#3c4a42}.r3-sk-t{height:8px;border-radius:4px;background:#EEF1F5;overflow:hidden}.r3-sk-t i{display:block;height:100%;border-radius:4px}"
+  +"i.r3-good{background:"+T.p2+"}i.r3-weak{background:"+T.acc+"}i.r3-base{background:#A9B8AE}"
+  +".r3-sk-v{text-align:right;font-weight:700}.r3-sk-n{font-size:8pt;color:"+T.mute+"}"
+  +".r3-lead{font-size:9.5pt;color:#3c4a42;margin-bottom:8px}.r3-lead b{color:"+T.ink+"}.r3-lead div{font-size:8.8pt;color:"+T.mute+"}"
+  +".r3-rep{width:100%;border-collapse:collapse;font-size:9pt}.r3-rep th{font-weight:600;font-size:8.5pt;color:"+T.mute+";padding:5px;border-bottom:1.5px solid "+T.p+";text-align:center}"
+  +".r3-rep td{padding:7px 5px;border-bottom:1px solid "+T.line+";text-align:center}.r3-rep .l{text-align:left;font-weight:700}.r3-na{color:"+T.mute+";font-size:8pt}"
+  +".r3-dots{display:flex;gap:3px;justify-content:center}.r3-dots i{width:10px;height:10px;border-radius:50%;display:block}"
+  +".r3-dots i.w{background:"+T.acc+"}.r3-dots i.o{background:#CFD8D2}.r3-dn{display:block;font-size:7.8pt;color:"+T.mute+"}"
+  +".r3-cap{font-size:8pt;color:"+T.mute+";margin-top:6px}"
+  +".r3-rc-list{display:flex;flex-wrap:wrap;gap:6px}.r3-rc-list span{font-size:9pt;padding:3px 9px;border-radius:99px;border:1px solid "+T.line+"}.r3-rc-list small{color:"+T.mute+"}"
+  +".r3-pls{display:grid;grid-template-columns:1fr 1fr;gap:14px}.r3-pl{border:1px solid "+T.line+";border-radius:8px;padding:10px 12px}"
+  +".r3-pl-h{font-size:10.5pt;font-weight:800;color:"+T.p+";display:flex;align-items:center;gap:7px}"
+  +".r3-pl-n{width:21px;height:21px;border-radius:50%;background:"+T.acc+";color:#fff;font-size:9pt;display:inline-flex;align-items:center;justify-content:center;flex:none}"
+  +".r3-pl-it{font-size:8.5pt;color:"+T.mute+";margin:4px 0 6px}.r3-pl-g{font-size:9.2pt;color:#3c4a42;margin-bottom:5px}.r3-pl-g b{color:"+T.ink+"}.r3-pl-g small{color:"+T.mute+"}"
+  +".r3-pl-ck{border-top:1px dashed "+T.line+";margin-top:6px;padding-top:6px;display:grid;gap:4px;font-size:9pt}.r3-pl-ck b{color:"+T.p+";display:inline-block;min-width:80px;font-size:8.5pt}"
+  +".rtbl2{width:100%;border-collapse:collapse;font-size:9pt}.rtbl2 th{font-weight:600;color:"+T.mute+";font-size:8.5pt;padding:5px;border-bottom:1.5px solid "+T.p+";text-align:left}"
+  +".rtbl2 td{padding:6px 5px;border-bottom:1px solid "+T.line+"}.r-rnd{font-weight:700;white-space:nowrap}.r-rnd-exam{display:block;font-weight:400;font-size:8pt;color:"+T.mute+"}.r-sc{color:"+T.ink+"!important;white-space:nowrap}"
+  +".rnarr .r3-t>span:first-child{font-size:11.5pt;font-weight:800;color:"+T.p+"}.rnarr .r3-t>span:first-child span{font-size:8.5pt;font-weight:500;color:"+T.mute+"}"+".r3-small{font-size:9pt;color:#3c4a42}.rnarr .narr-tools,.no-print{display:none!important}.narr-body p{font-size:9.5pt!important;color:#3c4a42!important;line-height:1.75!important}"
+  +".ft{margin-top:10px;padding-top:6px;border-top:1px solid "+T.line+";display:flex;justify-content:space-between;font-size:7.8pt;color:"+T.mute+"}"
+  +"body.color .hd{background:"+T.p+";color:#fff;border-radius:10px;padding:16px 20px;border-bottom:0}body.color .brand,body.color .hd h1{color:#fff}"
+  +"body.color .sh,body.color .r3-t{background:"+T.tint+";border-bottom:0;border-radius:0 6px 6px 0;padding:6px 10px}"
+  +"body.color .info th{background:"+T.tint2+"}body.color .cd,body.color .r3-pl,body.color .r3-hero-s{background:"+T.tint2+"}body.color .r3-hl{background:"+T.accT+";border-radius:0 8px 8px 0}";
+}
+function snTrend_(pts){
+  var T=YP_T, W=520, Hh=150, L=40, R=500, TOP=20, BOT=110, n=pts.length;
+  if(!n) return '';
+  var vals=pts.map(function(p){return +p[0];});
+  var lo=Math.max(0, Math.floor(Math.min.apply(null,vals)/10)*10-10), hi=Math.min(100, Math.floor(Math.max.apply(null,vals)/10)*10+10);
+  if(hi<=lo) hi=lo+10;
+  function X(i){ return n===1 ? (L+R)/2 : L+(R-L)*i/(n-1); } function Y(v){ return BOT-(BOT-TOP)*(v-lo)/(hi-lo); }
+  var s=['<svg viewBox="0 0 '+W+' '+Hh+'" width="100%">'];
+  [lo, Math.floor((lo+hi)/2), hi].forEach(function(g){
+    s.push('<line x1="'+L+'" y1="'+Y(g).toFixed(1)+'" x2="'+R+'" y2="'+Y(g).toFixed(1)+'" stroke="#E3E7EE"'+(g===lo?'':' stroke-dasharray="3"')+'/>'
+      +'<text x="'+(L-6)+'" y="'+(Y(g)+4).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#9aa3b2">'+g+'</text>'); });
+  if(n>1) s.push('<polyline points="'+pts.map(function(p,i){return X(i).toFixed(1)+','+Y(+p[0]).toFixed(1);}).join(' ')+'" fill="none" stroke="'+T.p+'" stroke-width="2.5"/>');
+  pts.forEach(function(p,i){ var last=(i===n-1), c=last?T.acc:T.p;
+    s.push('<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(+p[0]).toFixed(1)+'" r="'+(last?5.5:4.5)+'" fill="'+(last?T.acc:'#fff')+'" stroke="'+c+'" stroke-width="2.5"/>'
+      +'<text x="'+X(i).toFixed(1)+'" y="'+(Y(+p[0])-10).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="700" fill="'+c+'">'+p[0]+'</text>'
+      +'<text x="'+X(i).toFixed(1)+'" y="'+(BOT+20)+'" text-anchor="middle" font-size="10.5" fill="#4a5466">'+ypE_(p[1])+'</text>'); });
+  s.push('</svg>'); return s.join('');
+}
+function snSubName_(m){
+  var sel=REP.sel.filter(function(r){return m.st_rounds[r];});
+  if(sel.length && sel.every(function(r){return UNIFIED[r];})) return '통합 체제(선택과목 없음)';
+  return m.sub==='lm' ? '언어와 매체' : '화법과 작문';
+}
+function snStudent_(m, card){
+  var T=YP_T, sel=REP.sel.filter(function(r){return m.st_rounds[r];}), lastRid=sel[sel.length-1];
+  var lastR=m.raws[m.raws.length-1], lastG=m.grades[m.grades.length-1];
+  var pts=sel.map(function(r){ return [m.st_rounds[r].raw, REP.labelMap[r]]; });
+  var body=card.cloneNode(true);
+  [].slice.call(body.querySelectorAll('.r3-head, .rc-foot, .no-print, .rpdf-btn')).forEach(function(e){ e.remove(); });
+  var hdr='<header class="hd"><div><div class="brand">'+ypE_(snBrand_())+'</div><h1>수능 국어 진단 리포트</h1>'
+    +'<div class="hd-s">최근 '+m.n+'회 누적 분석</div></div><div class="hd-r"><div class="lab">김가경 국어 연구소</div><div class="dt">'+snToday_()+' 발행</div></div></header>';
+  var info='<section class="sec"><h2 class="sh">학생 정보</h2><table class="info"><tr>'
+    +'<th>이름</th><td class="big">'+ypE_(m.name)+'</td><th>학교</th><td>'+ypE_(m.school||'-')+'</td></tr><tr>'
+    +'<th>선택과목</th><td>'+snSubName_(m)+'</td><th>최근 회차</th><td>'+ypE_(REP.nameMap[lastRid]||REP.labelMap[lastRid]||'')+'</td></tr></table></section>';
+  var summ='<section class="sec"><h2 class="sh">이번 성적 한눈에 보기</h2><div class="sumrow">'
+    +ypDonut_(+lastR, 100, T.p, '원점수', '최근 회차')
+    +'<div class="cards"><div class="cd"><b>'+(lastG||'-')+'</b><span>등급</span><i>예상 등급</i></div>'
+    +'<div class="cd"><b>'+sel.length+'</b><span>회</span><i>분석한 회차</i></div></div>'
+    +'<div class="tr"><div class="tr-t">회차별 원점수</div>'+snTrend_(pts)+'</div></div></section>';
+  return '<div class="stu">'+hdr+'<main>'+info+summ+body.innerHTML+'</main>'
+    +'<footer class="ft"><span>'+ypE_(snBrand_())+' · 김가경 국어 연구소</span><span>학생이 표시한 오답 기준입니다</span></footer></div>';
+}
+function snPaginate_(art){
+  var H=art.scrollHeight, PH=Math.floor(art.offsetWidth*274/188), base=art.getBoundingClientRect().top, cand=[];
+  [].slice.call(art.querySelectorAll('.sec, .r3-sec, .r3-hl, .r3-hero-s, .r3-ar, .r3-pl, .r3-lead, .r3-cap, .r3-rc-list, tr, .narr-body p, .ft, main > div')).forEach(function(e){
+    var r=e.getBoundingClientRect(); cand.push(r.top-base); cand.push(r.bottom-base); });
+  // 막는 구간: 짧은 섹션은 통째로, 긴 섹션은 제목부터 본문 첫 덩어리(90px)까지 — 쪽 끝에 제목만 남지 않게
+  var bans=[];
+  [].slice.call(art.querySelectorAll('.sec, .r3-sec')).forEach(function(e){
+    var r=e.getBoundingClientRect(), t=r.top-base, b=r.bottom-base, hd=e.querySelector('.sh, .r3-t');
+    if(b-t < PH*0.4) bans.push([t, b]);
+    else if(hd){ var hr=hd.getBoundingClientRect(); bans.push([t, hr.bottom-base+90]); }
+  });
+  cand=cand.filter(function(v){ return !bans.some(function(x){ return v>x[0]+1 && v<x[1]-1; }); });
+  cand.sort(function(a,b){ return a-b; });
+  var pages=[], s=0, guard=0;
+  while(s<H-2 && guard++<40){
+    var lim=s+PH, cut;
+    if(lim>=H) cut=H;
+    else { var ok=cand.filter(function(v){ return v>s+PH*0.35 && v<=lim; }); cut=ok.length?ok[ok.length-1]:lim; }
+    pages.push([s,cut]); s=cut;
+    var nx=cand.filter(function(v){ return v>=s; })[0];
+    if(nx!=null && nx-s<30) s=nx;
+  }
+  var n=pages.length;
+  if(n>1 && pages[n-1][1]-pages[n-1][0] < PH*0.16){ pages[n-2][1]=pages[n-1][1]; pages.pop(); }
+  return pages;
+}
+function snDrawSlice_(pdf, canvas, sy, sh){   // 한 쪽(188 x 274mm)에 넘치면 비율대로 줄여 가운데 둔다
+  var c=document.createElement('canvas'); c.width=canvas.width; c.height=Math.max(1, Math.round(sh));
+  var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+  g.drawImage(canvas, 0, Math.round(sy), canvas.width, c.height, 0, 0, canvas.width, c.height);
+  var w=188, h=188*c.height/c.width; if(h>274){ w=w*274/h; h=274; }
+  pdf.addImage(c.toDataURL('image/jpeg', 0.93), 'JPEG', 11+(188-w)/2, 11, w, h);
+}
+async function snPdf_(cards, filename){
+  if(!cards || !cards.length){ alert('표시된 학생이 없습니다.'); return; }
+  if(!repLibsReady()){ alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.'); return; }
+  var color=snColor_();
+  repOverlay('PDF 만드는 중… (0/'+cards.length+')');
+  var ifr=document.createElement('iframe');
+  ifr.setAttribute('aria-hidden','true');
+  ifr.style.cssText='position:fixed;left:-12000px;top:0;width:760px;height:1400px;border:0';
+  document.body.appendChild(ifr);
+  try{
+    var d=ifr.contentDocument;
+    d.open(); d.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>'+snCss_()+'</style></head><body class="'+(color?'color':'')+'"></body></html>'); d.close();
+    await new Promise(function(r){ setTimeout(r,250); });
+    var jsPDF=getJsPDF(), pdf=new jsPDF({orientation:'portrait', unit:'mm', format:'a4'}), first=true;
+    for(var i=0;i<cards.length;i++){
+      var card=cards[i], m=REP.master[+String(card.id).replace('rep-','')];
+      if(!m) continue;
+      repOverlay('PDF 만드는 중… ('+(i+1)+'/'+cards.length+') · '+m.name);
+      d.body.innerHTML=snStudent_(m, card);
+      await new Promise(function(r){ setTimeout(r,120); });
+      try{ if(d.fonts && d.fonts.ready) await d.fonts.ready; }catch(e){}
+      var art=d.body.querySelector('.stu'), pages=snPaginate_(art);
+      var canvas=await html2canvas(art, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false, windowWidth:760});
+      var k=canvas.width/art.offsetWidth;
+      pages.forEach(function(pg, j){ if(!first) pdf.addPage(); first=false; snDrawSlice_(pdf, canvas, pg[0]*k, (pg[1]-pg[0])*k);
+        pdf.setFontSize(8); pdf.setTextColor(120,130,124); pdf.text((j+1)+' / '+pages.length, 105, 291, {align:'center'}); });
+      canvas.width=0; canvas.height=0;
+    }
+    pdf.save(filename+'.pdf');
+  }catch(err){ alert('PDF 생성 오류: '+(err.message||err)); }
+  finally{ try{ ifr.remove(); }catch(e){} repHideOverlay(); }
+}
 async function printOneReport(id){var t=document.getElementById(id);if(!t)return;
+  if(t.classList.contains('r3')){ snPdf_([t], snFilePre_()+'_'+(t.dataset.name||'학생')+'_진단리포트'); return; }
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
   var name=t.dataset.name||'학생';repOverlay(name+' PDF 생성 중…');
   try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(e){}
@@ -1943,6 +2378,8 @@ async function printOneReport(id){var t=document.getElementById(id);if(!t)return
   }catch(err){alert('PDF 생성 오류: '+(err.message||err));}finally{repHideOverlay();}}
 async function printAllReports(){
   if(repMode()==='yaksul'){ yakPrintAll_(); return; }   // 약술은 인쇄 틀로 한 파일에 묶는다
+  var r3=[].slice.call(document.querySelectorAll('#reportRoot .repcard.r3')).filter(function(p){return getComputedStyle(p).display!=='none';});
+  if(r3.length){ snPdf_(r3, snFilePre_()+'_수능진단리포트_'+r3.length+'명'); return; }
   if(!repLibsReady()){alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.');return;}
   var cards=[].slice.call(document.querySelectorAll('.repcard')).filter(function(p){return getComputedStyle(p).display!=='none';});
   if(!cards.length){alert('표시된 학생이 없습니다.');return;}
