@@ -1385,7 +1385,7 @@ function renderStep4(){
     el('p',{class:'result-meta'}, [
       STATE.student.school,
       exam.label,
-      choice==='lm'?'언어와 매체':'화법과 작문'
+      isUnified() ? '-' : (choice==='lm'?'언어와 매체':'화법과 작문')
     ].join(' · '))
   ));
 
