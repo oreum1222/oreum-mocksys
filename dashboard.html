@@ -198,7 +198,7 @@ tr:hover td{background:var(--bg-card-hover);color:var(--cream)}
 .rfnote{font-size:.8rem;color:var(--text-muted);margin:3px 0 2px}
 .rftbl{width:100%;border-collapse:collapse;font-size:.8rem;margin:2px 0 12px}.rftbl th{font-weight:500;color:var(--text-muted);font-size:.72rem;padding:5px 6px;border-bottom:1px solid var(--border-soft);text-align:center}.rftbl td{padding:6px;border-bottom:1px solid var(--border-line);text-align:center}.rftbl td:first-child{text-align:left}
 /* ── 수능 국어 학습 리포트 3차: 편집형 ── */
-.repcard.r3{padding:34px 38px 26px}
+.repcard.r3{padding:34px 38px 26px;word-break:keep-all;overflow-wrap:break-word}
 .r3-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding-bottom:18px;border-bottom:1px solid var(--border-soft);position:relative}
 .r3-org{font-size:.7rem;letter-spacing:1.5px;color:var(--text-muted)}
 .r3-name{font-family:'Noto Serif KR',serif;font-size:2.3rem;font-weight:700;color:var(--cream);line-height:1.15;margin-top:6px}
@@ -2213,7 +2213,7 @@ function snCss_(){
   return "@page{size:A4;margin:11mm 11mm 12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
   +":root{--good:"+T.p2+";--weak:"+T.acc+";--gold:"+T.p+";--gold-soft:"+T.p2+";--cream:"+T.ink+";--text-primary:"+T.ink+";--text-secondary:#3c4a42;--text-muted:"+T.mute+";--bg-dark:#EEF1F5;--bg-card:#fff;--border-soft:"+T.line+";--border-line:"+T.line+"}"
   +"html,body{background:#fff!important;margin:0}body{color:"+T.ink+";font-size:10.5pt;line-height:1.55}"
-  +"body,body *{font-family:'Malgun Gothic','맑은 고딕',sans-serif!important;letter-spacing:0!important}"
+  +"body,body *{font-family:'Malgun Gothic','맑은 고딕',sans-serif!important;letter-spacing:0!important;word-break:keep-all;overflow-wrap:break-word}"
   +".stu{width:710px;padding:0}"
   +".hd{display:flex;justify-content:space-between;align-items:flex-end;padding:4px 2px 12px;border-bottom:3px solid "+T.p+"}"
   +".brand{font-size:9pt;color:"+T.p+";font-weight:700}.hd h1{margin:2px 0 0;font-size:20pt;font-weight:800;color:"+T.p+"}"
@@ -2336,13 +2336,22 @@ function snDrawSlice_(pdf, canvas, sy, sh){   // 한 쪽(188 x 274mm)에 넘치�
   var g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
   g.drawImage(canvas, 0, Math.round(sy), canvas.width, c.height, 0, 0, canvas.width, c.height);
   var w=188, h=188*c.height/c.width; if(h>274){ w=w*274/h; h=274; }
-  pdf.addImage(c.toDataURL('image/jpeg', 0.93), 'JPEG', 11+(188-w)/2, 11, w, h);
+  pdf.addImage(c.toDataURL('image/jpeg', 0.96), 'JPEG', 11+(188-w)/2, 11, w, h);
 }
+var SN_WM=null;   // 김가경 국어 연구소 로고 워터마크(투명도 9%로 미리 구운 PNG, 1185x521)
+function snWatermark_(){
+  if(SN_WM!==null) return Promise.resolve(SN_WM);
+  return fetch('assets/kgk-lab-watermark.png').then(function(r){ if(!r.ok) throw 0; return r.blob(); })
+    .then(function(b){ return new Promise(function(res){ var fr=new FileReader(); fr.onload=function(){ res(fr.result); }; fr.readAsDataURL(b); }); })
+    .then(function(u){ SN_WM=u; return u; }).catch(function(){ SN_WM=''; return ''; });
+}
+function snDrawWm_(pdf){ if(!SN_WM) return; var w=130, h=w*521/1185; pdf.addImage(SN_WM, 'PNG', (210-w)/2, (297-h)/2, w, h, 'kgkwm'); }
 async function snPdf_(cards, filename){
   if(!cards || !cards.length){ alert('표시된 학생이 없습니다.'); return; }
   if(!repLibsReady()){ alert('PDF 기능을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.'); return; }
   var color=snColor_();
   repOverlay('PDF 만드는 중… (0/'+cards.length+')');
+  await snWatermark_();
   var ifr=document.createElement('iframe');
   ifr.setAttribute('aria-hidden','true');
   ifr.style.cssText='position:fixed;left:-12000px;top:0;width:760px;height:1400px;border:0';
@@ -2360,9 +2369,9 @@ async function snPdf_(cards, filename){
       await new Promise(function(r){ setTimeout(r,120); });
       try{ if(d.fonts && d.fonts.ready) await d.fonts.ready; }catch(e){}
       var art=d.body.querySelector('.stu'), pages=snPaginate_(art);
-      var canvas=await html2canvas(art, {scale:2, backgroundColor:'#ffffff', useCORS:true, logging:false, windowWidth:760});
+      var canvas=await html2canvas(art, {scale:3, backgroundColor:'#ffffff', useCORS:true, logging:false, windowWidth:760});
       var k=canvas.width/art.offsetWidth;
-      pages.forEach(function(pg, j){ if(!first) pdf.addPage(); first=false; snDrawSlice_(pdf, canvas, pg[0]*k, (pg[1]-pg[0])*k);
+      pages.forEach(function(pg, j){ if(!first) pdf.addPage(); first=false; snDrawSlice_(pdf, canvas, pg[0]*k, (pg[1]-pg[0])*k); snDrawWm_(pdf);
         pdf.setFontSize(8); pdf.setTextColor(120,130,124); pdf.text((j+1)+' / '+pages.length, 105, 291, {align:'center'}); });
       canvas.width=0; canvas.height=0;
     }
