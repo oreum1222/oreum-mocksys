@@ -367,7 +367,7 @@ body{
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261002b';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261002c';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -907,6 +907,9 @@ function generatePreviewTimeAns(pattern){
   return { '1': 2, '2': 1 };
 }
 
+// 마킹 화면 안내: 오답률의 출처가 출판사 예상치면 그렇게 밝힌다(실제 응시 집계로 읽히지 않게)
+function wrHint_(d){ var s=''; try{ var qs=[].concat((d.questions.common||[]),(d.questions.hs||[]),(d.questions.lm||[])); for(var i=0;i<qs.length;i++){ if(qs[i].wrSource){ s=qs[i].wrSource; break; } } }catch(e){}
+  return /예상/.test(s) ? '회색 숫자는 출판사가 시험 전에 낸 예상 오답률(%)이며 실제 응시 결과가 아닙니다.' : '회색 숫자는 오답률(%)입니다.'; }
 function loadExamPreview(examId, choice, pattern){
   const meta = EXAM_LIST.find(e=>e.id===examId);
   if(!meta){ renderRouter(); return; }
@@ -1103,7 +1106,7 @@ function renderStep2(){
   if(isYaksul()) return renderYakMark();
   const intro = el('div',{class:'section'},
     el('h2',{class:'section-title'},'오답 마킹'),
-    el('p',{class:'section-desc', html:'시험에서 틀린 문항을 모두 클릭해 주세요. 다시 클릭하면 해제됩니다. 회색 숫자는 전국 오답률(%)입니다. <strong style="color:var(--gold-soft)">3점</strong> 표시된 문항은 변별이 큰 자리입니다.'})
+    el('p',{class:'section-desc', html:'시험에서 틀린 문항을 모두 클릭해 주세요. 다시 클릭하면 해제됩니다. '+wrHint_(STATE.data)+' <strong style="color:var(--gold-soft)">3점</strong> 표시된 문항은 변별이 큰 자리입니다.'})
   );
   root.appendChild(intro);
 
@@ -1481,7 +1484,7 @@ function renderStep4(){
         q.source ? el('span',{class:'q-detail-source'}, q.source) : null,
         q.three ? el('span',{class:'q-detail-three'},'3점') : null,
         pkMk_ ? el('span',{class:'q-detail-pick'}, '고른 답 '+pkMk_) : null,
-        q.wr!=null ? el('span',{class:'q-detail-wr'}, '오답률 '+q.wr+'%') : null
+        q.wr!=null ? el('span',{class:'q-detail-wr'}, (/예상/.test(q.wrSource||'')?'예상 오답률 ':'오답률 ')+q.wr+'%') : null
       );
       const block = el('div',{class:'q-detail'}, head);
       if(q.coreElement) block.appendChild(el('div',{class:'q-detail-core'}, q.coreElement));
