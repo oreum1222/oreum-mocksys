@@ -367,7 +367,7 @@ body{
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20260927d';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261002a';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -408,6 +408,11 @@ const EXAM_LIST = [
     id: 'g2-2024-10', file: 'data/mock-g2-2024-10.json', course: 'g2',
     no: '제 2 회', tagDate: '2024년 10월 · 전국연합학력평가(교육청)',
     status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'sss5-05', file: 'data/mock-sss5-05.json',
+    no: '제 26 회', tagDate: '상상국어 파이널Ⅱ 시즌5-5회 · 사설 모의고사',
+    status: 'tentative', statusLabel: '가채점 (상상 예상 등급컷)'
   },
   {
     id: '2025-suneung', file: 'data/mock-2025-suneung.json',
