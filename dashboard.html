@@ -1936,7 +1936,8 @@ function rNatWr(meta, sub){ if(!meta) return null;
 function rJo(w,a,b){var c=String(w).replace(/<[^>]*>/g,'').replace(/[^가-힣]/g,'').slice(-1); if(!c) return w+a; return w+(((c.charCodeAt(0)-0xAC00)%28)?a:b);}
 function rPts(meta){ return meta&&meta.three?3:2; }
 function rPctS(w,t){ return t ? Math.round(w/t*1000)/10 : 0; }
-function rSkillName(s){ return escape(s.area===s.skill?s.skill:s.area+' '+s.skill); }
+function rUniAll_(){ return REP.sel.length>0 && REP.sel.every(function(x){return UNIFIED[x];}); }
+function rSkillName(s){ if(s.area==='언어와 매체' && s.skill==='문법' && rUniAll_()) return '문법'; return escape(s.area===s.skill?s.skill:s.area+' '+s.skill); }
 // 문법 세부 개념(문항 유형 이름 기준) → 처방
 var R_GRAM=[[/활용|용언|품사/, '활용과 품사', '기본형을 적고 어간과 어미, 바뀐 부분을 표시한 뒤 규칙과 불규칙을 판정합니다.'],
   [/음운/, '음운 변동', '발음 전과 후의 음운을 나란히 적고, 변동을 일어난 순서대로 이름 붙입니다.'],
@@ -2025,11 +2026,12 @@ function rHero(m){
 /* ── 영역과 유형 ── */
 function rAreaSkill(m){
   var S=rStats(m), taskKeys=S.tasks.map(function(t){return t.area+'|'+t.skill;}), groups=[['독서',['독서']],['문학',['문학']],['언어와 매체',['문법','매체']],['화법과 작문',['화법과 작문']]];
+  var gLabel=function(g){ return (g==='언어와 매체' && rUniAll_()) ? '문법' : g; };
   var html='';
   groups.forEach(function(g){ var xs=S.skills.filter(function(s){return s.area===g[0];}); if(!xs.length) return;
     var aw=0,at=0; g[1].forEach(function(k){var A=S.areas[k]; if(A){aw+=A.wrong;at+=A.taken;}});
     xs.sort(function(a,b){return a.rate-b.rate;});
-    html+='<div class="r3-ar"><div class="r3-ar-h"><span>'+g[0]+'</span><b>'+(at-aw)+'/'+at+'</b></div>'
+    html+='<div class="r3-ar"><div class="r3-ar-h"><span>'+gLabel(g[0])+'</span><b>'+(at-aw)+'/'+at+'</b></div>'
       + xs.map(function(s){ var ok=s.taken-s.wrong, pc=Math.round(ok/s.taken*100), isT=taskKeys.indexOf(s.area+'|'+s.skill)>=0,
           tone=isT?'weak':(s.wrong===0&&s.taken>=10?'good':'base');
           return '<div class="r3-sk"><span class="r3-sk-l">'+escape(s.skill)+'</span><span class="r3-sk-t"><i class="r3-'+tone+'" style="width:'+pc+'%"></i></span>'
