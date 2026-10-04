@@ -367,7 +367,7 @@ body{
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261003a';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261004a';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -680,6 +680,8 @@ function renderRouter(){
     tabs.appendChild(b);
   });
   const exams = EXAM_LIST.filter(m=>courseOf(m)===course);
+  // 고2는 최근에 추가한 회차(번호가 큰 회차)가 위에 오도록
+  if(course==='g2') exams.sort((a,b)=>(parseInt((b.no.match(/\d+/)||[0])[0])-parseInt((a.no.match(/\d+/)||[0])[0])));
   const specials = SPECIAL_LIST.filter(sp=>courseOf(sp)===course);
 
   const sectionLabel = el('div',{class:'section-label'},'회차 목록');
