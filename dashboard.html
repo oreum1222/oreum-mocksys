@@ -2301,7 +2301,7 @@ function snStudent_(m, card){
     +'<th>선택과목</th><td>'+snSubName_(m)+'</td><th>최근 회차</th><td>'+ypE_(REP.nameMap[lastRid]||REP.labelMap[lastRid]||'')+'</td></tr></table></section>';
   var summ='<section class="sec"><h2 class="sh">이번 성적 한눈에 보기</h2><div class="sumrow">'
     +ypDonut_(+lastR, 100, T.p, '원점수', '최근 회차')
-    +'<div class="cards"><div class="cd"><b>'+(lastG||'-')+'</b><span>등급</span><i>예상 등급</i></div>'
+    +'<div class="cards"><div class="cd"><b>'+(lastG||'-')+'</b><span>등급</span><i>최근 회차</i></div>'
     +'<div class="cd"><b>'+sel.length+'</b><span>회</span><i>분석한 회차</i></div></div>'
     +'<div class="tr"><div class="tr-t">회차별 원점수</div>'+snTrend_(pts)+'</div></div></section>';
   return '<div class="stu">'+hdr+'<main>'+info+summ+body.innerHTML+'</main>'
