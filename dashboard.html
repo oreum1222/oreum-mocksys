@@ -2298,7 +2298,11 @@ var SN_SCHOOL_FULL={'단국사대부고':'단국대학교사범대학부속고�
 function snSchoolFull_(s){ s=String(s||'').replace(/\s+/g,''); if(!s||s==='없음') return '';
   if(SN_SCHOOL_FULL[s]) return SN_SCHOOL_FULL[s];
   if(/^단국대/.test(s) && /부속|부설/.test(s)) return '단국대학교사범대학부속고등학교';
-  if(/고등학교$/.test(s)) return s; if(/고$/.test(s)) return s+'등학교'; return s; }
+  if(/고등학교$/.test(s)) return s;
+  if(/여고$/.test(s)) return s.replace(/여고$/,'여자고등학교');
+  if(/외고$/.test(s)) return s.replace(/외고$/,'외국어고등학교');
+  if(/예고$/.test(s)) return s.replace(/예고$/,'예술고등학교');
+  if(/고$/.test(s)) return s+'등학교'; return s; }
 function snSubName_(m){
   var sel=REP.sel.filter(function(r){return m.st_rounds[r];});
   if(sel.length && sel.every(function(r){return UNIFIED[r];})) return '통합 체제(선택과목 없음)';
