@@ -1202,13 +1202,15 @@ function rItemnum(c){var m=/(common|hs|lm)-(\d+)/.exec(c);return m?m[2]+"번":c;
 function rGcol(g){var R={1:"#2f7d57",2:"#3f9268",3:"#52a87c",4:"#6fbd95",5:"#8fceac",6:"#aadcc1",7:"#c4e7d4",8:"#daf0e4",9:"#ebf6f0"};return R[parseInt(g,10)]||"var(--text-muted)";}
 function rTlabel(t){return{"상승":"▲ 상승","하락":"▼ 하락","유지":"― 유지"}[t]||"";}
 function rTcls(t){return{"상승":"up","하락":"down","유지":"keep","단일":"single"}[t];}
-var R_TIME_DESC={"전체 시간 부족형":"시험 전체에서 시간에 쫓김 — 푸는 속도 자체가 병목","루틴 부재형":"풀이 순서·페이스 루틴이 잡히지 않음","고난도 집착형":"어려운 문항에 시간을 과투입 — 버리는 판단이 늦음","선택과목 지연형":"선택과목(화작/언매)에서 시간이 샘","독서 지연형":"독서 지문에서 시간이 과다 소모","문학 지연형":"문학에서 시간이 과다 소모","시간 안정형":"시간 운용이 안정적"};
-function rTimeComment(m){var seq=m.time_seq;if(!seq.length)return null;var mode=m.time_mode,desc=R_TIME_DESC[mode]||mode;
-  if(m.time_all_same&&seq.length>=2)return seq.length+'개 회차 모두 <b>'+mode+'</b>으로 답했다 — '+desc+'. 자가 응답이라 단정은 어렵지만, 반복되는 만큼 고착된 패턴일 가능성이 커 먼저 살펴볼 만하다.';
+var R_TIME_DESC={"전체 시간 부족형":"풀이 속도가 느려 시험 전체에서 시간에 쫓기는 경향을 보입니다","루틴 부재형":"풀이 순서와 시간 배분의 루틴이 아직 잡히지 않았습니다","고난도 집착형":"어려운 문항에 시간을 오래 쓰고, 넘어갈지 판단하는 시점이 늦습니다","선택과목 지연형":"선택과목에서 시간이 많이 듭니다","독서 지연형":"독서 지문에서 시간이 많이 듭니다","문학 지연형":"문학에서 시간이 많이 듭니다","시간 안정형":"시간 운용이 안정적입니다"};
+/* 시간 관리 문장(조교 검수 2026-10-11): 합니다체, 회차마다 다르면 그 사실만 적고 '모이지 않았다' 같은 당연한 설명은 하지 않는다 */
+function rTimeComment(m){var seq=m.time_seq;if(!seq.length)return null;var mode=m.time_mode,desc=R_TIME_DESC[mode]||'';
+  if(m.time_all_same&&seq.length>=2)return seq.length+'개 회차 모두 <b>'+mode+'</b>으로, '+desc+'.'
+    +(mode==='시간 안정형'?'':' '+seq.length+'개 회차에서 반복되는 만큼 고착된 패턴일 가능성이 커 주목해야 합니다.');
   var u={};seq.forEach(function(t){u[t]=1;});
   if(Object.keys(u).length>1){var cnt={};seq.forEach(function(t){cnt[t]=(cnt[t]||0)+1;});var mx=Math.max.apply(null,Object.keys(cnt).map(function(k){return cnt[k];}));var tops=Object.keys(cnt).filter(function(k){return cnt[k]===mx;});
-    return '회차별 자가 응답: <b>'+seq.join(' → ')+'</b>. '+(tops.length===1&&mx>=2?'가장 많은 응답은 '+tops[0]+'('+R_TIME_DESC[tops[0]]+')입니다.':Object.keys(cnt).map(function(k){return k+' '+cnt[k]+'회';}).join(', ')+'로 한 가지로 모이지 않았습니다.');}
-  return '<b>'+mode+'</b> — '+desc+'. <span style="color:var(--text-muted)">(학생 자가 응답)</span>';}
+    return '회차별 응답은 <b>'+seq.join(' → ')+'</b>입니다.'+(tops.length===1&&mx>=2?' 가장 많이 답한 <b>'+tops[0]+'</b>은 '+R_TIME_DESC[tops[0]]+'.':'');}
+  return '자가 응답은 <b>'+mode+'</b>입니다.'+(desc?' '+desc+'.':'');}
 function rDonut(m){var sp=m.small_pct,bp=m.big_pct,segs=[];
   if(sp["독서"])segs.push(["독서",sp["독서"],"#d68a8a"]);
   if(sp["문학"])segs.push(["문학",sp["문학"],"#86c9a8"]);
