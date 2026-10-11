@@ -2018,7 +2018,7 @@ function rHeadline(m){
   var tn=t.slice(0,2).map(function(x){return escape(rShort(x));});
   var tp=tn.length>1 ? rJo(tn[0],'과','와')+' '+tn[1] : (tn[0]||'');
   if(g && g.wrong*10<=g.taken && t.length) h=escape(rShort(g))+'에서는 꾸준히 정답을 지키고 있습니다. 앞으로는 '+tp+'에서 오답을 줄이는 데 집중해야 합니다.';
-  else if(t.length) h=tp+'에서 오답이 반복됩니다. '+(tn.length>1?'이 두 유형을':'이 유형을')+' 우선 보완하겠습니다.';
+  else if(t.length) h=tp+'에서 오답이 반복됩니다. '+(tn.length>1?'이 두 유형을':'이 유형을')+' 우선 보완해야 합니다.';
   else h=(m.n>1?'최근 '+m.n+'회 모의고사에서 반복되는 오답은 없습니다.':'이번 모의고사에서는 같은 유형을 두 문항 이상 틀린 경우가 없습니다.');
   if(c) sub=rSkillName(c.good)+' '+c.good.taken+'문항은 '+(c.good.wrong?c.good.wrong+'문항만 틀렸지만':'모두 맞혔지만')+', '+rSkillName(c.weak)+'에서는 '+c.weak.taken+'문항 중 '+c.weak.wrong+'문항을 틀렸습니다.';
   else if(t[0]) sub=rSkillName(t[0])+'에서 '+t[0].taken+'문항 중 '+t[0].wrong+'문항을 틀렸고, '+m.n+'회 누적 실점은 '+t[0].lost+'점입니다.';
