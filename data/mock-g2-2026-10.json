@@ -9,13 +9,13 @@
   "grade": "고2",
   "type": "전국연합학력평가",
   "totalQuestions": 45,
-  "gradeCutsPending": true,
+  "gradeCutsPending": false,
   "course": "g2",
   "classes": [
    "g2",
    "mexx"
   ],
-  "maxStd": 140,
+  "maxStd": 137,
   "unified": true,
   "structure": {
    "common": {
@@ -25,201 +25,201 @@
    }
   }
  },
- "gradeCutsPending": true,
+ "gradeCutsPending": false,
  "gradeCuts": {
   "common": [
    {
     "grade": 1,
-    "raw": 90,
-    "std": 132,
+    "raw": 93,
+    "std": 131,
     "pct": 96,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 2,
-    "raw": 83,
+    "raw": 86,
     "std": 126,
     "pct": 89,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 3,
-    "raw": 73,
+    "raw": 76,
     "std": 118,
     "pct": 77,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 4,
-    "raw": 60,
-    "std": 107,
-    "pct": 59,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "raw": 61,
+    "std": 106,
+    "pct": 60,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 5,
-    "raw": 43,
-    "std": 93,
+    "raw": 46,
+    "std": 94,
     "pct": 40,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 6,
     "raw": 28,
-    "std": 81,
+    "std": 79,
     "pct": 23,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 7,
     "raw": 20,
-    "std": 74,
+    "std": 73,
     "pct": 11,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 8,
     "raw": 14,
-    "std": 69,
-    "pct": 5,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "std": 68,
+    "pct": 4,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 9,
     "raw": 0,
-    "std": 58,
-    "pct": 0,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "std": null,
+    "pct": null,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    }
   ],
   "hs": [
    {
     "grade": 1,
-    "raw": 90,
-    "std": 132,
+    "raw": 93,
+    "std": 131,
     "pct": 96,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 2,
-    "raw": 83,
+    "raw": 86,
     "std": 126,
     "pct": 89,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 3,
-    "raw": 73,
+    "raw": 76,
     "std": 118,
     "pct": 77,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 4,
-    "raw": 60,
-    "std": 107,
-    "pct": 59,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "raw": 61,
+    "std": 106,
+    "pct": 60,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 5,
-    "raw": 43,
-    "std": 93,
+    "raw": 46,
+    "std": 94,
     "pct": 40,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 6,
     "raw": 28,
-    "std": 81,
+    "std": 79,
     "pct": 23,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 7,
     "raw": 20,
-    "std": 74,
+    "std": 73,
     "pct": 11,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 8,
     "raw": 14,
-    "std": 69,
-    "pct": 5,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "std": 68,
+    "pct": 4,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 9,
     "raw": 0,
-    "std": 58,
-    "pct": 0,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "std": null,
+    "pct": null,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    }
   ],
   "lm": [
    {
     "grade": 1,
-    "raw": 90,
-    "std": 132,
+    "raw": 93,
+    "std": 131,
     "pct": 96,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 2,
-    "raw": 83,
+    "raw": 86,
     "std": 126,
     "pct": 89,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 3,
-    "raw": 73,
+    "raw": 76,
     "std": 118,
     "pct": 77,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 4,
-    "raw": 60,
-    "std": 107,
-    "pct": 59,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "raw": 61,
+    "std": 106,
+    "pct": 60,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 5,
-    "raw": 43,
-    "std": 93,
+    "raw": 46,
+    "std": 94,
     "pct": 40,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 6,
     "raw": 28,
-    "std": 81,
+    "std": 79,
     "pct": 23,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 7,
     "raw": 20,
-    "std": 74,
+    "std": 73,
     "pct": 11,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 8,
     "raw": 14,
-    "std": 69,
-    "pct": 5,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "std": 68,
+    "pct": 4,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    },
    {
     "grade": 9,
     "raw": 0,
-    "std": 58,
-    "pct": 0,
-    "source": "임시(2025년 10월 고2 등급컷)"
+    "std": null,
+    "pct": null,
+    "source": "EBSi 풀서비스 예상 등급컷(2026.10.20)"
    }
   ]
  },
