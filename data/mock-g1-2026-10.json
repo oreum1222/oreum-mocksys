@@ -10,7 +10,7 @@
   "type": "전국연합학력평가",
   "totalQuestions": 45,
   "gradeCutsPending": false,
-  "course": "g2",
+  "course": "seminar",
   "classes": [
    "g2",
    "mexx"

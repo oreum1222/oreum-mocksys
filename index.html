@@ -371,11 +371,12 @@ body{
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261025b';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261025c';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
   { key:'g2', label:'고2 수능 정규반', short:'고2', footer:'오름 국어학원 고2 수능 정규반', empty:'고2 수능 정규반 회차는 준비 중입니다.<br>첫 회차가 올라오면 이 자리에 표시됩니다.' },
+  { key:'seminar', label:'설명회 특별판', short:'고1', footer:'오름 국어학원 설명회 특별판', empty:'설명회 특별판 회차는 준비 중입니다.' },
   { key:'yaksul', label:'약술형 논술', short:'약술', footer:'오름 국어학원 약술형 논술', empty:'약술형 논술 회차는 준비 중입니다.' }
 ];
 function courseOf(meta){ return (meta && meta.course) || 'g3'; }
@@ -404,8 +405,8 @@ const LOGO_URL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+
 
 const EXAM_LIST = [
   {
-    id: 'g1-2026-10', file: 'data/mock-g1-2026-10.json', course: 'g2', grade: '고1',
-    no: '설명회 특별판', tagDate: '2026년 10월 · 고1 전국연합학력평가(교육청)',
+    id: 'g1-2026-10', file: 'data/mock-g1-2026-10.json', course: 'seminar', grade: '고1',
+    no: '제 1 회', tagDate: '2026년 10월 · 고1 전국연합학력평가(교육청)',
     status: 'tentative', statusLabel: '가채점 (EBSi 예상 등급컷)'
   },
   {
@@ -1092,7 +1093,7 @@ function renderStep1(){
       renderYakApply(()=>{ STATE.apply = yakApplySnapshot(); })) : '',
     isYaksul() ? '' : isUnified() ? el('div',{class:'form-row'},
       el('label',{},'선택 과목'),
-      el('div',{class:'unified-note'}, courseOf(STATE.data && STATE.data.examMeta)==='g2' ? ((STATE.data.examMeta.grade==='고1' ? '고1' : '고2')+' 학력평가는 선택과목 없이 1~45번 전체가 공통입니다.') : '이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
+      el('div',{class:'unified-note'}, (STATE.data.examMeta.grade==='고1' || courseOf(STATE.data && STATE.data.examMeta)==='g2') ? ((STATE.data.examMeta.grade==='고1' ? '고1' : '고2')+' 학력평가는 선택과목 없이 1~45번 전체가 공통입니다.') : '이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
     ) : el('div',{class:'form-row'},
       el('label',{},'선택 과목 ', el('span',{class:'req'},'*')),
       el('div',{class:'radio-group'},
