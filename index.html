@@ -404,6 +404,14 @@ body.landing .corner-logo{display:none}
 .score-num{font-weight:800;letter-spacing:-1px}
 .pattern-action,.q-detail-rem,.parent-note,.submit-msg,.tree-btn{border-radius:12px}
 .grade-badge{background:var(--accent);color:#0b0c15}
+.parent-skip-sec{padding:20px 22px}
+.parent-skip{display:flex;align-items:flex-start;gap:14px;width:100%;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:inherit;font-family:inherit}
+.parent-skip-box{flex:0 0 auto;width:22px;height:22px;margin-top:2px;border-radius:6px;border:1.5px solid var(--border-soft);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#0b0c15;transition:all .15s}
+.parent-skip:hover .parent-skip-box{border-color:var(--accent)}
+.parent-skip.on .parent-skip-box{background:var(--accent);border-color:var(--accent)}
+.parent-skip-txt{display:flex;flex-direction:column;gap:4px}
+.parent-skip-k{font-weight:700;color:var(--cream);font-size:.98rem}
+.parent-skip-s{font-size:.84rem;color:var(--text-muted);line-height:1.6}
 </style>
 </head>
 <body class="landing">
@@ -417,7 +425,7 @@ body.landing .corner-logo{display:none}
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261026b';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261026c';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -1247,6 +1255,21 @@ function areaBlock(title, questions, scope){
 // ─── Step 3: 시간 진단 ───
 function renderStep3(){
   if(isYaksul()){ STATE.step=4; return renderDiag(); }   // 약술은 시간 진단 단계가 없다
+  // 설명회 특별판: 학부모님이 대신 응답하면 시험 중 상황(고른 답, 시간 사용)을 모르므로 이 단계를 건너뛸 수 있다
+  if(isSeminar_()){
+    const pb = el('button',{type:'button', class:'parent-skip'+(STATE.parentMode?' on':''), onclick:()=>{ STATE.parentMode=!STATE.parentMode; renderDiag(); }},
+      el('span',{class:'parent-skip-box'}, STATE.parentMode?'✓':''),
+      el('span',{class:'parent-skip-txt'},
+        el('span',{class:'parent-skip-k'},'학부모님 응답: 시험 중 자세한 상황은 모릅니다'),
+        el('span',{class:'parent-skip-s'},'학생이 고른 답과 시간 사용을 모르시면 체크해 주세요. 이 단계를 건너뛰고 결과로 넘어갑니다.')));
+    root.appendChild(el('div',{class:'section parent-skip-sec'}, pb));
+    if(STATE.parentMode){
+      root.appendChild(el('div',{class:'btn-row'},
+        el('button',{class:'btn btn-ghost', onclick:()=>{STATE.step=2; renderDiag();}},'← 이전'),
+        el('button',{class:'btn btn-primary', onclick:()=>goToResult()},'진단 결과 보기 →')));
+      return;
+    }
+  }
   root.appendChild(renderPickBox_());
   root.appendChild(renderTimeShortBox_());
   const intro = el('div',{class:'section'},
@@ -1364,10 +1387,11 @@ function checkPickAndTime_(){
   say(''); return true;
 }
 // 시트에 싣는 글: '3:②, 37:④' / '38-45, 30-34' / '없음'
-function pkPickText_(){ return pkSortKeys_().map(k=>String(k).split('-')[1]+':'+(STATE.pick[k]||'')).join(', '); }
-function pkTimeText_(){ const ts = STATE.timeShort||{}; if(ts.state==='no') return '없음'; const r = pkRangesClean_(); return r.length ? r.map(x=>x.from+'-'+x.to).join(', ') : ''; }
+function pkPickText_(){ if(STATE.parentMode && isSeminar_()) return '학부모 응답(모름)'; return pkSortKeys_().map(k=>String(k).split('-')[1]+':'+(STATE.pick[k]||'')).join(', '); }
+function pkTimeText_(){ if(STATE.parentMode && isSeminar_()) return '학부모 응답(모름)'; const ts = STATE.timeShort||{}; if(ts.state==='no') return '없음'; const r = pkRangesClean_(); return r.length ? r.map(x=>x.from+'-'+x.to).join(', ') : ''; }
 function goToResult(){
   STATE.result = computeResult();
+  if(STATE.parentMode && isSeminar_()) STATE.result.timeDiag = null;   // 학부모 응답: 시간 진단 생략
   STATE.step = 4;
   STATE.autoSubmitted = false;  // 결과를 새로 산출했으므로 자동 전송 1회 허용
   STATE.teacherView = false;    // 학생 정식 응시 경로
@@ -1547,6 +1571,11 @@ function renderStep4(){
   root.appendChild(pBlock);
 
   // 시간 진단
+  if(!r.timeDiag && STATE.parentMode && isSeminar_()){
+    root.appendChild(el('div',{class:'diag-section'},
+      el('div',{class:'diag-section-title'},'시간 진단'),
+      el('p',{class:'pattern-diag'},'학부모님 응답으로 진행해 시간 진단은 생략했습니다. 학생이 직접 응답하면 시간 사용 습관까지 함께 진단합니다.')));
+  }
   if(r.timeDiag){
     root.appendChild(el('div',{class:'diag-section'},
       el('div',{class:'diag-section-title'},'시간 진단'),
