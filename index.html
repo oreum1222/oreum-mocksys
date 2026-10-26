@@ -417,7 +417,7 @@ body.landing .corner-logo{display:none}
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261026a';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261026b';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -1122,6 +1122,8 @@ function shortArea(area){
   return head.slice(0,6);
 }
 // 통합 체제 회차(선택과목 없던 2018·2019 수능 등) 여부 — JSON examMeta.unified
+// 설명회 특별판 탭 회차 여부(이름 칸을 닉네임 허용으로 바꾼다)
+function isSeminar_(){ return courseOf(STATE.data && STATE.data.examMeta)==='seminar'; }
 function isUnified(){ return !!(STATE.data && STATE.data.examMeta && STATE.data.examMeta.unified); }
 // 채점·마킹에 쓸 유효 선택 키 (통합 회차는 항상 common)
 function activeChoice(){ return isUnified() ? 'common' : STATE.student.choice; }
@@ -1130,8 +1132,11 @@ function activeChoice(){ return isUnified() ? 'common' : STATE.student.choice; }
 function renderStep1(){
   const form = el('div',{class:'section'},
     el('h2',{class:'section-title'},'학생 정보'),
-    el('p',{class:'section-desc'},'결과 리포트가 학원 시트에 누적됩니다. 정확히 입력해 주세요.'),
-    formRow('이름','text','name', STATE.student.name),
+    isSeminar_()
+      ? el('p',{class:'section-desc'},'설명회 체험용 진단입니다. 실명을 남기고 싶지 않다면 닉네임을 써도 됩니다. 나중에 결과를 다시 볼 때는 같은 닉네임과 학교로 입력하세요.')
+      : el('p',{class:'section-desc'},'결과 리포트가 학원 시트에 누적됩니다. 정확히 입력해 주세요.'),
+    isSeminar_() ? formRow('이름 또는 닉네임','text','name', STATE.student.name, '실명이 아니어도 됩니다. 예: 국어고수')
+                 : formRow('이름','text','name', STATE.student.name),
     formRow('학교','text','school', STATE.student.school, '예: 산본고'),
     formRow('학년','select','grade', STATE.student.grade, null, isYaksul() ? ['고3','N수'] : [STATE.student.grade || '고3']),
     isYaksul() ? el('div',{class:'form-row form-row-wide'}, el('label',{},'지원 정보'),
@@ -1180,7 +1185,7 @@ function radioPill(name, val, label, selected){
 }
 function nextFromStep1(){
   const s = STATE.student;
-  if(!s.name?.trim()) return alert('이름을 입력해 주세요.');
+  if(!s.name?.trim()) return alert(isSeminar_() ? '이름이나 닉네임을 입력해 주세요.' : '이름을 입력해 주세요.');
   if(!s.school?.trim()) return alert('학교를 입력해 주세요.');
   if(!isYaksul() && !isUnified() && !s.choice) return alert('선택 과목을 선택해 주세요.');
   STATE.step = 2; renderDiag();
@@ -2176,6 +2181,7 @@ function submitResult(isManual){
     시간진단: (!isYaksul() && r.timeDiag) ? r.timeDiag.label : '',
     선택선지: isYaksul() ? '' : pkPickText_(),
     시간부족: isYaksul() ? '' : pkTimeText_(),
+    유입: srcTag_(),
     제출방식: isManual ? '재전송(수동)' : '자동',
     // 강사 메일용 풍부한 진단 데이터
     patternsJson: JSON.stringify(r.patterns.map(p=>({
@@ -2249,10 +2255,26 @@ function submitResult(isManual){
 }
 
 // ─────────────────── Init ───────────────────
+
+// ─── 유입 집계(2026-10-26): ?src=값 링크(설명회 QR 등)로 들어오면 그 기기에서 처음 한 번만 서버에 알린다 ───
+// 개인 정보는 보내지 않는다(유입 값, 강좌 탭, 모바일/PC만). 같은 기기에서 제출하면 제출 시트 '유입' 칸에도 남는다.
+function srcTag_(){ try{ return sessionStorage.getItem('oreum_src') || localStorage.getItem('oreum_src') || ''; }catch(e){ return ''; } }
+function logVisit_(params){
+  const src = String(params.get('src')||'').trim();
+  if(!/^[0-9A-Za-z가-힣_-]{1,40}$/.test(src)) return;
+  try{ sessionStorage.setItem('oreum_src', src); localStorage.setItem('oreum_src', src); }catch(e){}
+  let seen = false;
+  try{ seen = localStorage.getItem('oreum_visit_'+src)==='1'; }catch(e){}
+  if(seen || !SCRIPT_URL || SCRIPT_URL.includes('PASTE_YOUR')) return;
+  const m = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'mobile' : 'pc';
+  const url = SCRIPT_URL+'?action=visit&src='+encodeURIComponent(src)+'&course='+encodeURIComponent(params.get('course')||'')+'&m='+m;
+  fetch(url,{mode:'no-cors'}).then(()=>{ try{ localStorage.setItem('oreum_visit_'+src,'1'); }catch(e){} }).catch(()=>{});
+}
 loadConfig().then(()=>{
   document.getElementById('loading').style.display = 'none';
   root.style.display = '';
   const params = new URLSearchParams(window.location.search);
+  logVisit_(params);
 
   // 강사용 — 학생 결과 재현 (대시보드에서 클릭)
   const reportExamId = params.get('report');
