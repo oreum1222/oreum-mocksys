@@ -412,6 +412,21 @@ body.landing .corner-logo{display:none}
 .parent-skip-txt{display:flex;flex-direction:column;gap:4px}
 .parent-skip-k{font-weight:700;color:var(--cream);font-size:.98rem}
 .parent-skip-s{font-size:.84rem;color:var(--text-muted);line-height:1.6}
+.sw-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media (max-width:640px){.sw-grid{grid-template-columns:1fr}}
+.sw-card{background:var(--bg-dark);border:1px solid var(--border-line);border-radius:14px;padding:20px 22px}
+.sw-strong{border-color:rgba(165,174,240,.45)}
+.sw-h{font-size:.82rem;font-weight:700;letter-spacing:2px;margin-bottom:12px;color:var(--accent)}
+.sw-weak .sw-h{color:var(--danger)}
+.sw-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin:0;padding:0}
+.sw-list li{font-size:.9rem;line-height:1.65;color:var(--text-secondary);padding-left:14px;position:relative}
+.sw-list li::before{content:'';position:absolute;left:0;top:.7em;width:5px;height:5px;border-radius:50%;background:var(--border-soft)}
+.sw-list li b{color:var(--cream);font-weight:700}
+.sw-sub{display:block;font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.sw-list li.sw-hook{color:var(--cream);padding:12px 14px;margin-top:4px;background:rgba(165,174,240,.07);border-radius:10px}
+.sw-weak .sw-list li.sw-hook{background:rgba(224,143,143,.07)}
+.sw-list li.sw-hook::before{display:none}
+.sw-note{margin-top:14px;font-size:.8rem;color:var(--text-muted);line-height:1.7}
 </style>
 </head>
 <body class="landing">
@@ -425,7 +440,7 @@ body.landing .corner-logo{display:none}
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261026c';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261026d';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -1548,6 +1563,9 @@ function renderStep4(){
     )
   ));
 
+  // 설명회 특별판: 이번 오답으로 본 강점과 약점
+  if(isSeminar_()){ const sw = renderStrengthWeak_(); if(sw) root.appendChild(sw); }
+
   // 약점 패턴
   const pBlock = el('div',{class:'diag-section'},
     el('div',{class:'diag-section-title'}, '핵심 약점 패턴')
@@ -2285,6 +2303,72 @@ function submitResult(isManual){
 
 // ─────────────────── Init ───────────────────
 
+
+// ─── 강점과 약점(설명회 특별판, 2026-10-26) ───
+// 이번 시험 한 회차의 오답만으로 본 것이라 단정하지 않고, 전국 실측 오답률(EBSi)이 있는 문항만 숫자로 말한다.
+function swGroup_(area){
+  const a = String(area||'');
+  if(/문법|언어/.test(a)) return '문법';
+  if(/독서/.test(a)) return '독서';
+  if(/문학|소설|시가|현대시|수필/.test(a)) return '문학';
+  return '화법과 작문';
+}
+function swEsc_(t){ return String(t==null?'':t).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function renderStrengthWeak_(){
+  const d = STATE.data; if(!d || !d.questions || !d.questions.common) return null;
+  const qs = d.questions.common, wrong = STATE.wrong;
+  const isWrong = q => wrong.has('common-'+q.no);
+  const ORDER = ['화법과 작문','문법','독서','문학'];
+  const g = {}; ORDER.forEach(k=>g[k]={n:0,w:0,nos:[]});
+  qs.forEach(q=>{ const k=swGroup_(q.area); g[k].n++; if(isWrong(q)){ g[k].w++; g[k].nos.push(q.no); } });
+  const measured = q => /실측/.test(q.wrSource||'');
+  // 강점: 전국 실측 오답률이 높은데 맞힌 문항, 하나도 틀리지 않은 영역
+  const hardHits = qs.filter(q=>!isWrong(q) && measured(q) && (q.wr||0)>=50).sort((a,b)=>b.wr-a.wr).slice(0,3);
+  const perfect = ORDER.filter(k=>g[k].n && !g[k].w);
+  // 약점: 틀린 문항이 많이 몰린 영역(비율), 많은 학생이 맞힌 편인데 놓친 문항, 고난도 오답
+  const weakAreas = ORDER.filter(k=>g[k].w).sort((a,b)=>(g[b].w/g[b].n)-(g[a].w/g[a].n));
+  const easyMiss = qs.filter(q=>isWrong(q) && !measured(q) && (q.wr||100)<=20).map(q=>q.no);
+  const hardMiss = qs.filter(q=>isWrong(q) && measured(q) && (q.wr||0)>=50).sort((a,b)=>b.wr-a.wr);
+
+  const sec = el('div',{class:'diag-section sw-sec'}, el('div',{class:'diag-section-title'},'이번 시험으로 본 강점과 약점'));
+  const grid = el('div',{class:'sw-grid'});
+  const strong = el('div',{class:'sw-card sw-strong'}, el('div',{class:'sw-h'},'강점'));
+  const sl = el('ul',{class:'sw-list'});
+  hardHits.forEach(q=>{
+    const n10 = Math.round(q.wr/10);
+    sl.appendChild(el('li',{html:'<b>'+q.no+'번</b>을 맞혔습니다. 전국 응시생 <b>10명 중 '+n10+'명</b>이 틀린 문항입니다.<span class="sw-sub">'+swEsc_(q.area)+', '+swEsc_(q.type)+'</span>'}));
+  });
+  perfect.forEach(k=>sl.appendChild(el('li',{html:'<b>'+k+'</b> '+g[k].n+'문항을 모두 맞혔습니다.'})));
+  if(!sl.children.length){
+    const best = ORDER.filter(k=>g[k].n).sort((a,b)=>(g[a].w/g[a].n)-(g[b].w/g[b].n))[0];
+    if(best) sl.appendChild(el('li',{html:'네 영역 가운데 <b>'+best+'</b>의 정답률이 가장 높습니다('+(g[best].n-g[best].w)+'/'+g[best].n+'문항).'}));
+  }
+  if(hardHits.length) sl.appendChild(el('li',{class:'sw-hook',html:'많은 학생이 흔들린 문항을 맞혔다는 것은 지문의 조건을 끝까지 따라가는 힘이 이미 있다는 뜻입니다. 이 힘은 고2, 고3으로 갈수록 등급을 가르는 문항에서 쓰입니다.'}));
+  strong.appendChild(sl);
+
+  const weak = el('div',{class:'sw-card sw-weak'}, el('div',{class:'sw-h'},'보완할 점'));
+  const wl = el('ul',{class:'sw-list'});
+  if(!wrong.size){
+    wl.appendChild(el('li',{},'이번 시험에서 표시한 오답이 없습니다. 다음 회차에서도 같은 흐름이 유지되는지 확인하면 됩니다.'));
+  } else {
+    weakAreas.slice(0,2).forEach(k=>{
+      wl.appendChild(el('li',{html:'<b>'+k+'</b>에서 '+g[k].n+'문항 중 '+g[k].w+'문항을 놓쳤습니다('+g[k].nos.join(', ')+'번).'}));
+    });
+    if(easyMiss.length) wl.appendChild(el('li',{html:'많은 학생이 맞힌 편으로 보이는 문항('+easyMiss.join(', ')+'번)을 놓쳤습니다. 실수인지 개념이 흔들린 것인지 아래 문항 분석에서 먼저 확인해 보세요.'}));
+    if(hardMiss.length) wl.appendChild(el('li',{html:'놓친 문항 가운데 '+hardMiss.map(q=>q.no+'번').join(', ')+'은 전국에서도 오답이 많았던 고난도 문항입니다. 이런 문항은 풀이 순서를 익히면 가장 빨리 점수로 바뀝니다.'}));
+    const HOOK = {
+      '문법':'문법은 고2부터 언어와 매체로 이어집니다. 개념의 조건이 한 번 흔들리면 같은 유형에서 계속 틀리기 쉬워, 지금 원인을 짚어 두는 것이 가장 효율적입니다.',
+      '독서':'독서에서 생긴 오답은 학년이 올라 지문이 길어질수록 차이가 더 벌어지기 쉽습니다. 지금 원인을 짚어 두면 고2, 고3에서 시간을 벌 수 있습니다.',
+      '문학':'문학 오답은 대개 선지의 한 조각을 작품에서 확인하지 않을 때 생깁니다. 확인 순서만 잡아도 고2, 고3에서 가장 먼저 안정되는 영역입니다.',
+      '화법과 작문':'화법과 작문은 근거 문장을 찾는 습관만 잡히면 빠르게 안정되는 영역입니다. 지금 잡아 두면 고3에서 독서와 문학에 쓸 시간을 벌 수 있습니다.'
+    };
+    if(weakAreas[0]) wl.appendChild(el('li',{class:'sw-hook',html:'<b>'+weakAreas[0]+'</b>: '+HOOK[weakAreas[0]]}));
+  }
+  weak.appendChild(wl);
+  grid.appendChild(strong); grid.appendChild(weak); sec.appendChild(grid);
+  sec.appendChild(el('p',{class:'sw-note'},'이 분석은 시험 한 번, 스스로 표시한 오답만으로 본 결과라 데이터가 많지 않습니다. 한 번의 실수와 반복되는 약점을 정확히 가르려면 2~3회의 결과를 이어서 보는 것이 좋습니다.'));
+  return sec;
+}
 // ─── 유입 집계(2026-10-26): ?src=값 링크(설명회 QR 등)로 들어오면 그 기기에서 처음 한 번만 서버에 알린다 ───
 // 개인 정보는 보내지 않는다(유입 값, 강좌 탭, 모바일/PC만). 같은 기기에서 제출하면 제출 시트 '유입' 칸에도 남는다.
 function srcTag_(){ try{ return sessionStorage.getItem('oreum_src') || localStorage.getItem('oreum_src') || ''; }catch(e){ return ''; } }
