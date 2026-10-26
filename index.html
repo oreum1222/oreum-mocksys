@@ -440,7 +440,7 @@ body.landing .corner-logo{display:none}
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261026d';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261026e';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -1563,8 +1563,8 @@ function renderStep4(){
     )
   ));
 
-  // 설명회 특별판: 이번 오답으로 본 강점과 약점
-  if(isSeminar_()){ const sw = renderStrengthWeak_(); if(sw) root.appendChild(sw); }
+  // 이번 오답으로 본 강점과 약점(모든 수능 회차)
+  { const sw = renderStrengthWeak_(); if(sw) root.appendChild(sw); }
 
   // 약점 패턴
   const pBlock = el('div',{class:'diag-section'},
@@ -2304,46 +2304,70 @@ function submitResult(isManual){
 // ─────────────────── Init ───────────────────
 
 
-// ─── 강점과 약점(설명회 특별판, 2026-10-26) ───
-// 이번 시험 한 회차의 오답만으로 본 것이라 단정하지 않고, 전국 실측 오답률(EBSi)이 있는 문항만 숫자로 말한다.
-function swGroup_(area){
+// ─── 강점과 약점(모든 수능 회차, 2026-10-26) ───
+// 이번 시험 한 회차의 오답만으로 본 것이라 단정하지 않는다. 오답률은 출처에 따라 문구를 나누고, '추정'치는 숫자로 말하지 않는다.
+function swGroup_(area, scope){
+  if(scope==='lm') return '언어와 매체';
+  if(scope==='hs') return '화법과 작문';
   const a = String(area||'');
-  if(/문법|언어/.test(a)) return '문법';
   if(/독서/.test(a)) return '독서';
   if(/문학|소설|시가|현대시|수필/.test(a)) return '문학';
+  if(/매체/.test(a)) return '매체';
+  if(/문법|언어|언매/.test(a)) return '문법';
   return '화법과 작문';
+}
+function swGrade_(){
+  const m = (STATE.data && STATE.data.examMeta) || {};
+  if(m.grade) return m.grade;
+  return courseOf(m)==='g2' ? '고2' : '고3';
+}
+// 오답률 출처별 문장. null이면 숫자로 말하지 않는다.
+function swRateText_(q){
+  const src = String(q.wrSource||''), wr = q.wr||0;
+  if(!(wr>0) || /추정/.test(src)) return null;
+  const n10 = Math.round(wr/10);
+  if(/실측/.test(src)) return '전국 응시생 <b>10명 중 '+n10+'명</b>이 틀린 문항입니다.';
+  if(/채점/.test(src)) return '채점 집계에서 <b>10명 중 '+n10+'명</b>이 틀린 문항입니다.';
+  if(/예상/.test(src)) return '예상 오답률 <b>'+Math.round(wr)+'%</b>의 고난도 문항입니다.';
+  return '오답률 <b>'+Math.round(wr)+'%</b>의 고난도 문항입니다.';
 }
 function swEsc_(t){ return String(t==null?'':t).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function renderStrengthWeak_(){
   const d = STATE.data; if(!d || !d.questions || !d.questions.common) return null;
-  const qs = d.questions.common, wrong = STATE.wrong;
-  const isWrong = q => wrong.has('common-'+q.no);
-  const ORDER = ['화법과 작문','문법','독서','문학'];
+  const choice = STATE.student && STATE.student.choice;
+  const items = d.questions.common.map(q=>({q, key:'common-'+q.no, scope:'common'}));
+  if(!isUnified() && choice && d.questions[choice]) d.questions[choice].forEach(q=>items.push({q, key:choice+'-'+q.no, scope:choice}));
+  const wrong = STATE.wrong;
+  const isWrong = it => wrong.has(it.key);
+  const g3 = swGrade_()==='고3';
+  const ORDER = ['화법과 작문','문법','매체','언어와 매체','독서','문학'];
   const g = {}; ORDER.forEach(k=>g[k]={n:0,w:0,nos:[]});
-  qs.forEach(q=>{ const k=swGroup_(q.area); g[k].n++; if(isWrong(q)){ g[k].w++; g[k].nos.push(q.no); } });
-  const measured = q => /실측/.test(q.wrSource||'');
-  // 강점: 전국 실측 오답률이 높은데 맞힌 문항, 하나도 틀리지 않은 영역
-  const hardHits = qs.filter(q=>!isWrong(q) && measured(q) && (q.wr||0)>=50).sort((a,b)=>b.wr-a.wr).slice(0,3);
-  const perfect = ORDER.filter(k=>g[k].n && !g[k].w);
-  // 약점: 틀린 문항이 많이 몰린 영역(비율), 많은 학생이 맞힌 편인데 놓친 문항, 고난도 오답
-  const weakAreas = ORDER.filter(k=>g[k].w).sort((a,b)=>(g[b].w/g[b].n)-(g[a].w/g[a].n));
-  const easyMiss = qs.filter(q=>isWrong(q) && !measured(q) && (q.wr||100)<=20).map(q=>q.no);
-  const hardMiss = qs.filter(q=>isWrong(q) && measured(q) && (q.wr||0)>=50).sort((a,b)=>b.wr-a.wr);
+  items.forEach(it=>{ const k=swGroup_(it.q.area, it.scope); g[k].n++; if(isWrong(it)){ g[k].w++; g[k].nos.push(it.q.no); } });
+  const groups = ORDER.filter(k=>g[k].n);
+  const reliable = it => !!swRateText_(it.q);
+  // 강점: 오답률이 높은데 맞힌 문항, 하나도 틀리지 않은 영역
+  const hardHits = items.filter(it=>!isWrong(it) && reliable(it) && it.q.wr>=50).sort((a,b)=>b.q.wr-a.q.wr).slice(0,3);
+  const perfect = groups.filter(k=>!g[k].w);
+  // 약점: 틀린 문항이 몰린 영역(비율), 많은 학생이 맞힌 편인데 놓친 문항, 고난도 오답
+  const weakAreas = groups.filter(k=>g[k].w).sort((a,b)=>(g[b].w/g[b].n)-(g[a].w/g[a].n));
+  const easyMiss = items.filter(it=>isWrong(it) && it.q.wr>0 && it.q.wr<=20).map(it=>it.q.no);
+  const hardMiss = items.filter(it=>isWrong(it) && reliable(it) && it.q.wr>=50).sort((a,b)=>b.q.wr-a.q.wr);
 
   const sec = el('div',{class:'diag-section sw-sec'}, el('div',{class:'diag-section-title'},'이번 시험으로 본 강점과 약점'));
   const grid = el('div',{class:'sw-grid'});
   const strong = el('div',{class:'sw-card sw-strong'}, el('div',{class:'sw-h'},'강점'));
   const sl = el('ul',{class:'sw-list'});
-  hardHits.forEach(q=>{
-    const n10 = Math.round(q.wr/10);
-    sl.appendChild(el('li',{html:'<b>'+q.no+'번</b>을 맞혔습니다. 전국 응시생 <b>10명 중 '+n10+'명</b>이 틀린 문항입니다.<span class="sw-sub">'+swEsc_(q.area)+', '+swEsc_(q.type)+'</span>'}));
+  hardHits.forEach(it=>{
+    sl.appendChild(el('li',{html:'<b>'+it.q.no+'번</b>을 맞혔습니다. '+swRateText_(it.q)+'<span class="sw-sub">'+swEsc_(String(it.q.area||'').replace(/^([^>]+)>(.+)$/,'$1($2)'))+', '+swEsc_(it.q.type)+'</span>'}));
   });
   perfect.forEach(k=>sl.appendChild(el('li',{html:'<b>'+k+'</b> '+g[k].n+'문항을 모두 맞혔습니다.'})));
   if(!sl.children.length){
-    const best = ORDER.filter(k=>g[k].n).sort((a,b)=>(g[a].w/g[a].n)-(g[b].w/g[b].n))[0];
-    if(best) sl.appendChild(el('li',{html:'네 영역 가운데 <b>'+best+'</b>의 정답률이 가장 높습니다('+(g[best].n-g[best].w)+'/'+g[best].n+'문항).'}));
+    const best = groups.slice().sort((a,b)=>(g[a].w/g[a].n)-(g[b].w/g[b].n))[0];
+    if(best) sl.appendChild(el('li',{html:'영역 가운데 <b>'+best+'</b>의 정답률이 가장 높습니다('+(g[best].n-g[best].w)+'/'+g[best].n+'문항).'}));
   }
-  if(hardHits.length) sl.appendChild(el('li',{class:'sw-hook',html:'많은 학생이 흔들린 문항을 맞혔다는 것은 지문의 조건을 끝까지 따라가는 힘이 이미 있다는 뜻입니다. 이 힘은 고2, 고3으로 갈수록 등급을 가르는 문항에서 쓰입니다.'}));
+  if(hardHits.length) sl.appendChild(el('li',{class:'sw-hook',html: g3
+    ? '많은 학생이 흔들린 문항을 맞혔다는 것은 지문의 조건을 끝까지 따라가는 힘이 이미 있다는 뜻입니다. 수능에서 등급을 가르는 것도 바로 이런 문항입니다.'
+    : '많은 학생이 흔들린 문항을 맞혔다는 것은 지문의 조건을 끝까지 따라가는 힘이 이미 있다는 뜻입니다. 이 힘은 고2, 고3으로 갈수록 등급을 가르는 문항에서 쓰입니다.'}));
   strong.appendChild(sl);
 
   const weak = el('div',{class:'sw-card sw-weak'}, el('div',{class:'sw-h'},'보완할 점'));
@@ -2355,14 +2379,22 @@ function renderStrengthWeak_(){
       wl.appendChild(el('li',{html:'<b>'+k+'</b>에서 '+g[k].n+'문항 중 '+g[k].w+'문항을 놓쳤습니다('+g[k].nos.join(', ')+'번).'}));
     });
     if(easyMiss.length) wl.appendChild(el('li',{html:'많은 학생이 맞힌 편으로 보이는 문항('+easyMiss.join(', ')+'번)을 놓쳤습니다. 실수인지 개념이 흔들린 것인지 아래 문항 분석에서 먼저 확인해 보세요.'}));
-    if(hardMiss.length) wl.appendChild(el('li',{html:'놓친 문항 가운데 '+hardMiss.map(q=>q.no+'번').join(', ')+'은 전국에서도 오답이 많았던 고난도 문항입니다. 이런 문항은 풀이 순서를 익히면 가장 빨리 점수로 바뀝니다.'}));
-    const HOOK = {
+    if(hardMiss.length) wl.appendChild(el('li',{html:'놓친 문항 가운데 '+hardMiss.slice(0,3).map(it=>it.q.no+'번').join(', ')+(hardMiss.length>3?' 등 '+hardMiss.length+'문항':'')+'은 오답이 많았던 고난도 문항입니다. 이런 문항은 풀이 순서를 익히면 가장 빨리 점수로 바뀝니다.'}));
+    const HOOK = g3 ? {
+      '독서':'독서 오답은 시간 압박이 커지는 수능 현장에서 더 늘어나기 쉽습니다. 지금 원인을 짚어 두면 수능까지 남은 기간에 가장 크게 줄일 수 있는 오답입니다.',
+      '문학':'문학 오답은 대개 선지의 한 조각을 작품에서 확인하지 않을 때 생깁니다. 확인 순서만 잡아도 수능 전에 가장 먼저 안정되는 영역입니다.',
+      '화법과 작문':'화법과 작문은 근거 문장을 찾는 습관만 잡히면 빠르게 안정되는 영역입니다. 여기서 시간을 줄이면 독서와 문학에 쓸 시간을 벌 수 있습니다.',
+      '언어와 매체':'언어와 매체의 문법 문항은 개념의 조건이 한 번 흔들리면 같은 유형에서 계속 틀리기 쉽습니다. 개념의 조건을 정리해 두는 것이 수능 전에 점수를 가장 효율적으로 올리는 방법입니다.',
+      '문법':'문법은 개념의 조건이 한 번 흔들리면 같은 유형에서 계속 틀리기 쉽습니다. 개념의 조건을 정리해 두는 것이 수능 전에 점수를 가장 효율적으로 올리는 방법입니다.',
+      '매체':'매체 문항은 자료와 선지를 한 줄씩 대조하는 순서만 잡히면 빠르게 안정되는 영역입니다.'
+    } : {
       '문법':'문법은 고2부터 언어와 매체로 이어집니다. 개념의 조건이 한 번 흔들리면 같은 유형에서 계속 틀리기 쉬워, 지금 원인을 짚어 두는 것이 가장 효율적입니다.',
+      '매체':'매체 문항은 자료와 선지를 한 줄씩 대조하는 순서만 잡히면 빠르게 안정되는 영역입니다. 지금 잡아 두면 고3 언어와 매체에서 시간을 벌 수 있습니다.',
       '독서':'독서에서 생긴 오답은 학년이 올라 지문이 길어질수록 차이가 더 벌어지기 쉽습니다. 지금 원인을 짚어 두면 고2, 고3에서 시간을 벌 수 있습니다.',
       '문학':'문학 오답은 대개 선지의 한 조각을 작품에서 확인하지 않을 때 생깁니다. 확인 순서만 잡아도 고2, 고3에서 가장 먼저 안정되는 영역입니다.',
       '화법과 작문':'화법과 작문은 근거 문장을 찾는 습관만 잡히면 빠르게 안정되는 영역입니다. 지금 잡아 두면 고3에서 독서와 문학에 쓸 시간을 벌 수 있습니다.'
     };
-    if(weakAreas[0]) wl.appendChild(el('li',{class:'sw-hook',html:'<b>'+weakAreas[0]+'</b>: '+HOOK[weakAreas[0]]}));
+    if(weakAreas[0] && HOOK[weakAreas[0]]) wl.appendChild(el('li',{class:'sw-hook',html:HOOK[weakAreas[0]]}));
   }
   weak.appendChild(wl);
   grid.appendChild(strong); grid.appendChild(weak); sec.appendChild(grid);
