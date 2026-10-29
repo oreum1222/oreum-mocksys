@@ -755,6 +755,36 @@ const EXAM_LIST = [
     no: '파이널 6회', tagDate: '11월 29일 점수 입력 · 가천대 약술형 논술', inputDate: '2026-11-29',
     status: 'active', statusLabel: '정식 운영'
   },
+  {
+    id: 'kookmin-f-1', file: 'data/mock-kookmin-f-1.json', course: 'yaksul', mode: 'yaksul',
+    no: '국민대 파이널 1회', tagDate: '국민대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'kookmin-f-2', file: 'data/mock-kookmin-f-2.json', course: 'yaksul', mode: 'yaksul',
+    no: '국민대 파이널 2회', tagDate: '국민대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'kookmin-f-3', file: 'data/mock-kookmin-f-3.json', course: 'yaksul', mode: 'yaksul',
+    no: '국민대 파이널 3회', tagDate: '국민대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'kookmin-f-4', file: 'data/mock-kookmin-f-4.json', course: 'yaksul', mode: 'yaksul',
+    no: '국민대 파이널 4회', tagDate: '국민대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'kookmin-f-5', file: 'data/mock-kookmin-f-5.json', course: 'yaksul', mode: 'yaksul',
+    no: '국민대 파이널 5회', tagDate: '국민대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'kookmin-f-6', file: 'data/mock-kookmin-f-6.json', course: 'yaksul', mode: 'yaksul',
+    no: '국민대 파이널 6회', tagDate: '국민대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
 ];
 
 // 특별 진단 — 오답 마킹 진단과 별개로 응시 태도와 EBS 연계 체감을 스스로 적는 설문
@@ -919,8 +949,12 @@ function buildCardContent(meta, data=null){
     const em = data ? data.examMeta : null;
     const nKo = data ? (data.korean||[]).length : 8;
     const nMa = data ? (data.math||[]).length : 0;
-    const comp = data ? (`국어 <strong>${nKo}문항</strong>` + (nMa ? ` · 수학 <strong>${nMa}문항</strong>` : ' · 수학 없음')
-                        + (em && em.noAnswer ? ' · 정답 미입력' : '')) : '...';
+    const T = em && em.tracks;
+    const comp = !data ? '...' : T
+      ? Object.keys(T).map(k=>`${escape(k)} 국어 <strong>${T[k].koreanCount}문항</strong> · 수학 <strong>${T[k].mathCount}문항</strong>`).join('<br>')
+      : (`국어 <strong>${nKo}문항</strong>` + (nMa ? ` · 수학 <strong>${nMa}문항</strong>` : ' · 수학 없음')
+                        + (em && em.noAnswer ? ' · 정답 미입력' : ''));
+    const how = (em && em.partial) ? '계열을 고르고, 틀렸거나 감점된 소문항에 시험지에 쓴 답과 받은 점수를 적습니다.' : '소문항마다 틀린 칸을 체크하고 시험지에 쓴 답을 그대로 적습니다.';
     const when = (em && em.inputDateLabel) ? em.inputDateLabel : (meta.inputDate ? meta.inputDate.slice(5).replace('-','월 ')+'일' : '');
     const frag0 = document.createDocumentFragment();
     const inner0 = document.createElement('div');
@@ -942,7 +976,7 @@ function buildCardContent(meta, data=null){
       </div>
       <div class="card-body-block">
         <span class="body-label">기입 방식</span>
-        <p class="body-value">소문항마다 틀린 칸을 체크하고 시험지에 쓴 답을 그대로 적습니다.</p>
+        <p class="body-value">${how}</p>
       </div>
     </div>`;
     while(inner0.firstChild) frag0.appendChild(inner0.firstChild);
@@ -1003,9 +1037,21 @@ function isYaksul(){ return !!(STATE.data && STATE.data.examMeta && STATE.data.e
 function yakInit(){ if(!STATE.yak) STATE.yak={subs:{},math:{},mathSkip:false}; return STATE.yak; }
 function yakKey(no,mark){ return no+'-'+mark; }
 function yakSub(no,mark){ const y=yakInit(), k=yakKey(no,mark); if(!y.subs[k]) y.subs[k]={wrong:false,my:''}; return y.subs[k]; }
-function yakKorean(){ return (STATE.data && STATE.data.korean) || []; }
-function yakMath(){ return (STATE.data && STATE.data.math) || []; }
-function yakMathTotal(){ return (STATE.data && STATE.data.scoring && STATE.data.scoring.mathTotal) || 80; }
+function yakKorean(){ const all = (STATE.data && STATE.data.korean) || []; const tr = yakTrack_(); return tr ? all.filter(q=>q.track===tr) : all; }
+function yakMath(){ const T = yakTracks_(); if(T){ const n = (T[yakTrack_()]||{}).mathCount || 0; return Array.from({length:n}, (_, i)=>({no:i+1})); }
+  return (STATE.data && STATE.data.math) || []; }
+function yakMathTotal(){ const T = yakTracks_(); if(T) return (T[yakTrack_()]||{}).mathTotal || 0;
+  return (STATE.data && STATE.data.scoring && STATE.data.scoring.mathTotal) || 80; }
+// 국민대처럼 계열(인문/자연)마다 국어 문항과 수학 배점이 다른 회차
+function yakTracks_(){ const m = STATE.data && STATE.data.examMeta; return (m && m.tracks) || null; }
+function yakTrack_(){ const T = yakTracks_(); if(!T) return ''; const y = yakInit(); if(!y.track || !T[y.track]) y.track = Object.keys(T)[0]; return y.track; }
+function yakKoTotal_(){ return yakTracks_() ? Math.round(yakKorean().reduce((n,q)=>n+(q.total||0),0)*10)/10
+  : ((STATE.data.scoring && STATE.data.scoring.koreanTotal) || yakKorean().reduce((n,q)=>n+(q.total||0),0) || 80); }
+// 부분 점수 회차는 체크한 칸에서 받은 점수를 뺀 만큼만 잃는다
+function yakPartial_(){ const m = STATE.data && STATE.data.examMeta; return !!(m && m.partial); }
+function yakLost_(s, st){ const p = s.points || 0; if(!yakPartial_()) return p;
+  const g = Math.max(0, Math.min(p, Number(st && st.got) || 0)); return Math.round((p-g)*10)/10; }
+function yakQLabel_(q){ return q.label || ('문제 '+q.no); }
 function loadExam(examId){
   const meta = EXAM_LIST.find(e=>e.id===examId);
   if(!meta) return;
@@ -1885,6 +1931,12 @@ function yakTrap_(my, sub){
 // 틀린 칸 하나의 진단: 무엇을 근거로 어떤 판단을 내렸는지(확정 / 추정)
 function yakDiagnose_(q, s, my, cause){
   if(cause==='무응답') return {kind:'blank', basis:'확정', text:YAK_CAUSE_RX['무응답']};
+  if(cause==='서술 감점'){
+    const kp = (s.keyPoints||[]).filter(Boolean);
+    return {kind:'서술 감점', basis:'자기 채점', text: kp.length
+      ? '채점 기준이 요구하는 핵심 요소는 '+kp.join(', ')+'입니다. 내 답에서 빠지거나 다르게 쓴 요소를 하나씩 대조합니다.'
+      : '채점 기준의 요구 요소와 내 답을 하나씩 대조합니다.'};
+  }
   if(!cause) return {kind:'pending', basis:'보류', text:'이 회차는 해설지가 없어 정답과 대조하지 못했습니다. 교사 확인 후 진단합니다.'};
   if(YAK_COND_CAUSES[cause]) return {kind:'cond', basis:'확정', text:YAK_CAUSE_RX[cause]};
   // 같은 문항의 다른 칸 정답을 쓴 경우: 두 칸이 요구하는 조건을 바꿔 읽은 것(확정)
@@ -1902,12 +1954,26 @@ function renderYakMark(){
   const y = yakInit(), meta = STATE.data.examMeta;
   root.appendChild(el('div',{class:'section'},
     el('h2',{class:'section-title'},'국어 오답 기입'),
-    el('p',{class:'section-desc', html:'맞은 칸은 그대로 두고 <strong>틀린 칸만 체크</strong>해 주세요. 체크하면 답을 적는 칸이 열립니다.'})
+    el('p',{class:'section-desc', html: yakPartial_()
+      ? '맞은 칸은 그대로 두고 <strong>틀렸거나 감점된 칸만 체크</strong>해 주세요. 체크하면 시험지에 쓴 답과 <strong>채점 기준으로 매긴 점수</strong>를 적는 칸이 열립니다(0점이면 비워 둡니다).'
+      : '맞은 칸은 그대로 두고 <strong>틀린 칸만 체크</strong>해 주세요. 체크하면 답을 적는 칸이 열립니다.'})
   ));
+  const T = yakTracks_();
+  if(T){
+    const tr = yakTrack_();
+    const tw = el('div',{class:'yk-take', style:'margin:0 0 18px'});
+    Object.keys(T).forEach(k=>{
+      const b = el('button',{type:'button', class: tr===k ? 'on' : ''}, k+'계열');
+      b.onclick = ()=>{ if(y.track===k) return; y.track = k; y.mathTaken = undefined; y.mathScore = null; renderDiag(); };
+      tw.appendChild(b);
+    });
+    root.appendChild(el('div',{class:'section'}, el('h2',{class:'section-title'},'계열'),
+      el('p',{class:'section-desc'}, '응시한 계열을 고르세요. '+tr+'계열은 국어 '+yakKorean().length+'문항('+yakKoTotal_()+'점)과 수학 '+yakMath().length+'문항('+yakMathTotal()+'점)입니다.'), tw));
+  }
   yakKorean().forEach(q=>{
     const box = el('div',{class:'yk-q'});
     box.appendChild(el('div',{class:'yk-head'},
-      el('span',{class:'yk-no'},'문제 '+q.no),
+      el('span',{class:'yk-no'}, yakQLabel_(q)),
       q.course ? el('span',{class:'yk-chip'}, q.course) : '',
       q.type ? el('span',{class:'yk-chip'}, q.type) : '',
       q.concept ? el('span',{class:'yk-concept'}, q.concept) : ''
@@ -1928,8 +1994,19 @@ function renderYakMark(){
       const lab = el('label',{class:'yk-subrow'}, cb,
         el('span',{class:'yk-mark'}, sub.mark),
         el('span',{class:'yk-pts'}, sub.points!=null ? (sub.points+'점') : ''),
-        el('span',{class:'yk-hint'},'틀렸으면 체크'));
-      row.appendChild(lab); row.appendChild(ta);
+        el('span',{class:'yk-hint'}, yakPartial_() ? '틀렸거나 감점됐으면 체크' : '틀렸으면 체크'));
+      row.appendChild(lab);
+      if(sub.prompt) row.appendChild(el('p',{class:'yk-ev', style:'margin:2px 0 6px 28px'}, sub.prompt));
+      row.appendChild(ta);
+      if(yakPartial_()){
+        const gw = el('div',{class:'yk-mscore', style:'display:'+(st.wrong?'flex':'none')+';margin-top:6px'});
+        const gi = el('input',{type:'number', min:'0', max:String(sub.points||0), step:'0.1', inputmode:'decimal', value:(st.got!=null&&st.got!==''?String(st.got):'')});
+        gi.oninput = ()=>{ const v = gi.value.trim(); st.got = (v==='') ? null : Math.max(0, Math.min(sub.points||0, Number(v)||0)); yakSum(); };
+        gw.appendChild(el('span',{class:'yk-mlab'},'받은 점수')); gw.appendChild(gi);
+        gw.appendChild(el('span',{class:'yk-hint'},'/ '+(sub.points||0)+'점 · 0점이면 비워 두세요'));
+        row.appendChild(gw);
+        cb.addEventListener('change', ()=>{ gw.style.display = cb.checked ? 'flex' : 'none'; if(!cb.checked){ st.got = null; gi.value=''; } yakSum(); });
+      }
       box.appendChild(row);
     });
     root.appendChild(box);
@@ -1984,8 +2061,9 @@ function renderYakMark(){
 function yakSum(){
   const e = document.getElementById('yakSum'); if(!e) return;
   const y = yakInit(); let n=0, lost=0;
-  yakKorean().forEach(q=>(q.subs||[]).forEach(s=>{ const st=y.subs[yakKey(q.no,s.mark)]; if(st&&st.wrong){ n++; lost+=(s.points||0); } }));
-  const tot = (STATE.data.scoring&&STATE.data.scoring.koreanTotal)||80;
+  yakKorean().forEach(q=>(q.subs||[]).forEach(s=>{ const st=y.subs[yakKey(q.no,s.mark)]; if(st&&st.wrong){ n++; lost+=yakLost_(s, st); } }));
+  lost = Math.round(lost*10)/10;
+  const tot = yakKoTotal_();
   const koRaw = Math.max(0,Math.round((tot-lost)*10)/10);
   let line = '국어 틀린 칸 <b>'+n+'개</b> · 자기채점 득점 <b>'+koRaw+'</b> / '+tot+'점';
   if(y.mathTaken===true && typeof y.mathScore==='number'){
@@ -1998,7 +2076,7 @@ function yakSum(){
 /* ── 계산 ── */
 function computeYak(){
   const y = yakInit(), qs = yakKorean(), meta = STATE.data.examMeta;
-  const tot = (STATE.data.scoring&&STATE.data.scoring.koreanTotal) || qs.reduce((n,q)=>n+(q.total||0),0);
+  const tot = yakKoTotal_();
   const items=[]; let lost=0, wrongSubs=0, totalSubs=0, fullItems=0, condWrong=0; const byType={}, byCourse={}, byCause={};
   const typeTot={}, courseTot={}, courseLost={};
   const ability={}; YAK_ABILITIES.concat([YAK_COND]).forEach(k=>ability[k]={total:0, wrong:0});
@@ -2007,30 +2085,33 @@ function computeYak(){
     (q.subs||[]).forEach(s=>{ totalSubs++; typeTot[t]=(typeTot[t]||0)+1; courseTot[c]=(courseTot[c]||0)+(s.points||0);
       const ab = yakAbilityOf(q, s); ability[ab].total++; ability[YAK_COND].total++;
       const st=y.subs[yakKey(q.no,s.mark)];
-      if(st&&st.wrong){ wrongSubs++; lost+=(s.points||0); courseLost[c]=(courseLost[c]||0)+(s.points||0);
-        const my=(st.my||'').trim(), cause = yakCause(my, s.answer, q.type);
+      if(st&&st.wrong){ const lp = yakLost_(s, st); wrongSubs++; lost+=lp; courseLost[c]=(courseLost[c]||0)+lp;
+        const my=(st.my||'').trim(), cause = (s.form==='서술') ? (my ? '서술 감점' : '무응답') : yakCause(my, s.answer, q.type);
         if(cause) byCause[cause]=(byCause[cause]||0)+1;
         if(YAK_COND_CAUSES[cause]){ ability[YAK_COND].wrong++; condWrong++; } else ability[ab].wrong++;
         const dg = yakDiagnose_(q, s, my, cause);
-        subs.push({mark:s.mark, points:s.points||0, answer:s.answer||'', my:my, cause:cause, ability:ab,
+        subs.push({mark:s.mark, points:lp, full:s.points||0, got: yakPartial_() ? Math.round(((s.points||0)-lp)*10)/10 : null,
+                   answer:s.answer||'', my:my, cause:cause, ability:ab, prompt:s.prompt||'', form:s.form||'', explain: s.explain ? yakExplainShort_(s.explain) : '',
                    conditions:s.conditions||[], evidence:s.evidence||'', diag:dg}); }
     });
     if(subs.length){
       byType[t]=(byType[t]||0)+subs.length; byCourse[c]=(byCourse[c]||0)+subs.length;
-      items.push({no:q.no, type:q.type||'', course:q.course||'', concept:q.concept||'', prompt:q.prompt||'',
-                  intent:q.intent||'', ebs:q.ebs||'', ebsStudy:q.ebsStudy||null, explain: yakExplainShort_(q.explain),
-                  lost:subs.reduce((n,s)=>n+s.points,0), subs:subs});
+      items.push({no:q.no, label:yakQLabel_(q), type:q.type||'', course:q.course||'', concept:q.concept||'', prompt:q.prompt||'',
+                  intent:q.intent||'', ebs:q.ebs||'', ebsStudy:q.ebsStudy||null,
+                  explain: subs.some(x=>x.explain) ? subs.filter(x=>x.explain).map(x=>x.mark+' '+x.explain).join(' ') : yakExplainShort_(q.explain),
+                  lost:Math.round(subs.reduce((n,s)=>n+s.points,0)*10)/10, subs:subs});
     } else fullItems++;
   });
   Object.keys(ability).forEach(k=>{ const v=ability[k]; v.rate = v.total ? Math.round((v.total-v.wrong)/v.total*100) : null; });
   const typeRate={}; Object.keys(typeTot).forEach(k=>{ const w=byType[k]||0; typeRate[k]={total:typeTot[k], wrong:w, rate:Math.round(w/typeTot[k]*100)}; });
   const courseRate={}; Object.keys(courseTot).forEach(k=>{ const T=courseTot[k], L=courseLost[k]||0; courseRate[k]={total:T, got:Math.round((T-L)*10)/10, rate:T?Math.round((T-L)/T*100):0}; });
   const raw = Math.max(0, Math.round((tot-lost)*10)/10);
+  Object.keys(courseLost).forEach(k=>courseLost[k]=Math.round(courseLost[k]*10)/10);
   const hasMath = !meta.noMath && yakMath().length>0;
   const mTot = yakMathTotal();
   const mScore = (hasMath && y.mathTaken===true && typeof y.mathScore==='number') ? y.mathScore : null;
   const weak = yakWeak_(ability);
-  return { yaksul:true, raw:raw, total:tot, rate: tot?Math.round(raw/tot*100):0,
+  return { yaksul:true, track: yakTrack_(), raw:raw, total:tot, rate: tot?Math.round(raw/tot*100):0,
     wrongSubs:wrongSubs, totalSubs:totalSubs, fullItems:fullItems, itemCount:qs.length, condWrong:condWrong,
     items:items, byType:byType, byCourse:byCourse, byCause:byCause, typeRate:typeRate, courseRate:courseRate, ability:ability,
     math:null, mathTaken: hasMath ? y.mathTaken : null, apply: STATE.apply || null,
@@ -2051,7 +2132,7 @@ function yakEbsGroups_(items){
   const g = [], by = {};
   items.forEach(q=>{ const e=q.ebsStudy; const key = e ? (e.book+'|'+(String(e.pages).match(/\d+/)||[''])[0]) : (q.ebs||('q'+q.no));
     if(!by[key]){ by[key] = {line: yakEbsLine_(q), nos: [], lost: 0}; g.push(by[key]); }
-    by[key].nos.push(q.no); by[key].lost += q.lost||0; });
+    by[key].nos.push(q.no>100 ? '자연 '+(q.no-100) : q.no); by[key].lost += q.lost||0; });
   return g.filter(x=>x.line);
 }
 function yakWeak_(ab){
@@ -2190,7 +2271,7 @@ function renderYakResult(){
   r.items.forEach(q=>{
     const b = el('div',{class:'yk-q'});
     b.appendChild(el('div',{class:'yk-head'},
-      el('span',{class:'yk-no'},'문제 '+q.no),
+      el('span',{class:'yk-no'}, q.label || ('문제 '+q.no)),
       q.course?el('span',{class:'yk-chip'},q.course):'',
       q.type?el('span',{class:'yk-chip'},q.type):'',
       el('span',{class:'yk-concept'},'−'+q.lost+'점'+(q.concept?(' · '+q.concept):''))));
@@ -2198,7 +2279,8 @@ function renderYakResult(){
     q.subs.forEach(s=>{
       const d = s.diag || {};
       b.appendChild(el('div',{style:'margin-top:10px;padding:10px 12px;border:1px solid var(--border-line);border-radius:9px'},
-        el('div',{class:'yk-prompt', style:'margin:0'}, s.mark+' 내가 쓴 답 — '+(s.my||'(적지 않음)'),
+        s.prompt ? el('div',{class:'yk-ev', style:'margin:0 0 4px'}, s.mark+' '+s.prompt) : '',
+        el('div',{class:'yk-prompt', style:'margin:0'}, s.mark+' 내가 쓴 답 — '+(s.my||'(적지 않음)')+(s.got!=null ? ' ('+s.got+' / '+s.full+'점)' : ''),
           s.cause?el('span',{class:'yk-tag'}, YAK_COND_CAUSES[s.cause]?s.cause:(d.kind&&d.kind!==s.cause&&d.kind!=='blank'?d.kind:s.cause)):'',
           el('span',{class:'yk-badge'+(d.basis==='추정'?' guess':(d.basis==='지문 대조'?' ok':''))}, d.basis||'')),
         el('div',{class:'yk-prompt', style:'margin:3px 0 0;color:var(--gold-soft)'}, s.mark+' 정답 — '+(s.answer || (meta.noAnswer?'(해설지 미제공)':'-'))),
@@ -2304,7 +2386,7 @@ function submitResult(isManual){
       math: r.math, mathTaken: r.mathTaken, mathScore: r.mathScore, mathTotal: r.mathTotal,
       grandRaw: r.grandRaw, grandTotal: r.grandTotal, mathCount: r.mathCount, items: r.items,
       v: 2, ability: r.ability, fullItems: r.fullItems, itemCount: r.itemCount, condWrong: r.condWrong,
-      apply: r.apply, noAnswer: !!STATE.data.examMeta.noAnswer
+      apply: r.apply, noAnswer: !!STATE.data.examMeta.noAnswer, track: r.track || ''
     }) : ''
   };
 

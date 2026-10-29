@@ -1592,7 +1592,7 @@ function ypStudent_(st){
   rids.forEach(function(r){ (st.rounds[r].items||[]).forEach(function(q){ var e = q.ebsStudy || null;
     (q.subs||[]).forEach(function(sb){ var d = sb.diag || {}, dt = (typeof d==='string') ? d : (d.text||'');
       var ebsTxt = e ? [((e.book||'')+' '+(e.pages||'')).trim(), e.unit||''].filter(function(x){return x;}).join(', ') : '';
-      wr += '<div class="wq"><div class="wq-h"><b>'+ypRound_(r)+' '+q.no+'번 '+ypE_(sb.mark)+'</b>'
+      wr += '<div class="wq"><div class="wq-h"><b>'+ypRound_(r)+' '+(q.label||q.no+'번')+' '+ypE_(sb.mark)+'</b>'
         + (sb.ability?'<span class="tg">'+ypE_(sb.ability)+'</span>':'') + (sb.cause?'<span class="tg w">'+ypE_(sb.cause)+'</span>':'')
         + '<span class="pt">-'+ypF_(sb.points||0)+'점</span></div>'
         + (q.concept?'<div class="wq-c">'+ypE_(q.concept)+'</div>':'')
@@ -1822,7 +1822,7 @@ function yakCard_(st, idx){
       + (c ? '<button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfUndo(this)">되돌리기</button>'
            : '<button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfOk(this)">맞음</button><button class="yk-dbtn" data-stu="'+escape(st.name)+'" data-k="'+escape(key)+'" onclick="yakCfFix(this)">고치기</button>')
       + '</span>') : '';
-    t4 += '<div class="yk-ditem"><div style="font-weight:600;font-size:.9rem">'+escape(yakLabel_(r))+' 문제 '+q.no+' '+escape(s.mark)
+    t4 += '<div class="yk-ditem"><div style="font-weight:600;font-size:.9rem">'+escape(yakLabel_(r))+' '+escape(q.label||'문제 '+q.no)+' '+escape(s.mark)
       + ' <span style="opacity:.6;font-weight:400">'+escape(q.type||'')+' · '+escape(s.ability||'')+'</span>'
       + ' <span class="yk-dbadge '+cls+'">'+escape(basis)+'</span>'+tools+'</div>'
       + '<div style="font-size:.86rem;margin-top:4px">'+(s.legacy ? '학생 답 기록 없음(이전 제출)' : ('학생 답 “'+escape(s.my||'(적지 않음)')+'”'))+' · 정답 “'+escape(s.answer||'미제공')+'”'+(s.cause?' <span class="yk-dtag">'+escape(d.kind && !/^(blank|cond|pending)$/.test(d.kind) ? d.kind : s.cause)+'</span>':'')+'</div>'
@@ -1851,7 +1851,7 @@ function yakCard_(st, idx){
     var line=yakEbsLineD_(q); if(!line) return;
     var e=q.ebsStudy, key=e?(e.book+'|'+((String(e.pages).match(/\d+/)||[''])[0])):line;
     if(!eby[key]){ eby[key]={line:line, where:[], lost:0}; eg.push(eby[key]); }
-    eby[key].where.push(yakLabel_(r)+' '+q.no+'번'); eby[key].lost+=q.lost||0; }); });
+    eby[key].where.push(yakLabel_(r)+' '+(q.label||q.no+'번')); eby[key].lost+=q.lost||0; }); });
   if(eg.length) H.push('<div class="rblk"><div class="rblk-t">EBS 집중 학습</div><div style="font-size:.8rem;opacity:.7;margin-bottom:6px">틀린 문항의 원래 지문을 교재에서 다시 읽고 근거 문장에 표시한 뒤 그 강의 문제를 다시 풀게 합니다.</div><table class="yk-dtbl"><tr><th>교재 위치</th><th>틀린 문항</th><th>감점</th></tr>'
     + eg.map(function(x){ return '<tr><td>'+escape(x.line)+'</td><td style="white-space:nowrap">'+escape(x.where.join(', '))+'</td><td>−'+x.lost+'</td></tr>'; }).join('')+'</table></div>');
   // 6. 과거 입시 정보와 해석 안내
