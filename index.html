@@ -805,6 +805,26 @@ const EXAM_LIST = [
     no: '국민대 파이널 6회', tagDate: '국민대 약술형 논술', inputDate: '',
     status: 'active', statusLabel: '정식 운영'
   },
+  {
+    id: 'dongduk-f-1', file: 'data/mock-dongduk-f-1.json', course: 'yaksul', mode: 'yaksul',
+    no: '동덕여대 파이널 1회', tagDate: '동덕여대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'dongduk-f-2', file: 'data/mock-dongduk-f-2.json', course: 'yaksul', mode: 'yaksul',
+    no: '동덕여대 파이널 2회', tagDate: '동덕여대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'dongduk-f-3', file: 'data/mock-dongduk-f-3.json', course: 'yaksul', mode: 'yaksul',
+    no: '동덕여대 파이널 3회', tagDate: '동덕여대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'dongduk-f-4', file: 'data/mock-dongduk-f-4.json', course: 'yaksul', mode: 'yaksul',
+    no: '동덕여대 파이널 4회', tagDate: '동덕여대 약술형 논술', inputDate: '',
+    status: 'active', statusLabel: '정식 운영'
+  },
 ];
 
 // 특별 진단 — 오답 마킹 진단과 별개로 응시 태도와 EBS 연계 체감을 스스로 적는 설문
@@ -974,7 +994,7 @@ function buildCardContent(meta, data=null){
       ? Object.keys(T).map(k=>`${escape(k)} 국어 <strong>${T[k].koreanCount}문항</strong> · 수학 <strong>${T[k].mathCount}문항</strong>`).join('<br>')
       : (`국어 <strong>${nKo}문항</strong>` + (nMa ? ` · 수학 <strong>${nMa}문항</strong>` : ' · 수학 없음')
                         + (em && em.noAnswer ? ' · 정답 미입력' : ''));
-    const how = (em && em.partial) ? '계열을 고르고, 틀렸거나 감점된 소문항에 시험지에 쓴 답과 받은 점수를 적습니다.' : '소문항마다 틀린 칸을 체크하고 시험지에 쓴 답을 그대로 적습니다.';
+    const how = (em && em.partial) ? ((T ? '계열을 고르고, ' : '')+'틀렸거나 감점된 칸에 시험지에 쓴 답과 받은 점수를 적습니다.') : '소문항마다 틀린 칸을 체크하고 시험지에 쓴 답을 그대로 적습니다.';
     const when = (em && em.inputDateLabel) ? em.inputDateLabel : (meta.inputDate ? meta.inputDate.slice(5).replace('-','월 ')+'일' : '');
     const frag0 = document.createDocumentFragment();
     const inner0 = document.createElement('div');
@@ -1788,7 +1808,7 @@ function renderStep4(){
 
 /* ── 지원 대학과 모집단위 ── */
 let YAK_ADM = null, YAK_ADM_LOADING = null;
-const YAK_UNIVS = [{key:'gachon', name:'가천대'}, {key:'kookmin', name:'국민대'}];
+const YAK_UNIVS = [{key:'gachon', name:'가천대'}, {key:'kookmin', name:'국민대'}, {key:'dongduk', name:'동덕여대'}];
 function yakUnivName(k){ const u=YAK_UNIVS.find(x=>x.key===k); return u?u.name:k; }
 function yakAdmLoad(){
   if(YAK_ADM) return Promise.resolve(YAK_ADM);
