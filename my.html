@@ -4,46 +4,141 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache">
-<title>나의 국어 기록 · [오름] 국어 학원</title>
+<meta name="theme-color" content="#0B111D">
+<title>나의 국어 기록 | [오름] 국어</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
 <script src="config.js"></script>
 <style>
-:root{--navy:#1F3A5F;--navy2:#2C4A6E;--line:#E3E8F0;--tint:#F2F5FA;--txt:#22272E;--mut:#6B7685;--warm:#C26A3D}
-*{box-sizing:border-box}
-body{margin:0;background:#F6F8FB;color:var(--txt);font-family:'Pretendard','맑은 고딕','Malgun Gothic',sans-serif;font-size:15px;line-height:1.6}
-.wrap{max-width:720px;margin:0 auto;padding:18px 16px 40px}
-.hd{background:var(--navy);color:#fff;border-radius:16px;padding:18px 20px}
-.hd small{opacity:.8}.hd h1{margin:4px 0 0;font-size:22px}
-.dd{float:right;background:#fff;color:var(--navy);font-weight:800;border-radius:10px;padding:6px 12px;font-size:18px}
-.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px}
-h2{font-size:17px;color:var(--navy);margin:0 0 10px}
-.login label{display:block;font-size:13.5px;color:var(--mut);margin:12px 0 4px}
-.login input{width:100%;font-size:17px;padding:11px 12px;border:1px solid #C9D2DF;border-radius:10px;font-family:inherit}
-.login button{width:100%;margin-top:16px;font-size:17px;font-weight:700;padding:12px;border:0;border-radius:10px;background:var(--navy);color:#fff;cursor:pointer;font-family:inherit}
-.login button:disabled{opacity:.6}
-.err{color:#B03A2E;font-size:14px;margin-top:10px;min-height:1em}
-.kp{display:flex;gap:10px;flex-wrap:wrap}
-.k{flex:1;min-width:120px;background:var(--tint);border-radius:10px;padding:10px 12px}
-.k b{display:block;font-size:22px;color:var(--navy)}.k span{font-size:12.5px;color:var(--mut)}
-.lg{font-size:12px;color:var(--mut);margin-right:12px}
-.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
-.br{display:grid;grid-template-columns:150px 1fr 92px;gap:8px;align-items:center;margin:7px 0;font-size:13.5px}
-.bt{background:var(--tint);height:12px;border-radius:6px;overflow:hidden}.bf{height:100%}
-.bv{text-align:right;font-weight:700}.bv small{font-weight:400;color:var(--mut)}
-.sw{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sw div{border-radius:10px;padding:10px 12px;font-size:14px}.st{background:#EEF3FA}.wk{background:#FBF1EC}.sw b{display:block;margin-bottom:4px}
-details{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:#fff}
-summary{cursor:pointer;padding:10px 12px;font-weight:700;color:var(--navy)}summary b{color:var(--warm);margin-left:6px}
-.it{border-top:1px solid var(--line);padding:10px 12px;font-size:14px}.ih{font-weight:700}
-.src{color:var(--mut);font-size:13px;margin:2px 0 4px}.it p{margin:3px 0}
-.lb{display:inline-block;font-size:11.5px;color:#fff;background:var(--navy2);border-radius:4px;padding:0 6px;margin-right:6px}
-.b3{font-size:11.5px;color:#fff;background:var(--warm);border-radius:4px;padding:0 5px}
-.bw{font-size:11.5px;color:var(--navy2);border:1px solid var(--navy2);border-radius:4px;padding:0 5px}
-.pk{background:#FBF1EC;border-radius:8px;padding:6px 8px}
-.pl{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
-.pl:first-of-type{border-top:0}.pd{font-weight:700;color:var(--navy);font-size:13.5px}.pl p{margin:3px 0 0;font-size:14px}
-.note{font-size:12.5px;color:var(--mut)}
-.out{background:none;border:1px solid #fff;color:#fff;border-radius:8px;padding:2px 10px;font-size:12.5px;cursor:pointer;margin-top:8px;font-family:inherit}
-@media(max-width:560px){.br{grid-template-columns:110px 1fr 80px;font-size:12.5px}.sw,.pl{grid-template-columns:1fr}}
+:root{
+  --bg:#0B111D;--bg2:#0F1726;--card:#131C2E;--card2:#18233A;--line:#22304A;--line2:#2E3E5E;
+  --t1:#E9EDF6;--t2:#A3AEC6;--t3:#6F7B96;
+  --pw:#9AABFF;--pwD:#6F82E8;--pwG:rgba(154,171,255,.12);
+  --co:#FF8F7E;--coG:rgba(255,143,126,.12);
+  --sky:#6FB3F2;--fog:#C9D1E3;
+  --fs:'Noto Serif KR',serif;--fb:'Pretendard',-apple-system,'Malgun Gothic',sans-serif;
+  --eo:cubic-bezier(.22,1,.36,1)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;background:radial-gradient(900px 520px at 85% -10%,rgba(111,130,232,.16),transparent 60%);z-index:0}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:22px 16px 64px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+.brand{font-family:var(--fs);font-weight:900;font-size:14px;letter-spacing:-.01em;color:var(--t1);text-decoration:none}
+.brand em{font-style:normal;color:var(--pw)}
+.back{font-size:12.5px;color:var(--t3);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;transition:all .2s}
+.back:hover{color:var(--t1);border-color:var(--line2)}
+.ey{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--pw);margin-bottom:8px}
+.st{font-family:var(--fs);font-weight:700;font-size:19px;letter-spacing:-.01em;color:var(--t1);margin-bottom:4px}
+.sd{font-size:13.5px;color:var(--t3);margin-bottom:18px}
+
+/* 로그인 */
+.intro{padding:18px 2px 28px}
+.intro h1{font-family:var(--fs);font-weight:700;font-size:clamp(30px,7vw,42px);line-height:1.2;letter-spacing:-.02em}
+.intro p{color:var(--t2);font-size:15px;margin-top:12px;max-width:470px}
+.dbig{display:flex;align-items:baseline;gap:12px;margin:26px 0 4px}
+.dbig b{font-family:var(--fs);font-weight:900;font-size:clamp(54px,15vw,84px);line-height:1;color:var(--pw);letter-spacing:-.03em}
+.dbig span{font-size:14px;color:var(--t2)}
+.login{background:linear-gradient(170deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:20px;padding:24px 22px 20px}
+.login label{display:block;font-size:13px;font-weight:600;color:var(--t2);margin:0 0 7px}
+.login label+input{margin-bottom:16px}
+.login input{width:100%;font-family:inherit;font-size:17px;color:var(--t1);background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:13px 14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.login input::placeholder{color:var(--t3)}
+.login input:focus{border-color:var(--pw);box-shadow:0 0 0 4px var(--pwG)}
+.login button{width:100%;margin-top:6px;font-family:inherit;font-size:16.5px;font-weight:700;color:#0B111D;background:var(--pw);border:0;border-radius:12px;padding:14px;cursor:pointer;transition:transform .2s var(--eo),background .2s}
+.login button:hover{background:#B1BEFF}
+.login button:active{transform:scale(.99)}
+.login button:disabled{opacity:.55;cursor:default}
+.err{color:var(--co);font-size:14px;margin-top:12px;min-height:1.4em}
+.note{font-size:12.5px;color:var(--t3);line-height:1.6}
+
+/* 결과 머리 */
+.hero{padding:6px 2px 26px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px}
+.hero h1{font-family:var(--fs);font-weight:700;font-size:clamp(30px,7.5vw,40px);line-height:1.15;letter-spacing:-.02em}
+.hero h1 small{font-family:var(--fb);font-size:15px;font-weight:500;color:var(--t2);margin-left:6px;letter-spacing:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:12.5px;color:var(--t2);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:999px;padding:3px 11px}
+.dd{text-align:right;flex-shrink:0}
+.dd b{display:block;font-family:var(--fs);font-weight:900;font-size:clamp(34px,9vw,46px);line-height:1;color:var(--pw);letter-spacing:-.02em}
+.dd span{font-size:12px;color:var(--t3)}
+.out{margin-top:16px;font-family:inherit;font-size:12.5px;color:var(--t2);background:none;border:1px solid var(--line2);border-radius:999px;padding:5px 13px;cursor:pointer;transition:all .2s}
+.out:hover{color:var(--t1);border-color:var(--pw)}
+
+/* 카드 */
+.card{background:linear-gradient(170deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:20px;padding:22px 20px;margin-bottom:16px}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.k{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+.k span{display:block;font-size:12px;color:var(--t3);margin-bottom:4px}
+.k b{font-family:var(--fs);font-weight:700;font-size:26px;line-height:1.1;color:var(--t1);letter-spacing:-.02em}
+.k b i{font-style:normal;font-family:var(--fb);font-size:13px;font-weight:700;margin-left:6px;vertical-align:3px}
+.k em{display:block;font-style:normal;font-size:12px;color:var(--t2);margin-top:3px}
+.up{color:var(--pw)}.dn{color:var(--co)}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.lgd{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+.lgd span{font-size:12px;color:var(--t2)}
+.lgd i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+.sw{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sw>div{border-radius:14px;padding:14px 15px;border:1px solid}
+.sw .s{background:var(--pwG);border-color:rgba(154,171,255,.22)}
+.sw .w{background:var(--coG);border-color:rgba(255,143,126,.22)}
+.sw h3{font-size:12.5px;font-weight:700;margin-bottom:8px}
+.sw .s h3{color:var(--pw)}.sw .w h3{color:var(--co)}
+.sw li{list-style:none;display:flex;justify-content:space-between;gap:8px;font-size:13.5px;padding:4px 0;color:var(--t1)}
+.sw li b{font-variant-numeric:tabular-nums}
+.sum{font-size:14px;color:var(--t2);background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:22px}
+.sum b{color:var(--t1)}
+.bars{display:grid;gap:13px}
+.br-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13.5px;margin-bottom:6px}
+.br-h b{font-variant-numeric:tabular-nums;font-size:14px}
+.br-h small{color:var(--t3);font-size:12px;margin-left:5px;font-weight:400}
+.bt{height:7px;border-radius:99px;background:rgba(255,255,255,.05);overflow:hidden}
+.bf{height:100%;border-radius:99px;width:100%;transform-origin:left center;transform:scaleX(0);transition:transform .9s var(--eo)}
+.foot{font-size:12px;color:var(--t3);margin-top:16px}
+
+/* 전략 */
+.tl{position:relative;padding-left:22px}
+.pl::after{content:'';position:absolute;left:-17px;top:20px;bottom:-4px;width:1px;background:var(--line2)}
+.pl:last-child::after{display:none}
+.pl{position:relative;padding:0 0 20px}
+.pl:last-child{padding-bottom:0}
+.pl::before{content:'';position:absolute;left:-22px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:2px solid var(--pw)}
+.pl:last-child::before{background:var(--pw)}
+.pd{display:inline-block;font-size:12px;font-weight:700;color:var(--pw);background:var(--pwG);border-radius:6px;padding:1px 8px;margin-bottom:6px}
+.pl h4{font-size:15.5px;font-weight:700;margin-bottom:3px}
+.pl p{font-size:14px;color:var(--t2)}
+
+/* 틀린 문항 */
+details{border:1px solid var(--line);border-radius:14px;margin-top:9px;background:var(--bg2);overflow:hidden}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:13px 15px;font-weight:700;font-size:14.5px}
+summary::-webkit-details-marker{display:none}
+summary .cnt{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--co);font-weight:700}
+summary .cnt::after{content:'';width:7px;height:7px;border-right:1.5px solid var(--t3);border-bottom:1.5px solid var(--t3);transform:rotate(45deg);transition:transform .25s var(--eo);margin-top:-3px}
+details[open] summary .cnt::after{transform:rotate(-135deg);margin-top:3px}
+.it{border-top:1px solid var(--line);padding:14px 15px;font-size:14px}
+.ih{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-weight:700;font-size:14.5px}
+.b3{font-size:11px;font-weight:700;color:#0B111D;background:var(--co);border-radius:5px;padding:0 6px}
+.bw{font-size:11px;font-weight:600;color:var(--t2);border:1px solid var(--line2);border-radius:5px;padding:0 6px}
+.src{color:var(--t3);font-size:12.5px;margin:3px 0 8px}
+.row{display:grid;grid-template-columns:74px 1fr;gap:10px;margin-top:6px;color:var(--t2)}
+.row>span{font-size:12px;font-weight:600;color:var(--t3);padding-top:2px}
+.pk{margin-top:9px;background:var(--coG);border:1px solid rgba(255,143,126,.18);border-radius:10px;padding:9px 11px;color:var(--t1)}
+.pk b{color:var(--co);margin-right:4px}
+.fx{margin-top:9px;background:var(--pwG);border:1px solid rgba(154,171,255,.18);border-radius:10px;padding:9px 11px;color:var(--t1)}
+.fx b{color:var(--pw);margin-right:4px}
+
+.fade{animation:fu .7s var(--eo) both}
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(max-width:560px){
+  .card{padding:18px 15px;border-radius:18px}
+  .kp{grid-template-columns:1fr 1fr}.kp .k:first-child{grid-column:1/-1}
+  .sw{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr;gap:1px}
+}
+@media(prefers-reduced-motion:reduce){.fade{animation:none}.bf{transition:none}}
 </style>
 </head>
 <body>
@@ -52,10 +147,12 @@ summary{cursor:pointer;padding:10px 12px;font-weight:700;color:var(--navy)}summa
 /* 나의 국어 기록(2026-11-07): 이름 + 휴대폰 뒤 네 자리 → Apps Script(action=mystudy)가 본인 확인 후 제출 기록만 준다.
    문항 정보(유형, 핵심, 진단)는 공개된 회차 자료(data/mock-*.json)에서 읽어 이 화면에서 계산한다. */
 const SUNEUNG = new Date('2026-11-19T00:00:00+09:00');
+const SITE = 'https://oreum1222.github.io/oreum-3/';
 const E = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $app = document.getElementById('app');
 const kst = () => new Date(Date.now() + 9 * 3600e3);
 const dday = () => { const t = kst(); const today = Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate()); return Math.round((Date.UTC(2026, 10, 19) - today) / 864e5); };
+const TOP = `<div class="top"><a class="brand" href="${SITE}">[오름] <em>국어</em></a><a class="back" href="${SITE}">정규반 사이트로</a></div>`;
 
 function kind(id){
   if (/suneung/.test(id)) return '기출';
@@ -76,7 +173,7 @@ function shortLabel(id, label){
 }
 // 받침에 맞춰 '와/과'를 붙인다(한글로 끝나지 않으면 '와')
 function wa(s){ const c = String(s).trim().slice(-1).charCodeAt(0); return s + ((c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28) ? '과' : '와'); }
-const KCOL = {'평가원':'#1F3A5F','교육청':'#4C6FA5','기출':'#8A9BB8','사설':'#C26A3D'};
+const KCOL = {'평가원':'#9AABFF','교육청':'#6FB3F2','기출':'#C9D1E3','사설':'#FF8F7E'};
 
 function tagOf(q){
   const a = String(q.area || '').split('>')[0];
@@ -88,7 +185,7 @@ function tagOf(q){
     return '문법';
   }
   if (/어휘|문맥상|바꿔 쓰|사전적/.test(t)) return '어휘';
-  if (/보기|외적|사례|적용|상황|그림|그래프|자료/.test(t)) return a === '문학' ? '문학 〈보기〉 감상' : '독서 〈보기〉·사례 적용';
+  if (/보기|외적|사례|적용|상황|그림|그래프|자료/.test(t)) return a === '문학' ? '문학 〈보기〉 감상' : '독서 〈보기〉와 사례 적용';
   if (a === '독서'){
     if (/견해|입장|비교|관점/.test(t)) return '독서 견해 비교';
     if (/추론|이유|전제|의미/.test(t)) return '독서 추론';
@@ -98,7 +195,7 @@ function tagOf(q){
   return '문학 내용 이해';
 }
 const HOW = {
-  '독서 〈보기〉·사례 적용': '〈보기〉의 조건마다 지문의 어느 개념과 이어지는지 줄을 그어 대응시키고, 선지마다 그 연결이 끝까지 맞는지 확인합니다.',
+  '독서 〈보기〉와 사례 적용': '〈보기〉의 조건마다 지문의 어느 개념과 이어지는지 줄을 그어 대응시키고, 선지마다 그 연결이 끝까지 맞는지 확인합니다.',
   '문학 〈보기〉 감상': '선지를 앞부분과 뒷부분으로 나누어, 뒷부분이 작품에 근거가 있는지 확인합니다.',
   '문법': '판단에 쓴 개념의 조건을 적은 뒤, 예를 하나씩 조건에 대입합니다.',
   '독서 추론': '선지의 판단을 받쳐 주는 지문 문장을 두 개 이상 찾아 이어 봅니다.',
@@ -112,19 +209,23 @@ const HOW = {
 };
 
 function showLogin(msg){
-  $app.innerHTML = `
-  <div class="hd"><small>[오름] 국어 학원</small><h1>나의 국어 기록</h1><small>모의고사 진단에 제출한 기록으로 점수 변화, 강점과 약점, 틀린 문항을 모아 봅니다.</small></div>
-  <div class="card login">
-    <label for="nm">이름</label><input id="nm" autocomplete="name" placeholder="예: 홍길동">
-    <label for="p4">내 휴대폰 번호 마지막 네 자리</label><input id="p4" inputmode="numeric" maxlength="4" placeholder="예: 1234">
-    <button id="go">기록 보기</button>
+  const D = dday();
+  $app.innerHTML = `${TOP}
+  <section class="intro fade">
+    <div class="ey">2027 수능 정규반</div>
+    <h1>나의 국어 기록</h1>
+    <p>모의고사 진단에 제출한 기록을 모아 점수 변화, 강한 유형과 약한 유형, 틀린 문항을 한 화면에서 봅니다.</p>
+    ${D > 0 ? `<div class="dbig"><b>D-${D}</b><span>11월 19일 수능까지</span></div>` : ''}
+  </section>
+  <form class="login fade" style="animation-delay:.08s" onsubmit="return false">
+    <label for="nm">이름</label><input id="nm" autocomplete="name" placeholder="홍길동">
+    <label for="p4">휴대폰 번호 마지막 네 자리</label><input id="p4" inputmode="numeric" maxlength="4" placeholder="1234" autocomplete="off">
+    <button id="go" type="submit">내 기록 보기</button>
     <div class="err" id="err">${E(msg || '')}</div>
     <p class="note">학원에 등록된 학생 본인의 휴대폰 번호로 확인합니다. 번호를 여러 번 틀리면 10분 동안 조회가 멈춥니다.</p>
-  </div>`;
+  </form>`;
   const go = document.getElementById('go');
-  const run = () => lookup(document.getElementById('nm').value, document.getElementById('p4').value);
-  go.onclick = run;
-  document.getElementById('p4').addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+  go.onclick = () => lookup(document.getElementById('nm').value, document.getElementById('p4').value);
 }
 
 async function lookup(name, p4){
@@ -135,18 +236,45 @@ async function lookup(name, p4){
   if (p4.length !== 4){ err.textContent = '휴대폰 번호 마지막 네 자리를 숫자로 입력해 주세요.'; return; }
   const url = window.OREUM_CONFIG && window.OREUM_CONFIG.SCRIPT_URL;
   if (!url){ err.textContent = '서버 주소를 찾지 못했습니다. 데스크에 알려 주세요.'; return; }
-  go.disabled = true; err.textContent = '불러오는 중입니다…';
+  go.disabled = true; err.textContent = ''; go.textContent = '불러오는 중입니다';
+  const fail = m => { err.textContent = m; go.disabled = false; go.textContent = '내 기록 보기'; };
   try{
     const j = await fetch(url + '?action=mystudy&name=' + encodeURIComponent(name) + '&p4=' + p4).then(r => r.json());
     if (!j.ok){
-      err.textContent = j.error === 'locked' ? '번호를 여러 번 틀려 조회가 잠시 멈췄습니다. 10분 뒤에 다시 해 주세요.'
+      fail(j.error === 'locked' ? '번호를 여러 번 틀려 조회가 잠시 멈췄습니다. 10분 뒤에 다시 해 주세요.'
         : j.error === 'notfound' ? '이름과 번호가 학원에 등록된 정보와 맞지 않습니다. 번호를 바꿨다면 데스크에 알려 주세요.'
-        : '입력을 다시 확인해 주세요.';
-      go.disabled = false; return;
+        : '입력을 다시 확인해 주세요.');
+      return;
     }
-    if (!j.rows.length){ err.textContent = '아직 모의고사 진단에 제출한 기록이 없습니다.'; go.disabled = false; return; }
+    if (!j.rows.length){ fail('아직 모의고사 진단에 제출한 기록이 없습니다.'); return; }
     await render(j);
-  }catch(e){ err.textContent = '불러오지 못했습니다. 잠시 뒤 다시 해 주세요.'; go.disabled = false; }
+  }catch(e){ fail('불러오지 못했습니다. 잠시 뒤 다시 해 주세요.'); }
+}
+
+function scoreChart(rounds, raws){
+  const n = raws.length;
+  const W = Math.max(300, Math.min(720, $app.clientWidth - 40)), H = W < 440 ? 230 : 260;
+  const L = 30, R = 12, T = 22, B = 58;
+  const lo = Math.min(70, Math.floor((Math.min(...raws) - 3) / 5) * 5), hi = 100;
+  const X = i => L + (n === 1 ? (W - L - R) / 2 : i * (W - L - R) / (n - 1)), Y = v => T + (hi - v) * (H - T - B) / (hi - lo);
+  const best = Math.max(...raws);
+  let g = `<defs><linearGradient id="ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9AABFF" stop-opacity=".22"/><stop offset="1" stop-color="#9AABFF" stop-opacity="0"/></linearGradient></defs>`;
+  for (let v = lo; v <= hi; v += 10) g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#22304A" stroke-dasharray="${v === hi ? '0' : '3 4'}"/><text x="${L - 7}" y="${Y(v) + 4}" font-size="11" fill="#6F7B96" text-anchor="end">${v}</text>`;
+  const pts = raws.map((v, i) => X(i) + ',' + Y(v));
+  if (n > 1){
+    g += `<polygon points="${X(0)},${Y(lo)} ${pts.join(' ')} ${X(n - 1)},${Y(lo)}" fill="url(#ar)"/>`;
+    g += `<polyline points="${pts.join(' ')}" fill="none" stroke="#9AABFF" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  const step = n > 14 && W < 440 ? 2 : 1;
+  rounds.forEach(({r}, i) => {
+    const v = raws[i], x = X(i), k = kind(r['회차ID']), top = v === best;
+    g += `<circle cx="${x}" cy="${Y(v)}" r="${top ? 6 : 4.5}" fill="${KCOL[k]}" stroke="#131C2E" stroke-width="2.5"/>`;
+    g += `<text x="${x}" y="${Y(v) - 11}" font-size="11.5" font-weight="${top ? 800 : 600}" fill="${top ? '#E9EDF6' : '#A3AEC6'}" text-anchor="middle">${v}</text>`;
+    if (i % step === 0 || i === n - 1) g += `<text x="${x}" y="${H - B + 18}" font-size="10.5" fill="#6F7B96" text-anchor="end" transform="rotate(-38 ${x} ${H - B + 18})">${E(shortLabel(r['회차ID'], r['회차이름']))}</text>`;
+  });
+  const used = [...new Set(rounds.map(({r}) => kind(r['회차ID'])))];
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="원점수 변화 그래프">${g}</svg></div>`
+    + `<div class="lgd">${Object.entries(KCOL).filter(([k]) => used.includes(k)).map(([k, c]) => `<span><i style="background:${c}"></i>${k}</span>`).join('')}</div>`;
 }
 
 async function render(j){
@@ -189,34 +317,22 @@ async function render(j){
   const n3 = allW.filter(w => w.q.three).length;
   const n = rounds.length;
 
-  // 점수 그래프
-  let chart = '';
-  if (n >= 2){
-    const W = 680, H = 250, L = 40, R = 14, T = 18, B = 52;
-    const lo = Math.min(70, Math.floor((Math.min(...raws) - 3) / 5) * 5), hi = 100;
-    const X = i => L + i * (W - L - R) / (n - 1), Y = v => T + (hi - v) * (H - T - B) / (hi - lo);
-    let g = '';
-    for (let v = lo; v <= hi; v += 5) g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#E3E8F0"/><text x="${L - 6}" y="${Y(v) + 4}" font-size="11" fill="#7A8699" text-anchor="end">${v}</text>`;
-    g += `<polyline points="${raws.map((v, i) => X(i) + ',' + Y(v)).join(' ')}" fill="none" stroke="#B7C3D6" stroke-width="2"/>`;
-    rounds.forEach(({r}, i) => {
-      const v = raws[i], x = X(i), k = kind(r['회차ID']);
-      g += `<circle cx="${x}" cy="${Y(v)}" r="5" fill="${KCOL[k]}"/><text x="${x}" y="${Y(v) - 9}" font-size="10.5" fill="#2b2b2b" text-anchor="middle">${v}</text>`;
-      g += `<text x="${x}" y="${H - B + 16}" font-size="9.5" fill="#7A8699" text-anchor="end" transform="rotate(-50 ${x} ${H - B + 16})">${E(shortLabel(r['회차ID'], r['회차이름']))}</text>`;
-    });
-    chart = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="원점수 변화 그래프">${g}</svg><div>${Object.entries(KCOL).map(([k, c]) => `<span class="lg"><i style="background:${c}"></i>${k}</span>`).join('')}</div>`;
-  }
   const half = Math.min(10, Math.floor(n / 2)), recent = Math.min(5, Math.ceil(n / 2));
   const best = Math.max(...raws), bestR = rounds[raws.indexOf(best)].r;
-  const kpi = `<div class="kp"><div class="k"><b>${avg(raws).toFixed(1)}</b><span>${n}회 평균 원점수</span></div>`
-    + (n >= 4 ? `<div class="k"><b>${avg(raws.slice(0, half)).toFixed(1)} → ${avg(raws.slice(-recent)).toFixed(1)}</b><span>처음 ${half}회 평균 → 최근 ${recent}회 평균</span></div>` : '')
-    + `<div class="k"><b>${best}</b><span>최고점(${E(shortLabel(bestR['회차ID'], bestR['회차이름']))})</span></div></div>`;
+  let trend = '';
+  if (n >= 4){
+    const a0 = avg(raws.slice(0, half)), a1 = avg(raws.slice(-recent)), df = a1 - a0;
+    trend = `<div class="k"><span>최근 ${recent}회 평균</span><b>${a1.toFixed(1)}<i class="${df >= 0 ? 'up' : 'dn'}">${df >= 0 ? '+' : ''}${df.toFixed(1)}</i></b><em>처음 ${half}회 평균 ${a0.toFixed(1)}</em></div>`;
+  }
+  const kpi = `<div class="kp"><div class="k"><span>${n}회 평균 원점수</span><b>${avg(raws).toFixed(1)}</b><em>제출한 모든 회차</em></div>${trend}`
+    + `<div class="k"><span>최고점</span><b>${best}</b><em>${E(shortLabel(bestR['회차ID'], bestR['회차이름']))}</em></div></div>`;
 
-  const bars = tags.map(t => { const a = acc(t), c = a >= 90 ? '#1F3A5F' : (a >= 80 ? '#4C6FA5' : '#C26A3D');
-    return `<div class="br"><div class="bl">${E(t)}</div><div class="bt"><div class="bf" style="width:${a.toFixed(0)}%;background:${c}"></div></div><div class="bv">${a.toFixed(0)}%<small> (${tot[t] - (wr[t] || 0)}/${tot[t]})</small></div></div>`; }).join('');
+  const bars = tags.map(t => { const a = acc(t), c = a >= 90 ? '#9AABFF' : (a >= 80 ? '#6FB3F2' : '#FF8F7E');
+    return `<div><div class="br-h"><span>${E(t)}</span><b style="color:${c}">${a.toFixed(0)}%<small>${tot[t] - (wr[t] || 0)}/${tot[t]}</small></b></div><div class="bt"><div class="bf" data-w="${a.toFixed(1)}" style="background:${c}"></div></div></div>`; }).join('');
 
-  let summary = `${n}회 동안 ${allW.length}문항을 틀렸고, 그중 3점 문항이 ${n3}문항입니다.`;
-  if (weak[0] && wr[weak[0]]) summary += ` 정답률이 가장 낮은 유형은 ${weak[0]}(${acc(weak[0]).toFixed(0)}%)입니다.`;
-  if (easy.length) summary += ` 전국 오답률이 25% 미만인 쉬운 문항도 ${easy.length}문항 틀렸고, 그중 ${easyBy[easyTop]}문항이 ${easyTop} 문항입니다.`;
+  let summary = `${n}회 동안 <b>${allW.length}문항</b>을 틀렸고, 그중 3점 문항이 <b>${n3}문항</b>입니다.`;
+  if (weak[0] && wr[weak[0]]) summary += ` 정답률이 가장 낮은 유형은 <b>${E(weak[0])}(${acc(weak[0]).toFixed(0)}%)</b>입니다.`;
+  if (easy.length) summary += ` 전국 오답률이 25% 미만인 쉬운 문항도 <b>${easy.length}문항</b> 틀렸고, 그중 ${easyBy[easyTop]}문항이 ${E(easyTop)} 문항입니다.`;
 
   // 남은 날에 맞춘 전략
   const D = dday();
@@ -224,9 +340,10 @@ async function render(j){
   const fmt = k => { const t = new Date(Date.UTC(2026, 10, 19) - k * 864e5); return (t.getUTCMonth() + 1) + '/' + t.getUTCDate(); };
   const span = (a, b) => (a === b ? fmt(a) + ' (D-' + a + ')' : fmt(a) + '~' + fmt(b) + ' (D-' + a + '~D-' + b + ')');
   const w1 = weak[0], w23 = weak.slice(1, 3).filter(t => wr[t]);
+  const lastDay = [fmt(1) + ' (D-1)', '정리와 컨디션', '새 문제는 풀지 않습니다. 이 화면의 ‘다시 볼 때’ 문장만 유형별로 읽고, 시험 순서와 시간 배분을 한 번 적어 둡니다.'];
   if (D >= 2){
     const days = D - 1;
-    const p1 = Math.max(1, Math.round(days * 0.35)), p2 = w23.length ? Math.max(1, Math.round(days * 0.25)) : 0, p3 = days - p1 - p2;
+    const p1 = Math.max(1, Math.round(days * 0.35)), p2 = w23.length ? Math.max(1, Math.round(days * 0.25)) : 0;
     let k = D;
     if (w1 && wr[w1]){
       const c = (groups[w1] || []).length;
@@ -242,38 +359,47 @@ async function render(j){
       if (easy.length) txt += ` 쉬운 문항에서 ${easy.length}문항을 놓쳤고 그중 ${easyBy[easyTop]}문항이 ${easyTop} 문항이었습니다. ${HOW[easyTop] || ''} 마킹 전 2분은 이 유형만 다시 봅니다.`;
       plan.push([span(k, 2), '실전 연습과 마지막 점검 순서 고정', txt]);
     }
-    plan.push([fmt(1) + ' (D-1)', '정리와 컨디션', '새 문제는 풀지 않습니다. 이 화면의 ‘다시 볼 때’ 문장만 유형별로 읽고, 시험 순서와 시간 배분을 한 번 적어 둡니다.']);
+    plan.push(lastDay);
   } else if (D === 1){
-    plan.push([fmt(1) + ' (D-1)', '정리와 컨디션', '새 문제는 풀지 않습니다. 이 화면의 ‘다시 볼 때’ 문장만 유형별로 읽고, 시험 순서와 시간 배분을 한 번 적어 둡니다.']);
+    plan.push(lastDay);
   }
-  const planHtml = plan.map(([a, b, c]) => `<div class="pl"><div class="pd">${E(a)}</div><div><b>${E(b)}</b><p>${E(c)}</p></div></div>`).join('');
+  const planHtml = plan.map(([a, b, c]) => `<div class="pl"><span class="pd">${E(a)}</span><h4>${E(b)}</h4><p>${E(c)}</p></div>`).join('');
 
   const order = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
-  const sec = order.map((t, gi) => `<details${gi === 0 ? ' open' : ''}><summary>${E(t)} <b>${groups[t].length}문항</b></summary>` + groups[t].map(w => {
+  const sec = order.map((t, gi) => `<details${gi === 0 ? ' open' : ''}><summary><span>${E(t)}</span><span class="cnt">${groups[t].length}문항</span></summary>` + groups[t].map(w => {
     const q = w.q;
     return `<div class="it"><div class="ih">${E(shortLabel(w.r['회차ID'], w.r['회차이름']))} ${w.no}번${q.three ? ' <span class="b3">3점</span>' : ''}${q.wr != null ? ` <span class="bw">전국 오답률 ${Math.round(q.wr)}%</span>` : ''}</div>`
-      + `<div class="src">${E(q.source || '')}</div>`
-      + `<p><span class="lb">발문 유형</span>${E(q.type || '')}</p>`
-      + (q.coreElement ? `<p><span class="lb">핵심</span>${E(q.coreElement)}</p>` : '')
-      + (w.pick ? `<p class="pk"><b>내가 고른 답 ${E(w.pick)}</b>${w.note ? ' — ' + E(w.note) : ''}</p>` : '')
-      + (q.remediation ? `<p><span class="lb">다시 볼 때</span>${E(q.remediation)}</p>` : '') + '</div>';
+      + (q.source ? `<div class="src">${E(q.source)}</div>` : '')
+      + `<div class="row"><span>발문 유형</span><div>${E(q.type || '')}</div></div>`
+      + (q.coreElement ? `<div class="row"><span>핵심</span><div>${E(q.coreElement)}</div></div>` : '')
+      + (w.pick ? `<div class="pk"><b>내가 고른 답 ${E(w.pick)}</b>${w.note ? E(w.note) : ''}</div>` : '')
+      + (q.remediation ? `<div class="fx"><b>다시 볼 때</b>${E(q.remediation)}</div>` : '') + '</div>';
   }).join('') + '</details>').join('');
 
   const last = rounds[rounds.length - 1].r;
   const choice = last['선택과목'] === 'lm' ? '언어와 매체' : last['선택과목'] === 'hs' ? '화법과 작문' : '';
-  $app.innerHTML = `
-  <div class="hd">${D > 0 ? `<span class="dd">수능 D-${D}</span>` : ''}<small>[오름] 국어 학원 · 나의 국어 기록</small><h1>${E(j.name)} 학생</h1>
-    <small>${E(last['학교'] || j.school || '')} ${E((last['학년'] || '').replace('고', '') ? (last['학년'] || '').replace('고', '') + '학년' : '')}${choice ? ' · ' + choice : ''} · 모의고사 ${n}회 기록</small><br>
-    <button class="out" onclick="showLogin()">다른 이름으로 보기</button></div>
-  <div class="card"><h2>점수 변화</h2>${kpi}<div style="margin-top:10px">${chart}</div></div>
-  <div class="card"><h2>강점과 약점</h2>
-    ${tags.length >= 4 ? `<div class="sw"><div class="st"><b>강점</b>${strong.map(t => E(t) + ' ' + acc(t).toFixed(0) + '%').join('<br>')}</div><div class="wk"><b>약점</b>${weak.map(t => E(t) + ' ' + acc(t).toFixed(0) + '%').join('<br>')}</div></div>` : ''}
-    <p style="font-size:14px">${E(summary)}</p>
-    <h2 style="margin-top:14px">문항 유형별 정답률</h2>${bars}
-    <p class="note">정답률 = 내가 푼 회차에 나온 그 유형 문항 중 맞힌 비율(8문항 이상 나온 유형만)</p></div>
-  ${planHtml ? `<div class="card"><h2>수능까지 ${D}일, 필승 전략</h2>${planHtml}</div>` : ''}
-  <div class="card"><h2>틀린 문항 모음 (${allW.length}문항)</h2><p class="note">유형을 누르면 펼쳐집니다. 회차와 번호, 지문, 내가 고른 답과 진단을 함께 보여 줍니다.</p>${sec}</div>`;
+  const gr = (last['학년'] || '').replace('고', '');
+  const chips = [last['학교'] || j.school || '', gr ? gr + '학년' : '', choice].filter(Boolean).map(s => `<span class="chip">${E(s)}</span>`).join('');
+  $app.innerHTML = `${TOP}
+  <section class="hero fade">
+    <div class="hero-row">
+      <div><div class="ey">나의 국어 기록</div><h1>${E(j.name)}<small>학생</small></h1></div>
+      ${D > 0 ? `<div class="dd"><b>D-${D}</b><span>수능까지</span></div>` : ''}
+    </div>
+    <div class="meta">${chips}</div>
+    <button class="out" onclick="showLogin()">다른 이름으로 보기</button>
+  </section>
+  <div class="card fade"><div class="st">점수 변화</div><div class="sd">회차마다 받은 원점수입니다. 가장 높은 점수는 크게 표시합니다.</div>${kpi}${n >= 2 ? scoreChart(rounds, raws) : ''}</div>
+  <div class="card fade"><div class="st">강점과 약점</div><div class="sd">문항 유형별로 맞힌 비율을 비교했습니다.</div>
+    ${tags.length >= 4 ? `<div class="sw"><div class="s"><h3>강한 유형</h3><ul>${strong.map(t => `<li><span>${E(t)}</span><b>${acc(t).toFixed(0)}%</b></li>`).join('')}</ul></div><div class="w"><h3>약한 유형</h3><ul>${weak.map(t => `<li><span>${E(t)}</span><b>${acc(t).toFixed(0)}%</b></li>`).join('')}</ul></div></div>` : ''}
+    <p class="sum">${summary}</p>
+    <div class="st" style="font-size:16px;margin-bottom:14px">문항 유형별 정답률</div>
+    <div class="bars">${bars}</div>
+    <p class="foot">정답률은 내가 푼 회차에 나온 그 유형 문항 중 맞힌 비율입니다. 8문항 이상 나온 유형만 보여 줍니다.</p></div>
+  ${planHtml ? `<div class="card fade"><div class="st">수능까지 ${D}일, 필승 전략</div><div class="sd">약한 유형부터 남은 날짜에 나누어 배치했습니다.</div><div class="tl">${planHtml}</div></div>` : ''}
+  <div class="card fade"><div class="st">틀린 문항 모음</div><div class="sd">${allW.length}문항을 유형별로 묶었습니다. 유형을 누르면 펼쳐집니다.</div>${sec}</div>`;
   window.scrollTo(0, 0);
+  requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.bf').forEach(b => b.style.transform = 'scaleX(' + (b.dataset.w / 100) + ')'), 60));
 }
 showLogin();
 </script>
