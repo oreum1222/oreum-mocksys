@@ -379,6 +379,8 @@ body.landing .corner-logo{display:none}
 .course-tab.on{background:var(--accent);color:#0b0c15;font-weight:700}
 .course-tab.on:hover{background:var(--accent-soft);color:#0b0c15}
 .course-tab.off,.course-tab.off:hover{opacity:.38;cursor:not-allowed;background:transparent;color:var(--text-muted)}
+.sub-tabs{margin:-28px auto 36px;padding:4px}.sub-tabs .course-tab{padding:8px 18px;font-size:0.86rem}.sub-tabs .sub-count{opacity:.6;font-weight:500;margin-left:2px}
+@media (max-width:640px){.sub-tabs .course-tab{padding:7px 11px;font-size:0.8rem}}
 @media (max-width:640px){.course-tabs{border-radius:16px}.course-tab{padding:9px 14px;font-size:0.86rem}}
 /* 회차 카드 */
 .exam-card{border-radius:14px}
@@ -452,15 +454,23 @@ const COURSES = [
 ];
 // 고3/N수 탭에서 사설 모의고사(이감, 바탕, 상상 등) 회차를 목록에서 숨긴다(2026-11-26).
 // 다시 보이게 하려면 false로 바꾸거나 주소 뒤에 ?all=1 을 붙인다. 회차 자료와 직접 주소는 그대로 살아 있다.
-const HIDE_PRIVATE_G3 = true;
+const HIDE_PRIVATE_G3 = false;   // 2026-11-26 하위 탭 ‘사설 모의고사’로 옮김
 function isPrivateExam(meta){ return /사설 모의고사/.test(meta.tagDate || ''); }
 // 고3/N수 회차 목록 묶음(2026-11-26). 회차에 group 키를 직접 주면 그것이 우선한다.
 const G3_GROUPS = [
   { key:'suneung', label:'수능 기출' },
-  { key:'kice', label:'평가원 기출' },
+  { key:'kice', label:'평가원(6월/9월) 기출' },
   { key:'hakpyeong', label:'학력평가' },
-  { key:'private', label:'사설(실전) 모의고사' }
+  { key:'private', label:'사설 모의고사' }
 ];
+// 고3/N수 하위 탭(2026-11-26): 고른 묶음의 회차만 보인다. 주소 ?g=kice 처럼 바로 열 수도 있다.
+function currentG3Group(){
+  const ok = k=>G3_GROUPS.some(g=>g.key===k);
+  try{ const q=new URLSearchParams(location.search).get('g'); if(q && ok(q)) return q; }catch(e){}
+  try{ const c=localStorage.getItem('oreum_g3group'); if(c && ok(c)) return c; }catch(e){}
+  return 'suneung';
+}
+function setG3Group(key){ try{ localStorage.setItem('oreum_g3group',key); }catch(e){} renderRouter(); }
 function examGroup(meta){
   if(meta.group) return meta.group;
   const t = meta.tagDate || '';
@@ -1065,20 +1075,27 @@ function renderRouter(){
   root.appendChild(wrapHeader);
   root.appendChild(tabs);
   if(course==='g3' && exams.length){
-    // 고3/N수: 수능 기출, 평가원 기출, 학력평가, 사설(실전) 모의고사로 나눠 보인다
+    // 고3/N수: 하위 탭(수능 기출, 평가원 6월/9월 기출, 학력평가, 사설 모의고사) 가운데 고른 묶음만 보인다
+    const gsel = currentG3Group();
+    const sub = el('div',{class:'course-tabs sub-tabs', role:'tablist'});
     G3_GROUPS.forEach(g=>{
-      const items = exams.filter(m=>examGroup(m)===g.key);
-      if(!items.length) return;
-      const gl = el('div',{class:'exam-list'});
-      items.forEach(meta=>{
-        const card = el('button',{class:'exam-card', onclick:()=>loadExam(meta.id)});
-        card.appendChild(buildCardContent(meta));
-        gl.appendChild(card);
-        cardById[meta.id] = card;
-      });
-      root.appendChild(el('div',{class:'section-label group-label'}, g.label+' · '+items.length+'회'));
-      root.appendChild(gl);
+      const n = exams.filter(m=>examGroup(m)===g.key).length;
+      sub.appendChild(el('button',{class:'course-tab'+(g.key===gsel?' on':''), role:'tab', onclick:()=>setG3Group(g.key)},
+        g.label, el('span',{class:'sub-count'}, ' '+n)));
     });
+    root.appendChild(sub);
+    const g = G3_GROUPS.find(x=>x.key===gsel);
+    const items = exams.filter(m=>examGroup(m)===gsel);
+    const gl = el('div',{class:'exam-list'});
+    items.forEach(meta=>{
+      const card = el('button',{class:'exam-card', onclick:()=>loadExam(meta.id)});
+      card.appendChild(buildCardContent(meta));
+      gl.appendChild(card);
+      cardById[meta.id] = card;
+    });
+    root.appendChild(el('div',{class:'section-label group-label'}, g.label+' · '+items.length+'회'));
+    if(items.length) root.appendChild(gl);
+    else root.appendChild(el('p',{class:'lead'},'이 묶음의 회차는 준비 중입니다.'));
   } else {
     root.appendChild(sectionLabel);
     root.appendChild(list);
