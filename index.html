@@ -2768,6 +2768,13 @@ loadConfig().then(()=>{
     loadExamPreview(previewExamId, choice, pattern);
     return;
   }
+
+  // 회차 바로 열기(2026-11-27, 안내문 QR용): ?exam=2027-sss3-03
+  const directExamId = params.get('exam');
+  if(directExamId && EXAM_LIST.some(e=>e.id===directExamId)){
+    loadExam(directExamId);
+    return;
+  }
   renderRouter();
 });
 </script>
