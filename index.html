@@ -449,7 +449,8 @@ const DATA_VER = '20261126o';   // 회차 JSON 캐시 버스터 — 데이터 �
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
   { key:'g2', label:'고2 수능 정규반', short:'고2', footer:'오름 국어학원 고2 수능 정규반', empty:'고2 수능 정규반 회차는 준비 중입니다.<br>첫 회차가 올라오면 이 자리에 표시됩니다.' },
-  { key:'seminar', label:'설명회 특별판', short:'고1', footer:'오름 국어학원 설명회 특별판', empty:'설명회 특별판 회차는 준비 중입니다.' },
+  { key:'clinic', label:'예비 고1 클리닉', short:'예비고1', footer:'오름 국어학원 예비 고1 클리닉', empty:'예비 고1 클리닉 회차는 준비 중입니다.<br>첫 회차가 올라오면 이 자리에 표시됩니다.' },
+  { key:'seminar', label:'설명회 특별판', short:'고1', footer:'오름 국어학원 설명회 특별판', empty:'설명회 특별판 회차는 준비 중입니다.', hidden:true },  // 2026-11-27 탭에서 내림(회차 자료와 직접 주소는 그대로)
   { key:'yaksul', label:'약술형 논술', short:'약술', footer:'오름 국어학원 약술형 논술', empty:'약술형 논술 회차는 준비 중입니다.', disabled:true }  // 당분간 쉼: 탭은 보이되 눌리지 않음(다시 쓰려면 disabled:true를 지운다)
 ];
 // 고3/N수 탭에서 사설 모의고사(이감, 바탕, 상상 등) 회차를 목록에서 숨긴다(2026-11-26).
@@ -482,7 +483,7 @@ function examGroup(meta){
 function showAllExams(){ try{ return new URLSearchParams(location.search).get('all')==='1'; }catch(e){ return false; } }
 function courseOf(meta){ return (meta && meta.course) || 'g3'; }
 function courseInfo(key){ return COURSES.find(c=>c.key===key) || COURSES[0]; }
-function courseOpen(key){ return COURSES.some(c=>c.key===key && !c.disabled); }
+function courseOpen(key){ return COURSES.some(c=>c.key===key && !c.disabled && !c.hidden); }
 function currentCourse(){
   try{ const q=new URLSearchParams(location.search).get('course'); if(q && courseOpen(q)) return q; }catch(e){}
   try{ const c=localStorage.getItem('oreum_course'); if(c && courseOpen(c)) return c; }catch(e){}
@@ -1015,7 +1016,7 @@ function renderRouter(){
 
   const course = currentCourse(); STATE.course = course; const cinfo = courseInfo(course);
   const tabs = el('div',{class:'course-tabs', role:'tablist'});
-  COURSES.forEach(c=>{
+  COURSES.filter(c=>!c.hidden).forEach(c=>{
     const b = el('button',{class:'course-tab'+(c.key===course?' on':'')+(c.disabled?' off':''), role:'tab', onclick:()=>{ if(!c.disabled) setCourse(c.key); }}, c.label);
     if(c.disabled){ b.disabled = true; b.setAttribute('aria-disabled','true'); b.title = '지금은 운영하지 않습니다'; }
     tabs.appendChild(b);
