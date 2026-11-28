@@ -162,6 +162,7 @@ body{
 .q-item:hover{border-color:var(--border-soft)}
 .q-item.wrong{background:rgba(198,102,102,0.12);border-color:var(--danger);color:var(--cream)}
 .q-num{font-weight:500;font-size:0.92rem;min-width:34px;color:var(--cream)}
+.q-lab{margin-top:12px}.q-lab-h{font-size:0.78rem;font-weight:700;color:var(--accent,#a5aef0);margin-bottom:3px}.q-lab-b{font-size:0.92rem;line-height:1.75;color:var(--cream);word-break:keep-all}.q-lab-warn .q-lab-h{color:#ff9b8a}
 .q-area{font-size:0.68rem;color:var(--text-muted);letter-spacing:0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:74px}
 .q-item.wrong .q-area{color:var(--cream);opacity:0.75}
 .q-three{font-size:0.7rem;color:var(--gold-soft);font-weight:500;margin-left:auto}
@@ -444,7 +445,7 @@ body.landing .corner-logo{display:none}
 
 <script>
 // ─────────────────── State ───────────────────
-const DATA_VER = '20261126o';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
+const DATA_VER = '20261129a';   // 회차 JSON 캐시 버스터 — 데이터 구조 바뀌면 갱신
 // 수업(강좌) 탭 — 회차 항목에 course 키가 없으면 고3/N수로 본다
 const COURSES = [
   { key:'g3', label:'고3/N수 수능 정규반', short:'고3', footer:'오름 국어학원 고3/N수 수능 정규반', empty:'' },
@@ -590,6 +591,16 @@ const EXAM_LIST = [
   {
     id: '2018-06', file: 'data/mock-2018-06.json', group: 'kice',
     no: '제 31 회', tagDate: '2018학년도 6월 모의평가 · 한국교육과정평가원',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'yb1-2026-1', file: 'data/mock-yb1-2026-1.json', course: 'clinic', grade: '예비고1',
+    no: '제 1 회', tagDate: '2026 예비고1 실전 모의고사 1회 · 13문항(3번 제외)',
+    status: 'active', statusLabel: '정식 운영'
+  },
+  {
+    id: 'yb1-2026-2', file: 'data/mock-yb1-2026-2.json', course: 'clinic', grade: '예비고1',
+    no: '제 2 회', tagDate: '2026 예비고1 실전 모의고사 2회 · 12문항(3번 제외)',
     status: 'active', statusLabel: '정식 운영'
   },
   {
@@ -1254,7 +1265,7 @@ function loadExam(examId){
     STATE.view = 'diag';
     STATE.step = 1;
     const _em = STATE.data && STATE.data.examMeta;   // 회차에 학년이 따로 적혀 있으면(고1 설명회 특별판 등) 그 학년
-    STATE.student = { name:'', school:'', grade: (_em && (_em.grade==='고1' || _em.grade==='고2')) ? _em.grade : (courseOf(_em)==='g2' ? '고2' : '고3'), choice:null, raw:null };
+    STATE.student = { name:'', school:'', grade: (_em && _em.grade) ? _em.grade : (courseOf(_em)==='g2' ? '고2' : '고3'), choice:null, raw:null };
     STATE.wrong = new Set();
     STATE.timeAns = {};
     STATE.result = null;
@@ -1454,7 +1465,7 @@ function renderStep1(){
       renderYakApply(()=>{ STATE.apply = yakApplySnapshot(); })) : '',
     isYaksul() ? '' : isUnified() ? el('div',{class:'form-row'},
       el('label',{},'선택 과목'),
-      el('div',{class:'unified-note'}, (STATE.data.examMeta.grade==='고1' || courseOf(STATE.data && STATE.data.examMeta)==='g2') ? ((STATE.data.examMeta.grade==='고1' ? '고1' : '고2')+' 학력평가는 선택과목 없이 1~45번 전체가 공통입니다.') : '이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
+      el('div',{class:'unified-note'}, STATE.data.examMeta.unifiedNote ? STATE.data.examMeta.unifiedNote : (STATE.data.examMeta.grade==='고1' || courseOf(STATE.data && STATE.data.examMeta)==='g2') ? ((STATE.data.examMeta.grade==='고1' ? '고1' : '고2')+' 학력평가는 선택과목 없이 1~45번 전체가 공통입니다.') : '이 회차는 선택과목이 없던 통합 체제입니다 — 1~45번 전체가 공통입니다.')
     ) : el('div',{class:'form-row'},
       el('label',{},'선택 과목 ', el('span',{class:'req'},'*')),
       el('div',{class:'radio-group'},
@@ -1513,7 +1524,7 @@ function renderStep2(){
 
   if(isUnified()){
     // 선택과목이 없던 통합 체제 — 1~45 전체가 공통
-    root.appendChild(areaBlock('전체 1-45 (공통)', STATE.data.questions.common, 'common'));
+    root.appendChild(areaBlock(STATE.data.examMeta.blockTitle || '전체 1-45 (공통)', STATE.data.questions.common, 'common'));
   } else {
     // 공통 (독서/문학)
     root.appendChild(areaBlock('공통 1-34 (독서·문학)', STATE.data.questions.common, 'common'));
@@ -1575,7 +1586,8 @@ function renderStep3(){
   }
   root.appendChild(renderPickBox_());
   root.appendChild(renderTimeShortBox_());
-  const intro = el('div',{class:'section'},
+  const _noSurvey = !(STATE.data.timeSurvey && STATE.data.timeSurvey.length);   // 짧은 시험: 시간 진단 설문 없음
+  const intro = _noSurvey ? el('span') : el('div',{class:'section'},
     el('h2',{class:'section-title'},'시간 진단'),
     el('p',{class:'section-desc'},'본 시험에서의 ‘시간 사용 패턴’을 진단합니다. 각 문항에 솔직하게 답해 주세요.')
   );
@@ -1583,7 +1595,7 @@ function renderStep3(){
 
   const surveyBox = el('div',{class:'section'});
   const surveyList = el('div',{class:'time-survey'});
-  STATE.data.timeSurvey.forEach(tq=>{
+  (STATE.data.timeSurvey||[]).forEach(tq=>{
     const tqBlock = el('div',{class:'tq'},
       el('span',{class:'tq-num'},'Q '+tq.num),
       el('p',{class:'tq-q'}, tq.q)
@@ -1828,7 +1840,15 @@ function renderStep4(){
   ));
 
   // 점수 카드
-  root.appendChild(el('div',{class:'score-block'},
+  const _mini = !!(exam && exam.mini);   // 짧은 시험(예비고1 실전 모의고사 등): 등급 대신 맞힌 문항 수
+  const _full = r.totalScore.common + r.totalScore.choice;
+  const _nq = STATE.data.questions.common.length + (isUnified() ? 0 : (STATE.data.questions[choice]||[]).length);
+  if(_mini) root.appendChild(el('div',{class:'score-block'},
+    el('div',{class:'score-card'}, el('div',{class:'score-label'},'원점수'), el('div',{class:'score-num'},r.raw), el('div',{class:'score-num-sub'},'/ '+_full+'점')),
+    el('div',{class:'score-card'}, el('div',{class:'score-label'},'맞힌 문항'), el('div',{class:'score-num'}, _nq - r.wrongDetails.length), el('div',{class:'score-num-sub'},'/ '+_nq+'문항')),
+    el('div',{class:'score-card'}, el('div',{class:'score-label'},'틀린 문항'), el('div',{class:'score-num'}, r.wrongDetails.length), el('div',{class:'score-num-sub'},'문항'))
+  ));
+  if(!_mini) root.appendChild(el('div',{class:'score-block'},
     el('div',{class:'score-card'},
       el('div',{class:'score-label'},'원점수'),
       el('div',{class:'score-num'},r.raw),
@@ -1912,6 +1932,20 @@ function renderStep4(){
         q.wr!=null ? el('span',{class:'q-detail-wr'}, (/예상/.test(q.wrSource||'')?'예상 오답률 ':'오답률 ')+q.wr+'%') : null
       );
       const block = el('div',{class:'q-detail'}, head);
+      if(q.why){   // 학생과 학부모가 읽는 칸 제목 형식(2026-11-29 예비고1부터)
+        const ansNo = ((STATE.data.answers||{})[q.scope]||{})[String(q.no)];
+        const ansMk = typeof ansNo==='number' ? PK_MARKS[ansNo-1] : String(ansNo||'');
+        const lab = (t, body, cls)=>{ if(body) block.appendChild(el('div',{class:'q-lab'+(cls?' '+cls:'')}, el('div',{class:'q-lab-h'}, t), el('div',{class:'q-lab-b'}, body))); };
+        const _eul = mk=>({'①':'을','②':'를','③':'을','④':'를','⑤':'를'}[mk]||'를'), _eun = mk=>({'①':'은','②':'는','③':'은','④':'는','⑤':'는'}[mk]||'는');
+        if(pkMk_ && pkMk_===ansMk) lab('확인해 주세요', '고른 답 '+pkMk_+_eun(pkMk_)+' 이 문항의 정답입니다. 채점할 때 틀린 문항으로 잘못 표시하지 않았는지 다시 확인해 주세요.', 'q-lab-warn');
+        lab('이 문항이 묻는 것', q.coreElement);
+        if(pkNote_) lab(pkMk_+_eul(pkMk_)+' 골랐다면', pkNote_);
+        else lab('틀렸다면 점검할 점', q.weakness1);
+        lab('정답이 '+ansMk+'인 이유', q.why);
+        lab('다음에는 이렇게', q.remediation);
+        wBlock.appendChild(block);
+        return;
+      }
       if(q.coreElement) block.appendChild(el('div',{class:'q-detail-core'}, q.coreElement));
       if(q.weakness1) block.appendChild(el('div',{class:'q-detail-weak'}, q.weakness1));
       // 고른 답에 맞는 점검 문장이 있으면 그것만, 없으면 기존 문장을 쓴다
