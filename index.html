@@ -594,12 +594,12 @@ const EXAM_LIST = [
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'yb1-2026-1', file: 'data/mock-yb1-2026-1.json', course: 'clinic', grade: '예비고1',
+    id: 'yb1-2026-1', file: 'data/mock-yb1-2026-1.json', course: 'clinic', grade: '예비고1', mini: true,
     no: '제 1 회', tagDate: '2026 예비고1 실전 모의고사 1회 · 13문항(3번 제외)',
     status: 'active', statusLabel: '정식 운영'
   },
   {
-    id: 'yb1-2026-2', file: 'data/mock-yb1-2026-2.json', course: 'clinic', grade: '예비고1',
+    id: 'yb1-2026-2', file: 'data/mock-yb1-2026-2.json', course: 'clinic', grade: '예비고1', mini: true,
     no: '제 2 회', tagDate: '2026 예비고1 실전 모의고사 2회 · 12문항(3번 제외)',
     status: 'active', statusLabel: '정식 운영'
   },
@@ -1184,6 +1184,33 @@ function buildCardContent(meta, data=null){
     </div>`;
     while(inner0.firstChild) frag0.appendChild(inner0.firstChild);
     return frag0;
+  }
+
+  // 짧은 시험(예비고1 실전 모의고사): 등급컷 대신 구성
+  if(meta.mini || (data && data.examMeta && data.examMeta.mini)){
+    const qs = data ? (data.questions.common||[]) : [];
+    const full = qs.reduce((t,q)=>t+(q.three?3:2),0);
+    const cnt = {}; qs.forEach(q=>{ const k=String(q.area||'').split('>')[0]; cnt[k]=(cnt[k]||0)+1; });
+    const comp = !data ? '...' : `<strong>${qs.length}문항</strong>, 만점 <strong>${full}점</strong> (3번은 시험지에서 빠진 문항이라 채점하지 않음)`;
+    const areas = !data ? '...' : Object.keys(cnt).map(k=>`${escape(k)} ${cnt[k]}문항`).join(', ');
+    const fragM = document.createDocumentFragment(); const innerM = document.createElement('div');
+    innerM.innerHTML = `
+    <div class="card-top">
+      <div class="card-meta-left">
+        <span class="card-num">${escape(meta.no)}</span>
+        <span class="card-grade">${escape(meta.grade || '')}</span>
+        <span class="card-status ${meta.status==='active'?'status-active':'status-tentative'}">${escape(meta.statusLabel)}</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </div>
+    <h2 class="card-name">${escape(examLabel)}</h2>
+    <p class="card-date">[오름] 국어 예비 고1 클리닉</p>
+    <div class="card-body">
+      <div class="card-body-block"><span class="body-label">구성</span><p class="body-value">${comp}</p></div>
+      <div class="card-body-block"><span class="body-label">영역</span><p class="body-value">${areas}</p></div>
+    </div>`;
+    while(innerM.firstChild) fragM.appendChild(innerM.firstChild);
+    return fragM;
   }
 
   // 등급컷
